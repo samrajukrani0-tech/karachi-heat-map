@@ -57,7 +57,14 @@ test('tap targets in the header are at least 44px', async ({ page }) => {
 test('everything shares one left edge (DESIGN.md alignment rule)', async ({ page }) => {
   await page.goto('/about.html');
   const edges = await page.evaluate(() => {
-    const x = s => { const el = document.querySelector(s); return el ? Math.round(el.getBoundingClientRect().left) : null; };
+    // Measure the TEXT edge, not the box edge: the nav uses a negative margin so its
+    // links' boxes start left of their text, which is exactly what a reader does not see.
+    const x = s => {
+      const el = document.querySelector(s);
+      if (!el) return null;
+      const pad = parseFloat(getComputedStyle(el).paddingLeft) || 0;
+      return Math.round(el.getBoundingClientRect().left + pad);
+    };
     return {
       title: x('header.site h1'),
       nav: x('header.site nav a'),

@@ -770,3 +770,33 @@ serif-display combination lost its serif, and the panel stopped being a rounded 
 a shadow.
 **Status:** provisional until Samraj approves the plan.
 **Next:** P3-02 Shell.
+
+## 2026-09-27 — P3-02 Shell
+**What changed:** `scripts/build_site_data.py`, `site/style.css`, six pages,
+`package.json` + `.htmlvalidate.json` + `playwright.config.js`,
+`tests/e2e/shell.spec.js` (44 tests across both viewports).
+**Evidence:** `npx html-validate site` clean; `npx playwright test` 44 passed;
+`check.py --quick` -> **`CHECK: PASS (6 checks)`** — up from 3, because html-validate,
+Playwright and site-data consistency are now live.
+**Two checks were fixed rather than left misleading.** `site-data consistency` globbed
+`*.json` and so never matched `cells.geojson` — it silently reported N/A forever. It is
+now a real check: every served cell must exist in the processed data with matching
+priority, rank and temperature, the cell sets must be identical, and the provisional flags
+must be present. And `axe-core` was **failing** with "no tests found" rather than
+deferring; it now reports N/A until an axe-tagged test exists, and fails properly once one
+does.
+**I committed on a misread and had to correct it.** I read Playwright's "44 passed" and
+missed "2 failed" printed above it, and pushed. The alignment test was failing because the
+nav uses a negative margin, so its links' *boxes* start 12 px left of their *text* — the
+test measured boxes. Fixed by measuring the text edge, which is what a reader actually
+sees, and pushed immediately. The lesson is to read the gate's own verdict line rather
+than the test runner's tail.
+**Screenshots critiqued, as DESIGN.md requires, and two real faults fixed:**
+1. The laptop view broke **DESIGN.md's own alignment rule** — nav at x=16, heading at
+   x=305, two competing left edges where the rule says one. Header and footer now share
+   main's column, and a test asserts all four edges agree within 2 px.
+2. The phone nav consumed about 100 px before any content — space the map needs.
+   Tightened without dropping below the 44 px tap target.
+**One unnecessary element removed:** the footer said "Built by Samraj Lal Ukrani" and then
+"fieldwork by Samraj Lal Ukrani" one sentence later.
+**Next:** P3-03 Map and legend.

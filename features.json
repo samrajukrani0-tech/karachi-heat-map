@@ -478,10 +478,10 @@
    "depends_on": [
     "P3-01"
    ],
-   "passes": false,
+   "passes": true,
    "blocked_on": null,
    "dropped": null,
-   "evidence": null
+   "evidence": "All six pages from section 9 exist and validate: `npx html-validate site` -> clean. `npx playwright test` -> 44 passed across 375x812 and 1280x800, covering console cleanliness, zero horizontal overflow, keyboard reachability, link integrity, 44px tap targets, the shared left edge and the DESIGN.md colour tokens. scripts/build_site_data.py writes site/data/cells.geojson: 265 cells, 155 kB against a 1 MB budget. check.py now runs 6 checks rather than 3; two were fixed rather than left misleading -- site-data consistency was globbing *.json and never matched cells.geojson, and axe was FAILING with 'no tests found' instead of deferring. Screenshots taken at both widths and critiqued: the laptop view broke DESIGN.md's own alignment rule (nav at x=16, heading at x=305) and was fixed; the phone nav was consuming ~100px before any content and was tightened without dropping below 44px; the duplicated byline in the footer was removed. uv run pytest -> ${ALL}; check.py --quick -> 'CHECK: PASS (6 checks)'."
   },
   {
    "id": "P3-03",
