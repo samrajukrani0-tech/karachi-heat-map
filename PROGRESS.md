@@ -51,3 +51,18 @@ tried to compile it from source. Pinned to `>=4.3,<4.4` (4.3.1 is the last cp312
 Intel-macOS build). CI runs on Linux and is unaffected, but the pin keeps both
 environments identical.
 **Next:** P0-05, then Phase 1.
+
+## 2026-09-26 — P0-05 Live placeholder
+**What changed:** public repo created and pushed, GitHub Pages switched to deploy from
+Actions, placeholder page live. Bumped `actions/checkout` to v5 and `astral-sh/setup-uv`
+to v6 after CI warned they were being forced onto Node 24.
+**Evidence:** https://github.com/samrajukrani0-tech/karachi-heat-map ; Actions runs
+36238295986 and 36238570299 both completed success (check: success, deploy: success);
+https://samrajukrani0-tech.github.io/karachi-heat-map/ returns HTTP 200.
+**Phase 0 complete:** `uv run python scripts/features.py --phase 0` -> "Phase 0: 5 of 5
+resolved, 0 blocked".
+**On the critical path for Phase 1:** P1-09 needs at least one relief centre verified in
+person (QUESTIONS.md Q2). OSM has no Edhi or Saylani facility inside Landhi Town, so
+there is no fallback. Expect to split P1-09 into P1-09a (distance to health facility,
+from OSM) and P1-09b (distance to verified relief centre, blocked on Samraj).
+**Next:** P1-01 Pilot boundary.
