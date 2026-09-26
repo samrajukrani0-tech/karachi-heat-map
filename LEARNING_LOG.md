@@ -251,3 +251,65 @@ guaranteed, or compression metadata will hash differently while being equivalent
 show a *result* reproduces you must re-derive the result itself — here, re-measuring the
 area — and say plainly which of the two you have checked.
 </details>
+
+---
+
+## P1-04 — Reading heat from orbit, and why the median beats the mean
+
+**What and why.** Landhi's 265 cells now each carry a hot-season daytime surface
+temperature: a mean and a 90th percentile, in °C. They come from 48 Landsat passes over
+April–June across five years. Each pass is cloud-masked, converted from raw counts to
+temperature, and then the 48 values at each 30 m pixel are reduced to one number by
+taking the **median**. Cells range from 39.19 °C to 46.28 °C — a 7 °C spread inside one
+town.
+
+**The key idea in A Level terms.** Two ideas meet here, one from Physics and one from
+Statistics.
+
+*How a satellite measures temperature at all.* Every object above absolute zero radiates
+electromagnetic energy, and the hotter it is the more it radiates and the shorter the
+peak wavelength — Wien's law, λ_max ∝ 1/T. At the temperatures of ground in Karachi
+(around 315 K) that peak sits in the thermal infrared, near 9–10 µm. Landsat's TIRS
+instrument measures brightness in a band at about 11 µm, and the Stefan–Boltzmann
+relationship between radiated power and T⁴ lets that brightness be inverted into a
+temperature. The satellite is not "seeing heat"; it is measuring radiated power at a
+chosen wavelength and solving backwards. The raw file stores integers, and USGS
+publishes the linear conversion the pipeline applies: K = 0.00341802 × DN + 149.0.
+
+*Why the median.* Each pixel has up to 48 readings, and some are wrong — a thin cloud
+edge the quality mask missed reads far too cold, because the cloud top is cold. The
+arithmetic mean is pulled by every outlier in proportion to how extreme it is. The
+median is the middle value once sorted, so it is unmoved by how far out an outlier lies;
+it only matters that it is on one side. Formally the median minimises the sum of
+*absolute* deviations while the mean minimises the sum of *squared* deviations, and
+squaring is exactly what makes a single bad reading dominate. With 33–47 clear looks per
+pixel, a handful of contaminated readings cannot shift the median at all.
+
+**Questions.**
+
+1. A thin cloud the mask misses makes one reading 15 °C too cold. With 40 readings, how
+   much does that shift the mean, and how much the median?
+<details><summary>Answer</summary>
+The mean shifts by 15/40 ≈ 0.375 °C. The median shifts by roughly one position in the
+sorted order — typically a few hundredths of a degree, and nothing at all if the bad
+value was already below the middle. This is why the composite uses the median.
+</details>
+
+2. Why does the 90th percentile of a cell sit above its mean for all 265 cells, and what
+   would it mean if one cell broke that?
+<details><summary>Answer</summary>
+Within a cell, LST values are roughly symmetric with a tail towards hot surfaces such as
+roofs and tarmac, so the 90th percentile sits above the centre while the mean sits near
+it. A cell where p90 fell below the mean would be strong evidence the two statistics had
+been computed over different pixel sets — a bug, not a property of Karachi.
+</details>
+
+3. The cells range over 7 °C within one town. Why is that spread the thing that matters,
+   rather than the absolute values?
+<details><summary>Answer</summary>
+The index ranks places within the pilot area, so only relative differences drive the
+result; normalisation maps the range onto 0–1 regardless of the absolute level. If every
+cell read 43 °C the hazard layer would be constant and would contribute nothing. The
+absolute values still matter for plausibility checks and for saying honestly that this is
+surface, not air, temperature.
+</details>

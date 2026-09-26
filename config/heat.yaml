@@ -42,3 +42,10 @@ composite:
 plausible_range_celsius:
   min: 20.0
   max: 65.0
+
+# Per-cell aggregation (P1-04b). A cell is flagged rather than silently averaged when
+# it rests on too few pixels or too few clear satellite looks.
+cells:
+  min_pixel_coverage: 0.50   # fraction of the clipped cell area covered by valid pixels
+  min_clear_looks: 10        # median clear looks across the cell's pixels
+  percentile: 90             # the "how hot does it get at worst" statistic

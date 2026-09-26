@@ -171,10 +171,10 @@
    "depends_on": [
     "P1-04a"
    ],
-   "passes": false,
+   "passes": true,
    "blocked_on": null,
    "dropped": null,
-   "evidence": null
+   "evidence": "uv run python -m pipeline.heat -> 'Cells: 265; with values: 265; flagged: 0'. Mean LST per cell 39.19 to 46.28 degC (median 43.23, spread 7.09); P90 per cell 40.21 to 47.29 degC; pixels per cell min 27, median 113. All inside the documented plausible range 20-65. Statistics computed over the clipped cell (cell intersect boundary) via pipeline/zonal.py, per D15. Wrote data/processed/lst_cells.csv (11 kB) and artifacts/lst_cells_map.png, which was viewed: spatially coherent structure with a cool band on the north-west edge and hot patches in the south-centre, not noise. 16 new tests: 7 on the zonal helper using SYNTHETIC in-memory rasters (including proof that clipping changes the answer, and that a sub-pixel cell falls back rather than vanishing) and 9 on the per-cell table (one row per grid cell, p90 never below mean across all 265, the flagging rule actually applied, real variation present). uv run pytest -> 104 passed in 2.45s; CI=true pytest -m 'not raw' -> 100 passed, 4 deselected in 1.47s; check.py --quick -> 'CHECK: PASS (3 checks)'."
   },
   {
    "id": "P1-05",

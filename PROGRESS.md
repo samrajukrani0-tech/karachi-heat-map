@@ -221,3 +221,33 @@ collection reports `license: proprietary`, which is the catalogue's generic plac
 USGS Landsat Collection 2 data is US public domain with no restrictions. Both facts are
 in data/SOURCES.md so nobody has to rediscover the contradiction.
 **Next:** P1-04b Daytime heat per cell.
+
+## 2026-09-26 — P1-04b Daytime heat per cell
+**What changed:** `pipeline/zonal.py`, a shared zonal-statistics helper that every raster
+indicator will use, and `pipeline/heat.py` (P1-04b). Added `tests/test_zonal.py` (7) and
+`tests/test_heat_cells.py` (9).
+**Evidence:** `uv run python -m pipeline.heat` -> "Cells: 265; with values: 265;
+flagged: 0". Mean LST per cell 39.19–46.28 degC (median 43.23, spread 7.09); P90 per cell
+40.21–47.29; pixels per cell min 27, median 113. All inside the documented 20–65 range.
+Wrote `data/processed/lst_cells.csv` (11 kB) and `artifacts/lst_cells_map.png`, viewed:
+spatially coherent, with a cool band on the north-west edge and hot patches in the
+south-centre — structure, not noise, which is the sanity check a real LST field should
+pass.
+**D15 is enforced in code, not in a comment.** `pipeline/zonal.py` takes the clipped cell
+and a test proves clipping changes the answer: on a SYNTHETIC raster whose left half is
+10 and right half 30, the whole polygon means 20 and the clipped left half means 10. Any
+future indicator that forgets to clip will fail that test's intent rather than quietly
+importing Korangi's values.
+**A sub-pixel cell falls back rather than vanishing.** The smallest clipped edge cell
+holds 27 pixels, but the helper handles the general case: if no pixel centre lies inside
+a cell it retries with `all_touched=True` and records `all_touched_fallback`, so a tiny
+cell is reported honestly rather than as missing data.
+**Caught before it could stand as false evidence:** P1-04b was marked passing and the
+gate then failed on ruff (an unused import in a new test). The evidence string claimed
+"CHECK: PASS", so it was fixed and re-verified in the same turn before the commit —
+104 passed, CHECK: PASS (3 checks). A feature only passes when its checks passed in the
+same turn (§2.3).
+**Observation logged for P1-08:** the five coolest cells cluster at 24.858–24.862 N,
+67.159–67.178 E with normal clear-look counts (41–43), so the cool band is signal, not a
+masking failure. Green cover should explain it; if it does not, that is worth chasing.
+**Next:** P1-06 People per cell.

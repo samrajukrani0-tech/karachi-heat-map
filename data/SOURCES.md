@@ -162,6 +162,17 @@ Storage CRS: EPSG:4326. All distances and areas: EPSG:32642 (UTM zone 42N).
   - The median is taken across five hot seasons, so it describes a typical hot-season
     day, not any particular heatwave.
 
+### Derived: per-cell hot-season LST (P1-04b, 2026-09-26)
+- **Output:** `data/processed/lst_cells.csv` — one row per grid cell with `lst_mean_c`,
+  `lst_p90_c`, pixel count, pixel coverage, median clear looks and flags.
+- **Method:** zonal statistics over the **clipped** cell (cell ∩ pilot boundary, D15),
+  via `pipeline/zonal.py`. Cells resting on too few pixels or too few clear looks are
+  flagged, not silently averaged; none were.
+- **Result:** mean 39.19–46.28 °C (median 43.23), p90 40.21–47.29 °C, 27–113+ pixels per
+  cell.
+- **Licence:** derived from USGS Landsat (public domain) and the OSM-derived grid, so the
+  file falls under `LICENSE-data` (ODbL 1.0) along with the rest of `data/processed`.
+
 ## Planned (Phase 1) — verify at fetch time; IDs, band names and licences change
 
 | Dataset | Indicator | Access | Licence | Notes |
