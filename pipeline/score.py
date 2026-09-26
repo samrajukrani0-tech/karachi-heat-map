@@ -52,11 +52,27 @@ def normalised_indicators(frame: pd.DataFrame, indicators: list[dict], model: di
             continue
         if indicator.get("transform") == "log1p":
             raw = np.log1p(raw)
-        values[indicator["id"]] = normalise(
+        scaled = normalise(
             raw, method=norm["method"], direction=indicator["direction"],
             name=indicator["id"], low_percentile=norm["clip_low_percentile"],
             high_percentile=norm["clip_high_percentile"])
+        values[indicator["id"]] = apply_structural_zero(scaled, frame, indicator)
     return values, missing
+
+
+def apply_structural_zero(scaled: np.ndarray, frame: pd.DataFrame,
+                          indicator: dict) -> np.ndarray:
+    """Force a declared structural zero to normalise to exactly 0, whatever the method.
+
+    A count of zero people is a real absence, not a low percentile. Percentile rank would
+    otherwise map the tied-at-zero cells to the average of their ranks -- 0.0379 here --
+    and D6b's guarantee that an unpopulated cell scores Priority 0 would silently hold
+    under one normalisation method and fail under the other.
+    """
+    if not indicator.get("structural_zero"):
+        return scaled
+    raw = frame[COLUMN_FOR[indicator["id"]]].to_numpy(dtype="float64", na_value=np.nan)
+    return np.where(raw == 0, 0.0, scaled)
 
 
 def dimension_score(values: dict[str, np.ndarray], weights: dict[str, float],

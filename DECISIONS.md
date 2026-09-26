@@ -837,3 +837,29 @@ n = 3 it *is* the inconsistency story and it is far more interpretable than CI.
 to confirm. Raised as QUESTIONS.md Q10. Nothing is blocked: his answers would have to be
 unusually contradictory for the two thresholds to differ in practice.
 **Date:** 2026-09-26
+
+---
+
+## D23 — A count of zero is a structural zero, not a low percentile (2026-09-27)
+
+**The bug.** D6b guarantees that a cell with no residents scores Priority exactly 0,
+because Exposure is deliberately left unfloored. Measured, that guarantee held under
+**robust min–max only**. Under percentile rank the 21 empty cells share the minimum rank,
+whose average maps to **0.0379**, not 0 — so they received non-zero Priority. Since the
+sensitivity analysis swaps normalisation method, **500 of its 1,000 draws were violating a
+design invariant**, and the empty cells were being given 21 distinct ranks in half the runs.
+
+**The fix.** `config/indicators.yaml` now declares `structural_zero: true` on
+`population`, and normalisation forces a raw value of exactly zero to normalise to exactly
+zero whatever the method. A count of zero people is a real absence, not a low percentile.
+
+**Why in config rather than in code:** it is a statement about what the indicator *means*,
+so it belongs where it can be audited, and it generalises to any future count indicator.
+
+**Found by:** the P2-04 checker subagent, which noticed the 21 cells were being ranked
+inconsistently between methods and pointed out that their published rank intervals were
+therefore a methodological artefact.
+
+**Status:** approved — this restores an invariant Samraj already approved in D6b rather
+than creating a new rule.
+**Date:** 2026-09-27

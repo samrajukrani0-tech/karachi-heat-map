@@ -329,3 +329,29 @@ explained by land cover, and the report should not imply the usual urban-heat-is
 recommendation), or move it to Hazard.
 
 **Answer:**
+
+---
+
+## Q13 — "Confidence" as §7 defines it labels most of the map wrongly (OPEN, decide before P3-05)
+
+PROMPT.md §7 says: *"Report, per cell: median rank, 90% rank interval, and probability of
+being in the top 20%. Confidence classes: high (≥ 0.8), medium (0.5–0.8), low (< 0.5)."*
+
+Read literally — thresholds applied to P(top 20%) — **215 of 265 cells come out "low
+confidence", and 155 of those have P below 0.01.** Those are cells the model is almost
+maximally confident about: it is certain they are *not* in the top 20%. Labelling them
+"low confidence" on a map tells a coordinator the opposite of the truth. The checker
+subagent reached this conclusion independently.
+
+**What Claude implemented instead**, keeping both so the difference is visible:
+- `stability`: **confidently in** (P ≥ 0.8) — 28 cells · **uncertain** (0.2–0.8) — 48 ·
+  **confidently out** (P ≤ 0.2) — 189. The 48 "uncertain" cells are an actionable list.
+- `confidence`: the same §7 thresholds applied to *certainty* = max(P, 1−P), giving high
+  216 / medium 49 / low 0.
+- `confidence_literal`: §7 read straight, kept so nothing is hidden.
+
+**Asked of Samraj:** which does the site's Confidence layer use? Claude recommends the
+three-way **confidently in / uncertain / confidently out**, because it is directional and
+the middle band is the list worth a human's attention.
+
+**Answer:**

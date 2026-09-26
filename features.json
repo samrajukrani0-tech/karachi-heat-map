@@ -407,10 +407,10 @@
    "depends_on": [
     "P2-03"
    ],
-   "passes": false,
+   "passes": true,
    "blocked_on": null,
    "dropped": null,
-   "evidence": null
+   "evidence": "uv run python -m pipeline.sensitivity -> 1000 seeded draws (seed 20260926), Dirichlet concentration 50, methods run SEPARATELY then pooled (500/500). Rank interval width median 53, max 182; priority interval width median 0.193 on a 0-0.85 scale. Monte Carlo standard error on P max 0.016, so P is reported to 2 dp not 4. Stability of the top-20% call: confidently in 28, uncertain 48, confidently out 189. Mean |P_robust - P_percentile| = 0.144 with 36 cells disagreeing by more than 0.5, so the two methods are reported separately rather than pooled. OF THE 53 CELLS IN THE HEADLINE TOP 20%, ONLY 28 STAY THERE IN AT LEAST 80% OF DRAWS AND 12 ARE ON THE WRONG SIDE OF A COIN FLIP. Figures written to artifacts/sensitivity.png and viewed. 13 tests including the required reproducibility test, which re-runs the analysis and asserts the committed output is reproduced byte for byte. CHECKER SUBAGENT (section 3.1): it built its own implementation from the spec with its own seeds and AGREED on every headline number -- 27/49/189 split (mine 28/48/189 after a bug fix it prompted), mean method gap 0.145 vs 0.144, 36 cells disagreeing by >0.5 (exact match), 12 of 53 below a coin flip (exact match), and the three spot cells matching within Monte Carlo error. IT FOUND A REAL BUG, now fixed as D23: D6b's guarantee that an empty cell scores Priority 0 held only under robust min-max; under percentile rank the 21 empty cells normalised to 0.0379, so half the draws violated the invariant. population is now declared structural_zero in config. Three further findings applied: method arms separated (pooling produced bimodal distributions whose median landed in the trough), P reported to 2 dp with its standard error, and priority intervals published alongside rank intervals because rank is competitive and the priority curve is nearly flat mid-ranking. Raised Q13. uv run pytest -> 252 passed; check.py --quick -> 'CHECK: PASS (3 checks)'."
   },
   {
    "id": "P2-05",

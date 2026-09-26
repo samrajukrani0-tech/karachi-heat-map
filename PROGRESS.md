@@ -619,3 +619,66 @@ each contributes information rather than repeating the others. That is good inde
 and it also means no dimension dominates, so the ranking is sensitive to the weights,
 which P2-04 must quantify.
 **Next:** P2-04 Sensitivity.
+
+## 2026-09-27 — P2-04 Sensitivity
+**What changed:** `pipeline/sensitivity.py`, `tests/test_sensitivity.py` (13 tests),
+`data/processed/confidence.csv`, `artifacts/sensitivity.png`. Plus a bug fix recorded as
+**D23** and a new question **Q13**.
+**Evidence:** 1000 seeded draws (seed 20260926), α = 50, methods run separately then
+pooled. Rank interval width median 53, max 182; priority interval width median 0.193.
+Monte Carlo SE on P at most 0.016. `uv run pytest` -> 252 passed; `check.py --quick` ->
+`CHECK: PASS (3 checks)`. The reproducibility test re-runs the whole analysis and asserts
+the committed output is reproduced byte for byte.
+
+### The headline finding, and it is not comfortable
+**Of the 53 cells in the published top 20%, only 28 stay there in at least 80% of draws,
+and 12 are on the wrong side of a coin flip.** Roughly half the priority list does not
+survive reasonable variation in the weights and the normalisation method. The top handful
+and the bottom are stable; the middle is not. For a triage tool that is the right shape —
+you act on the top — but it must be stated plainly rather than buried.
+
+### Checker subagent verdict (PROMPT.md §3.1) — AGREES on every headline number
+It built its own implementation from the specification, with its own seeds, and got:
+
+| quantity | checker | mine |
+|---|---|---|
+| stability split | 27 / 49 / 189 | 28 / 48 / 189 (after its bug fix) |
+| mean \|P_robust − P_percentile\| | 0.145 | 0.144 |
+| cells where methods differ by > 0.5 | 36 | **36** |
+| of 53 top cells, below a coin flip | 12 | **12** |
+| the three spot cells | within MC error | within MC error |
+
+**It found a real bug, fixed as D23.** D6b guarantees an empty cell scores Priority 0
+because Exposure is unfloored. That held under robust min–max only: under percentile rank
+the 21 empty cells share the minimum rank, whose average maps to **0.0379**, so they got
+non-zero Priority and 21 distinct ranks. **Half the sensitivity draws were violating a
+design invariant**, and those cells' published rank intervals were an artefact.
+`population` is now declared `structural_zero: true` in config, and a raw count of zero
+normalises to exactly zero under any method. Verified before and after.
+
+**Three further findings applied:**
+1. **The method swap and the weight jitter were confounded.** Pooled, they produce
+   *bimodal* rank distributions whose median lands in the trough — a value no draw
+   favours. The two arms are now run separately and reported separately. They are not a
+   detail: mean |P_robust − P_percentile| is 0.144, and 36 cells disagree by more than 0.5.
+2. **Four-decimal P overstated precision by roughly 300×.** At p ≈ 0.6 with 1000 draws the
+   standard error is 0.016. P is now reported to 2 dp with its standard error, and the
+   classification is computed from the published rounded number so a reader checking
+   "0.80 → high" finds it true.
+3. **Rank is the wrong primary object.** Rank is competitive — a cell moves when *other*
+   cells move — and the priority curve is nearly flat mid-ranking. Priority intervals are
+   now published alongside: median width 0.193 on a 0–0.85 scale, far better behaved than
+   rank intervals of 6 to 182 places.
+
+**Q13 raised.** §7's confidence classes, read literally against P(top 20%), label 215 of
+265 cells "low confidence" — 155 of them with P below 0.01, i.e. cells the model is
+*certain* about. Three columns are now published so nothing is hidden: `stability`
+(confidently in 28 / uncertain 48 / confidently out 189), `confidence` (the §7 thresholds
+against certainty), and `confidence_literal` (§7 read straight).
+
+**Recorded for the model report, not acted on:** α = 50 implies a marginal SD of 0.066 on
+each exponent, so this measures robustness to *small* perturbation, not to a genuinely
+different weighting; the checker's sweep showed the count of stable cells falling from 49
+at α = 500 to 11 at α ≈ 3. And the weights are still `provisional: true`, so the
+uncertainty from "these are not yet Samraj's judgement" exceeds anything sampled here.
+**Next:** P2-05 Validation pack.

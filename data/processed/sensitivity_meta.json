@@ -1,0 +1,11 @@
+{
+ "draws": 1000,
+ "seed": 20260926,
+ "dirichlet_concentration": 50.0,
+ "median_rank_interval": 53.0,
+ "median_priority_interval": 0.193,
+ "mean_method_gap": 0.14428679245283021,
+ "confidently_in": 28,
+ "uncertain": 48,
+ "confidently_out": 189
+}

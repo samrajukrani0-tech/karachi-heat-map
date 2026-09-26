@@ -22,6 +22,11 @@ indicators:
     unit: "people per cell"
     direction: 1
     transform: log1p
+    # A count of exactly zero is a real absence, not a low percentile. Without this,
+    # percentile-rank normalisation maps the 21 empty cells to 0.0379 rather than 0, and
+    # D6b's guarantee -- that a cell with no residents scores Priority 0 -- would hold
+    # under one normalisation method and not the other.
+    structural_zero: true
     source: Meta high-resolution population density / WorldPop constrained 100 m
     reason_en: "More people live in this area"
     reason_ur: ""
