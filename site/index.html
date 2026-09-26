@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Karachi Heat Priority Map</title>
 <meta name="description" content="Where heat support should go first in Landhi Town, and why.">
+<link rel="stylesheet" href="vendor/leaflet.css">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -25,9 +26,21 @@
 <main id="main">
     <div class="wrap">
         <h2>Where heat support should go first</h2>
-        <p class="notice">The map arrives in the next step. The data behind it is ready:
-        265 cells covering Landhi Town.</p>
+        <p class="small muted">Landhi Town, <span id="cell-count">265</span> areas.
+        Darker means higher priority. Tap an area to see why.</p>
+        <p class="notice small" id="provisional-note" hidden><strong>Provisional.</strong>
+        The weights are placeholders and one indicator has no data.
+        <a href="how-it-works.html">What that means</a></p>
     </div>
+    <div class="map-frame">
+        <div id="map"></div>
+        <p class="notice" id="map-error" hidden></p>
+    </div>
+    <div class="wrap">
+        <p class="small muted">Priority is a ranking <em>within</em> Landhi. It is not a
+        measurement of risk on any absolute scale, and never a verdict on a neighbourhood.</p>
+    </div>
+    <p id="live" class="visually-hidden" role="status" aria-live="polite"></p>
 
 </main>
 <footer class="site">
@@ -41,5 +54,7 @@
     OpenStreetMap, © OpenStreetMap contributors.</p>
   </div>
 </footer>
+<script src="vendor/leaflet.js"></script>
+<script src="map.js"></script>
 </body>
 </html>

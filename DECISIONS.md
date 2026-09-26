@@ -863,3 +863,33 @@ therefore a methodological artefact.
 **Status:** approved — this restores an invariant Samraj already approved in D6b rather
 than creating a new rule.
 **Date:** 2026-09-27
+
+---
+
+## D24 — Basemap: Esri World Light Gray Canvas, not CARTO (2026-09-27)
+
+**What happened.** §9 requires "a light raster basemap that needs no API key". CARTO's
+`light_all` was the obvious choice and was implemented first. It returned **HTTP 200 with
+`naturalWidth > 0`** — so every check passed — while actually serving **"API KEY REQUIRED"
+watermark tiles**. The map looked broken only when a screenshot was inspected by eye.
+
+**Measured at z=13 over Landhi:**
+
+| Provider | Size | Distinct colours |
+|---|---|---|
+| CARTO `light_all` | 2.0 kB | **16** (a watermark on flat grey) |
+| Esri World Light Gray Canvas | 12.3 kB | 161 |
+| OSM standard | 35.7 kB | 256 |
+
+**Decision: Esri World Light Gray Canvas.** Free, no API key, and genuinely *light*, so the
+priority ramp reads on top of it rather than competing. OSM standard tiles are darker and
+busier, and their usage policy is stricter about non-trivial traffic. Attribution is
+"Tiles © Esri — Esri, HERE, Garmin, © OpenStreetMap contributors, and the GIS user
+community", shown on the map.
+
+**The test that should have caught it, and now does.** "Tiles load" was never the right
+assertion — a watermark is a perfectly valid image. The end-to-end test now draws a tile
+to a canvas and counts distinct colours, requiring more than 40. A watermark has 16.
+
+**Status:** approved — a source substitution forced by an upstream change, logged per §6.
+**Date:** 2026-09-27

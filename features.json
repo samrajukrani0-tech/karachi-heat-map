@@ -495,10 +495,10 @@
    "depends_on": [
     "P3-02"
    ],
-   "passes": false,
+   "passes": true,
    "blocked_on": null,
    "dropped": null,
-   "evidence": null
+   "evidence": "site/map.js renders all 265 cells from site/data/cells.geojson with Leaflet 1.9.4 vendored at a pinned version. `npx playwright test tests/e2e/map.spec.js` -> 17 passed, 1 skipped (a phone-only test): one SVG path per cell, exactly five quintile bands all drawn from the DESIGN.md ramp, the rank-1 cell in the darkest band, a plain-words legend that contains neither 'safe' nor 'danger', visible Esri and OpenStreetMap attribution, real basemap tiles, the provisional warning shown, the map above the fold on a phone, and cells keyboard-focusable with aria-labels. A REAL FAULT FOUND BY LOOKING AT THE SCREENSHOT, NOT BY A TEST: CARTO's tiles returned HTTP 200 with naturalWidth > 0 -- so 'tiles load' passed -- while actually serving 'API KEY REQUIRED' watermarks. Measured at z=13 over Landhi a CARTO tile is 2.0 kB with 16 distinct colours against Esri's 12.3 kB and 161. Switched to Esri World Light Gray Canvas (D24), and the test now draws a tile to a canvas and requires more than 40 distinct colours. Screenshots at both widths taken and critiqued; the copy above the map was condensed so the map starts above the fold on a 375 px screen, now asserted by a test. check.py --quick -> 'CHECK: PASS (6 checks)'."
   },
   {
    "id": "P3-04",

@@ -265,6 +265,22 @@ Storage CRS: EPSG:4326. All distances and areas: EPSG:32642 (UTM zone 42N).
   the pilot area — which is not measurable from OSM alone and should be asked of a centre
   manager.
 
+### Basemap tiles: Esri World Light Gray Canvas (P3-03, 2026-09-27)
+- **URL:** `https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}`
+- **Key required:** none. **Attribution shown on the map:** "Tiles © Esri — Esri, HERE,
+  Garmin, © OpenStreetMap contributors, and the GIS user community".
+- **Why not CARTO** (the first choice): it now serves "API KEY REQUIRED" watermark tiles
+  with HTTP 200, so nothing failed — the map simply stopped being a map. Measured at
+  z=13 over Landhi, a CARTO tile is 2.0 kB with **16 distinct colours**; the Esri tile is
+  12.3 kB with 161. See D24.
+- **Usage:** tiles are requested by the browser at view time and are not cached or
+  redistributed by this project.
+
+### Leaflet 1.9.4 (vendored)
+- **Vendored** into `site/vendor/` at a pinned version rather than loaded from a CDN, so
+  the site has no third-party runtime dependency and works offline in P5-02.
+- **Licence:** BSD-2-Clause. 144 kB of JavaScript, 14 kB of CSS.
+
 ## Planned (Phase 1) — verify at fetch time; IDs, band names and licences change
 
 | Dataset | Indicator | Access | Licence | Notes |
