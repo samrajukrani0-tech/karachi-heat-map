@@ -1,0 +1,24 @@
+# Distance to care and to relief (P1-09a, P1-09b).
+
+health_facilities:
+  source: OpenStreetMap via Overpass
+  tags: [hospital, clinic, doctors]
+  licence: ODbL 1.0 - (c) OpenStreetMap contributors
+  # Facilities just outside Landhi still serve Landhi. Without this buffer an edge cell
+  # would be scored as far from care because the nearest clinic sits over the boundary.
+  search_buffer_km: 6
+
+distance:
+  # PROMPT.md section 6 allows a routable road graph, or straight-line distance times a
+  # documented circuity factor. We use the latter: adding osmnx and networkx for a
+  # routable graph is hard to justify when OSM's own coverage of Landhi is the larger
+  # source of error (D18: about 11% of built area mapped). Recorded as a v2 refinement.
+  method: straight_line_times_circuity
+  circuity_factor: 1.3
+  measured_in: EPSG:32642
+  from_point: clipped_cell_centroid
+
+plausibility:
+  # A dense Karachi town should have care within a few kilometres of everywhere.
+  max_median_m: 3000
+  max_any_m: 12000

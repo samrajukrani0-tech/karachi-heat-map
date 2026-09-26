@@ -75,7 +75,7 @@ def check_data() -> tuple[str, str]:
                 problems.append(f"features.json: {feature['id']} depends on unknown {dep}")
 
     configs = ("area", "indicators", "weights", "model", "allocation", "heat",
-               "population", "landcover")
+               "population", "landcover", "access")
     for name in configs:
         path = ROOT / "config" / f"{name}.yaml"
         if not path.exists():

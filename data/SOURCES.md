@@ -239,6 +239,32 @@ Storage CRS: EPSG:4326. All distances and areas: EPSG:32642 (UTM zone 42N).
   same caveat governs P1-09's distance-to-health-facility indicator, which must report the
   gap rather than assume coverage.
 
+### OpenStreetMap health facilities (P1-09a, 2026-09-26)
+- **Access:** Overpass, `amenity=hospital|clinic|doctors`, within **6 km** of the pilot
+  boundary. Cached at `data/raw/osm/health_facilities_buffer6km.json` and manifested.
+- **Licence:** ODbL 1.0 — © OpenStreetMap contributors.
+- **Result:** 228 facilities — **32 inside Landhi, 196 outside**. Distance from each
+  clipped cell centroid, straight line in EPSG:32642 × a **1.3 circuity factor**:
+  min 14 m, median 849 m, max 2,471 m.
+- **Why the buffer matters, measured:** 42 of 265 cells have their nearest facility
+  outside Landhi. Restricting the search to the pilot boundary would have scored those
+  cells as far from care purely because a clinic sits over an administrative line.
+- **Why straight-line × 1.3 rather than a routable road graph:** §6 permits either. A
+  routable graph needs osmnx and networkx, and would refine an estimate whose dominant
+  error is OSM's own coverage (below), not the circuity approximation. Recorded as a v2
+  refinement.
+- **⚠ Coverage caveat, and the direction of its bias.** OSM maps only about 11% of
+  Landhi's built area (D18), so unmapped clinics almost certainly exist. Every missing
+  facility can only make the true distance **shorter** than the measured one, so this
+  indicator **overstates** isolation from care. Note this runs opposite to the population
+  undercount (D16), which understates exposure — the two biases do not cancel, they act on
+  different dimensions, and both belong in the model report.
+- **Also notable:** far more facilities are mapped just outside Landhi (196) than inside
+  (32), which suggests Landhi is mapped less thoroughly than its neighbours. Since the
+  index ranks only within Landhi, what matters is whether mapping quality varies *inside*
+  the pilot area — which is not measurable from OSM alone and should be asked of a centre
+  manager.
+
 ## Planned (Phase 1) — verify at fetch time; IDs, band names and licences change
 
 | Dataset | Indicator | Access | Licence | Notes |

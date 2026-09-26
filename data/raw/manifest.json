@@ -31,6 +31,14 @@
   "licence": "CC BY 4.0 - Meta (Data for Good) / Columbia University CIESIN",
   "note": "Meta High Resolution Population Density, Pakistan+India v1.5, 10-degree tile containing Karachi"
  },
+ "osm/health_facilities_buffer6km.json": {
+  "url": "https://overpass-api.de/api/interpreter",
+  "sha256": "d083a6b6fd1c2ff2bc3bc32407a8fc96589f377af70128531e9be34db2489de9",
+  "bytes": 62434,
+  "downloaded": "2026-09-26",
+  "licence": "ODbL 1.0 - (c) OpenStreetMap contributors",
+  "note": "Overpass query response; rebuildable from the query in the caller"
+ },
  "osm/landhi_buildings.json": {
   "url": "https://overpass-api.de/api/interpreter",
   "sha256": "fb68f4da1a6d0b2766ab92db5167bf62e9e38ede89c9a1840d36654f73e21d38",

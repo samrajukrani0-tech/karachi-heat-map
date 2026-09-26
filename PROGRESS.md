@@ -361,3 +361,29 @@ each pixel one class so built and green are near-complements. Recommendation: dr
 land surface temperature that Hazard already measures directly, so keeping it would count
 the same physical fact twice.
 **Next:** P1-09 Access, which will split into P1-09a and P1-09b.
+
+## 2026-09-26 — P1-09 split; P1-09a Distance to nearest health facility
+**Why split:** P1-09b needs a relief centre verified in person (Q2) and has no open-data
+fallback, so it would have blocked the health-facility indicator too. Split per the Phase
+1 instruction: P1-09a unblocked, P1-09b blocked on Samraj.
+**What changed:** `config/access.yaml`, `pipeline/access.py`, `tests/test_access.py`
+(8 tests). `check.py` validates a ninth config file.
+**Evidence:** 228 OSM health facilities within 6 km (32 inside Landhi, 196 outside).
+Distance min 14 m, median 849 m, max 2,471 m, inside the documented limits.
+`uv run pytest` -> 139 passed (135 in CI); `check.py --quick` -> `CHECK: PASS (3 checks)`.
+Map viewed: facilities cluster along the central corridor; the worst-served cells are the
+north-west band — the same cells P1-08 found greenest and P1-04b coolest, which is a
+coherent picture rather than a contradiction.
+**The search buffer earned its place, measurably.** 42 of 265 cells have their nearest
+facility outside Landhi. Without the 6 km buffer those cells would have been scored as
+far from care purely because a clinic sits over an administrative boundary. That is a
+measured justification, not an assumption.
+**Bias direction stated, not just the caveat.** OSM maps about 11% of Landhi's built area
+(D18), so unmapped clinics almost certainly exist. Every missing facility can only make
+the true distance *shorter*, so this indicator **overstates** isolation from care — the
+opposite direction to the population undercount (D16), which understates exposure. The
+two do not cancel: they act on different dimensions, and both belong in the model report.
+**Straight line x 1.3 rather than a routable graph:** §6 permits either. A routable graph
+needs osmnx and networkx and would refine an estimate whose dominant error is OSM's
+coverage, not the circuity approximation. Logged as a v2 refinement in data/SOURCES.md.
+**Next:** P1-10 Load-shedding feasibility. P1-09b stays blocked on Q2.

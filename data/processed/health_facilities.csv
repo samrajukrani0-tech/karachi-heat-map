@@ -1,0 +1,229 @@
+name,amenity,lat,lon,osm
+PAF Hospital Faisal,clinic,24.89016,67.115974,node/4520352289
+Ali Medical Complex,hospital,24.886379,67.154702,node/4737625706
+FOMG Hospital,hospital,24.885141,67.175099,node/4737664783
+Doctors Plaza,hospital,24.883654,67.179243,node/4737680866
+Dr Mehdi A Manji Laboratory,clinic,24.883305,67.180188,node/4737685499
+Aga Khan University Hospital Medical Centre Malir,hospital,24.883117,67.180595,node/4737685500
+Dr Atiq Orthopedic & Medical Centre,hospital,24.883027,67.180906,node/4737685501
+Al Mumtaz Hospital,hospital,24.88264,67.18204,node/4737689208
+Nehal Hospital,hospital,24.88251,67.182168,node/4737689209
+Dr Khan Laboratory & Diagnostic Centre,hospital,24.880645,67.185691,node/4737716791
+Hassan General Hospital,hospital,24.880531,67.185819,node/4737716792
+Aurangzeb Hospital,hospital,24.859171,67.207989,node/4737814936
+Hamid Hospital,hospital,24.854443,67.21083,node/4737820029
+Kashif Iqbal Thalassemia Care Center,hospital,24.90067,67.105982,node/4758017032
+Ali Clinic,clinic,24.909454,67.106765,node/4758078463
+Mahtab Clinic,clinic,24.908824,67.107744,node/4758078472
+Madina Medical Store,clinic,24.908527,67.107277,node/4758078473
+Naveed Hijama Clinic,clinic,24.908415,67.10815,node/4758115388
+Umeed-e-Seher Old Age Home,hospital,24.901045,67.185755,node/4764497924
+"DHO Malir, Model Town Health Office",hospital,24.902481,67.188862,node/4764575641
+Model Colony Town Hospital,hospital,24.902783,67.188717,node/4764575642
+Shiraz Medical Center,hospital,24.901863,67.191595,node/4764575650
+Imam Clinic,clinic,24.896384,67.197714,node/4764777139
+Ain-Dental Clinic,clinic,24.89394,67.195794,node/4764777143
+Pakistan Health Care Trust Hospital,hospital,24.902455,67.197632,node/4767455641
+Sindh Heart Hospital,hospital,24.90136,67.201052,node/4767455654
+Government Saudabad Hospital,hospital,24.903027,67.211259,node/4767455692
+Khokrapar No.2 Govt Hospital,hospital,24.903444,67.211362,node/4767455693
+Alleviate Addiction Suffering Trust,hospital,24.898021,67.214459,node/4767455701
+Shahid Clinic,clinic,24.891172,67.197489,node/4767542676
+Rashid Clinic,clinic,24.881773,67.193267,node/4767596793
+Al-Ibrahim Eye Hospital,hospital,24.884867,67.224768,node/4767647536
+Al-Mansoor Clininc,clinic,24.8817,67.145647,node/4767920568
+Cardiac Emergency Centre,hospital,24.881177,67.1453,node/4767920570
+East Side Hospital - Korangi,hospital,24.837999,67.118828,node/4769518748
+Bilqees Memorial Hospital,hospital,24.819112,67.107139,node/4769800425
+Bilquees Hospital,hospital,24.819705,67.107811,node/4769800426
+New Urgent Care Hospital,hospital,24.81893,67.11621,node/4769800460
+Sheikh Muhammad Saeed Memorial Hospital,hospital,24.814677,67.12016,node/4769800475
+Orionomni Car Clinic,clinic,24.838012,67.134267,node/4769824154
+Shahid Medical Center Korangi 1,hospital,24.822226,67.133263,node/4769937767
+Star Charitable Clinic,clinic,24.859777,67.132091,node/4769985101
+Star Charitable Clinic,clinic,24.857567,67.137241,node/4769985102
+Rida Medical Centre,hospital,24.90955,67.120529,node/4772708950
+Cure Clinic,clinic,24.917927,67.131394,node/4772802712
+Razia Medical Centre,hospital,24.836359,67.263369,node/4783144512
+Saleh Shifa Hospital,hospital,24.836226,67.260931,node/4783144514
+Dr Azhra Hospital,hospital,24.922907,67.101853,node/4793731858
+Agha Khan Laboratory,hospital,24.918959,67.095689,node/4810084312
+baji house,clinic,24.868877,67.187561,node/5063378221
+Pakistan Relief Foundation Hospital,hospital,24.912253,67.139454,node/5063491281
+Dr. Khalid Bhatti Eye and Consulting Clinic,clinic,24.917489,67.120382,node/5085898853
+The New Revival Kainat Clinic Maternity Home,clinic,24.837978,67.206328,node/5103425089
+Nawab Medical Complex,clinic,24.837742,67.217067,node/5103425098
+Bilqees Sultan Medical Centre,clinic,24.835972,67.237104,node/5103518890
+Nagori Hospital,hospital,24.834595,67.261344,node/5105344543
+Amjad Hospital,hospital,24.911116,67.105295,node/5115427051
+Mufeed e Aam Dawakhana,clinic,24.914363,67.101876,node/5115427068
+Shan Hospital,hospital,24.919134,67.095511,node/5115540200
+Urban Health Center Babar Market Landhi,hospital,24.844497,67.192863,node/5127759864
+Landhi Cardiac Emergency Center,hospital,24.844672,67.19304,node/5127759865
+SESSI Hospital - Mehran Highway,hospital,24.833874,67.225712,node/5127785877
+Ibn-e-Sina Hospital,hospital,24.922022,67.101999,node/5127796859
+Korangi Landhi Medical Center,hospital,24.828312,67.161001,node/5128042359
+LRBT Eye Hospital - Korangi,hospital,24.821851,67.146678,node/5128085123
+Chinot General Hospital - Korangi,hospital,24.823675,67.143332,node/5128085154
+دارالصحت ہسپتال,hospital,24.914236,67.127488,node/5128368408
+Dr.Saeed Diabetes Clinic & Foot Care Center,clinic,24.898197,67.097039,node/5128396156
+ENT Specialist Dr Bilal Akram,clinic,24.889894,67.116077,node/5128493819
+EYE SPECIALIST DR ARSALAN FAROOQ,clinic,24.890077,67.116459,node/5128493820
+Al-Khidmat Hospital,hospital,24.903499,67.205265,node/5130353811
+"Al-Khidmat Hospital, Shahfaisal",hospital,24.880143,67.141919,node/5130353812
+Al-Khidmat Hospital,hospital,24.825902,67.151849,node/5130353814
+Umeed Maternity Home,clinic,24.818412,67.104591,node/5130353820
+Al Masiha Hospital,hospital,24.83993,67.186207,node/5130354321
+Awadh Hospital,hospital,24.840804,67.189821,node/5130354327
+Dow Lab Collection Center,clinic,24.882728,67.182595,node/5130354340
+Al Nas Hospital,hospital,24.876406,67.162741,node/5130354341
+Anwar Clinic & Hospital,clinic,24.874708,67.13058,node/5130498609
+Atia General Hospital,hospital,24.882002,67.183166,node/5130682839
+Aziz Medical Centre,clinic,24.856569,67.195466,node/5130682846
+Azizullah Medical & General Store,clinic,24.856538,67.195672,node/5130682847
+Cheezal Dental & Medical Hospital,hospital,24.919381,67.122457,node/5130682861
+Sindh Lab,clinic,24.823451,67.144094,node/5130682866
+Baldia Hospital,hospital,24.823985,67.141946,node/5130682867
+Kashaf Dental Clinic,clinic,24.823497,67.141246,node/5130682868
+Essa Laboratory & Diagnostic Centre,clinic,24.882849,67.145782,node/5130921742
+Essa Laboratory & Diagnostic Centre,clinic,24.883248,67.145736,node/5130921743
+Essa Laboratory & Diagnostic Centre,clinic,24.91127,67.123855,node/5130921744
+Fatima Eye Hospital,hospital,24.883296,67.183033,node/5130921750
+Hafeez Clinic & Dental Surgery,clinic,24.919872,67.095762,node/5130955228
+Nadeem Medical Centre,hospital,24.918896,67.0967,node/5130968256
+Kashif Dental Clinic,clinic,24.913071,67.126252,node/5132720036
+اسلامک مشن ہسپتال,hospital,24.817555,67.113729,node/5132890212
+Fomg Hospital,hospital,24.818923,67.115719,node/5132890214
+Madani Shifa Hospital,hospital,24.828503,67.119629,node/5132942490
+Maqsood Eye Hospital,clinic,24.906507,67.109936,node/5133026868
+Matab Hamdard,clinic,24.886716,67.158374,node/5133026872
+Naila Maternity Hospital,hospital,24.883443,67.14526,node/5133026905
+Sarwat Clinic,clinic,24.839624,67.156346,node/5133028121
+Shahid Clinic,clinic,24.856119,67.194179,node/5133028124
+Shamsi Hospital,hospital,24.879551,67.171449,node/5133028130
+Sindh Government Hospital Korangi,hospital,24.828972,67.163662,node/5133028134
+Sindh Institute of Reproductive Medicine (SIRM),hospital,24.882049,67.183065,node/5133028135
+The Children Hospital,hospital,24.880454,67.185951,node/5133028136
+Khatak Hospital,hospital,24.850669,67.206589,node/5133048481
+Al Zehra Clinic,clinic,24.883094,67.202037,node/5133102881
+Karachi Homoeopathic Medical College & Hospital,hospital,24.840925,67.194654,node/5133363020
+Al Razi Hospital,hospital,24.840983,67.187352,node/5133370625
+Fouzia Clinic,clinic,24.838713,67.182749,node/5133425771
+MALC Landhi Leprosy Centre,hospital,24.837405,67.180217,node/5133425777
+Al Massiha Hospital,hospital,24.836289,67.179655,node/5133527581
+Baldia Hospital,hospital,24.834513,67.177367,node/5133527584
+Landhi Polyclinic,clinic,24.834929,67.177089,node/5133527587
+Dr Mrs.Hameeda,clinic,24.834836,67.176947,node/5133527588
+doctor ansari clicnic,clinic,24.833731,67.176267,node/5133527593
+Abbasi Clinic,clinic,24.831274,67.172,node/5133527609
+Behtar Zindagi Center Korangi,hospital,24.831487,67.171793,node/5135061566
+Rais Clinic Dr Toqeer Ahmed,clinic,24.825091,67.176198,node/5135309365
+Landhi 3 Dispensary Landhi Town,clinic,24.837708,67.188812,node/5135309390
+Razia Sultana Hospital,hospital,24.83967,67.199579,node/5135474730
+Dow Lab Collection Centre,clinic,24.824413,67.144226,node/5137399529
+Aga Khan University HospitalMedical,hospital,24.82587,67.153145,node/5137626762
+Karachi Clinic & Maternity Home,hospital,24.922574,67.118591,node/5142741147
+Shah General Hospital,hospital,24.852005,67.204948,node/5143340852
+SIUT Mahrunnisa Medical Center,hospital,24.809611,67.130757,node/5144939655
+Landhi Medical Complex,hospital,24.842757,67.189714,node/5156598714
+Cardio Surgery Centre,hospital,24.878046,67.146285,node/5156794553
+Al-Mustafa Medical Centre Maternity Home,hospital,24.878456,67.154476,node/5156794555
+Faizan Homeo Clinic,clinic,24.871995,67.192029,node/5156794585
+Government Hospital,hospital,24.90901,67.222612,node/5156794593
+Al Tibri General Hospital,hospital,24.885061,67.225122,node/5156794596
+Shoukat Omer Memorial Hospital,hospital,24.884143,67.151535,node/5172982168
+Abdullah Haroon Hospital,hospital,24.884717,67.12608,node/5188687719
+CAA Medical Board,hospital,24.888581,67.144163,node/5226556628
+Star General Hospital,hospital,24.884641,67.167923,node/5226556643
+Nimrah Hospital,hospital,24.832727,67.227592,node/5228298784
+AL Syed Hospital & Meternity Home,hospital,24.832753,67.22729,node/5228298785
+Chiniot General Hospital,hospital,24.842633,67.13315,node/5259800626
+Qurat Ul Ann Hospital,hospital,24.902051,67.189006,node/5269189188
+Ajmeri Herbal Cancer Dawakhana & Research Centre,clinic,24.899544,67.189517,node/5269335956
+Asim Clinic & Maternity Home,clinic,24.878629,67.14661,node/5269655689
+Al-Shifa Hospital & Maternity Home,hospital,24.876323,67.18079,node/5287119639
+Zia Clinic,clinic,24.876485,67.177249,node/5287119643
+Alsehat Rehabilitation Services,hospital,24.914682,67.125659,node/5297001603
+Sana Medical Centre,clinic,24.913964,67.122257,node/5297001604
+PIA Hospital Complex,hospital,24.914039,67.120835,node/5297001605
+Al-Madina Medical Center,clinic,24.908493,67.119154,node/5297001617
+M J Memorial AL Medical Center,hospital,24.913833,67.1414,node/5297150742
+Isolation Hospital Airport Karachi,hospital,24.914269,67.150948,node/5333236745
+CWC,hospital,24.878273,67.097677,node/5383541713
+Creek General Hospital,hospital,24.815144,67.130683,node/5581614723
+Fatma Hospital,hospital,24.917986,67.110807,node/6305478232
+Maria Medical Centre,clinic,24.816601,67.131013,node/6335733985
+Sind Government Dispensary,hospital,24.91783,67.109523,node/7013175986
+Dar us Sehat Clinic,clinic,24.914913,67.126649,node/8950847478
+Zia clinic,hospital,24.902051,67.190739,node/9062205384
+MALC Malir Leprosy Centre,hospital,24.886714,67.188213,node/10688723587
+Family Care Clinic & Ultrasound Center,clinic,24.898668,67.113977,node/12064997023
+Aasma consultant welfare clinic,clinic,24.878143,67.138965,node/12126095808
+Aziz Hospital,doctors,24.820662,67.125527,node/12126312630
+Specialist Clinic,clinic,24.882053,67.151407,node/12128165411
+Arham Clinic,clinic,24.883193,67.152562,node/12131046322
+Mustafa Family Clinic,clinic,24.884669,67.154646,node/12131496573
+Anamta homeopathic clicinc,clinic,24.884681,67.154461,node/12131501414
+Bismilla Homeo Clinic,clinic,24.884699,67.155063,node/12131514823
+AL-Falah Urgent Care Clinic,hospital,24.883122,67.157629,node/12132455862
+Shaheed Manoor Alam Arain,hospital,24.88096,67.160149,node/12133520629
+Al-Shifa Clinic,clinic,24.882039,67.145091,node/12134286235
+THO OFFICE SHAH FAYSAL TOWN,hospital,24.881402,67.144791,node/12137334414
+Sindh Government Hospital Shah Faisal Town,hospital,24.881194,67.1448,node/12137338889
+SGD THO OFFICE ahah Faysal town,hospital,24.881329,67.144723,node/12137346924
+Alvi Homeopathic Clinic,clinic,24.881458,67.143606,node/12137467147
+WAQAT JAHAN MEDICAL WELFARE TRUST,hospital,24.881873,67.14185,node/12137511367
+ABDUL REHMAN ZUBAIDI HOUSE,clinic,24.880494,67.142594,node/12137886525
+Alhameed Welvear Medical Store,hospital,24.843132,67.166446,node/12139620326
+Lady Rafat Medical Centre - LRMC,hospital,24.901589,67.189983,node/12139963090
+Finger steel ring cutting master,hospital,24.840865,67.165142,node/12140157270
+Fazale Illahi Hospital,hospital,24.823121,67.107398,node/12140423128
+AISHA ABEDIN CLINIC & MATERNITY HOME,clinic,24.835713,67.175257,node/12141823780
+Meternity Homes Hospital,hospital,24.839198,67.174669,node/12141836078
+Govt Dispensary,hospital,24.835253,67.174825,node/12141919384
+Mubarak Optical,doctors,24.825887,67.122474,node/12142079055
+JIQ hospital,hospital,24.831087,67.168997,node/12142129726
+Shahid Medical Center Korangi 1 Karachi,hospital,24.822701,67.134229,node/12144239976
+Marium Zahoor Eye Care Clinic,hospital,24.822588,67.134362,node/12144259375
+Shahid Medical Center Korangi 1 Dr M.A.Gohar Ortho,hospital,24.822774,67.134288,node/12144285424
+Child Care Hospital,hospital,24.822029,67.13219,node/12144315074
+Aziz Hospital,hospital,24.821426,67.129707,node/12144371952
+Dastagir Welfare Medical Centre,clinic,24.826758,67.135379,node/12146151546
+Khokhar hospital,hospital,24.829627,67.127592,node/12146244093
+Al Janat Welfare Association Karachi,doctors,24.831762,67.127713,node/12146291798
+Hajra medicao and skin care center,doctors,24.835604,67.137025,node/12151300958
+Bhittai Medical Center,hospital,24.819137,67.131105,node/12151593415
+Sindh Social Dispencery Shah Faisal,hospital,24.884543,67.152427,node/12153730317
+Bukhari Arcade,doctors,24.827615,67.12729,node/12165973706
+ABBASI HOMOEO CLINIC,clinic,24.831929,67.126159,node/12168099676
+Mubarak Optical,doctors,24.825632,67.121164,node/12169788136
+Anmol hospital bahawalpur,hospital,24.881534,67.138938,node/12184168067
+Mustafa Child Clinic,clinic,24.922419,67.152251,node/12186123081
+Eman clinics and Matrnity home,doctors,24.915965,67.150321,node/12186227162
+Hospital Road,hospital,24.919843,67.135164,node/12188392007
+Bashir Ahmed Medical and Dental Clinic,clinic,24.913041,67.119978,node/12192617770
+Ahmad hassan Ishaque,doctors,24.860024,67.208269,node/12211525113
+Faizan Homeopathic clinic & store,clinic,24.871339,67.198504,node/12211567829
+Zoha Poly And Dental Clinic,clinic,24.872104,67.197609,node/12211659156
+Danish Medical Center,hospital,24.878105,67.155697,node/12238694219
+"Dr. Tariq Zia, ENT General Hospital",hospital,24.878309,67.155029,node/12238715112
+TB Chest Hospital,hospital,24.886455,67.188403,node/12278483829
+Veterinary Hospital Malir Karachi,hospital,24.88235,67.191263,node/12278516404
+Ibn-e-Hassan Hospital,hospital,24.879545,67.187571,node/12278525945
+Dr. Anjum Clinic (Skincare),clinic,24.878133,67.190314,node/12281558256
+Medilife 2 clinics malir branch,hospital,24.878268,67.189797,node/12281564007
+The Next Consultant Gulshan Branch,doctors,24.920011,67.094815,node/12287976582
+Matab Hakeem Syed Mutti,doctors,24.920742,67.100267,node/12304716213
+Lifestyle Aesthetic Clinic Gulshan,clinic,24.921431,67.100249,node/12304716216
+Dow Lab,hospital,24.909183,67.107717,node/13996264083
+Al-Mustafa Clinic,clinic,24.910506,67.1001,node/13996264093
+Kalam Medical Center,clinic,24.90882,67.105012,node/13998623031
+Jinnah Medical College Hospital,hospital,24.858062,67.120325,way/151733317
+PIA Hospital Complex,hospital,24.914652,67.120175,way/435137045
+CAA Medical Centre,hospital,24.88979,67.157344,way/450602223
+SIUT Drig Road Dialysis Unit,hospital,24.884149,67.125847,way/687681647
+Dr Khalida Clinic,clinic,24.917624,67.250975,way/906766429
+(unnamed),hospital,24.822986,67.107336,way/1144160044
+Indus Hospital,hospital,24.816587,67.11146,way/1144173764
+Isolation Hospital Airport Karachi,hospital,24.914088,67.152001,way/1179894849
+Sindh Govt. hospital Rahi Goth,hospital,24.816965,67.226018,way/1278985319
