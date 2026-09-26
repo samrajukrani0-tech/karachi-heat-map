@@ -1,0 +1,28 @@
+# Pilot area and grid. Decisions D2 and D3 (see DECISIONS.md).
+pilot:
+  name_en: Landhi Town
+  city: Karachi
+  district: Korangi District
+  country: Pakistan
+  source:
+    dataset: OpenStreetMap administrative boundary
+    osm_relation: 16350631
+    admin_level: 7
+    licence: ODbL 1.0
+    accessed: 2026-09-26
+  area_km2_expected: 25.37   # computed in Phase 0 from the OSM relation, EPSG:32642
+  area_km2_tolerance: 0.75   # P1-01 fails if the recomputed area differs by more
+
+grid:
+  system: h3
+  resolution: 9              # D3: ~0.105 km2/cell, edge ~174 m
+  expected_cells_min: 180    # sanity bounds only; P1-02 prints the real count
+  expected_cells_max: 340
+  inclusion_rule: >
+    A cell is included when its centre lies inside the pilot boundary, OR when at
+    least 50% of its area intersects the boundary. Documented and tested in P1-02;
+    cells must cover at least 99% of the boundary area.
+
+crs:
+  storage: EPSG:4326         # all stored and exported geometry
+  measurement: EPSG:32642    # UTM 42N, for all distances and areas

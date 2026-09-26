@@ -1,0 +1,30 @@
+# Model settings. Decisions D5 and D6 (see DECISIONS.md).
+normalisation:
+  method: robust_minmax      # D5 headline method
+  clip_low_percentile: 5
+  clip_high_percentile: 95
+  alternative: percentile_rank   # used by the sensitivity analysis, not by default
+
+aggregation:
+  within_dimension: weighted_arithmetic_mean
+  across_dimensions: weighted_geometric_mean   # D6a; with equal 1/3 exponents this is (H*E*V)^(1/3)
+  # D6b: H and V are floored before multiplication because a normalised 0 there is an
+  # artefact of clipping (the coolest 5% of Landhi is still ~40 degC in June).
+  # E is NOT floored: E = 0 means nobody lives there, which is a real absence.
+  floor:
+    hazard: 0.01
+    exposure: null
+    vulnerability: 0.01
+
+intensity:
+  formula: sqrt(H*V)         # per-person view, for the equity discussion
+
+sensitivity:
+  n: 1000
+  seed: 20260926
+  dirichlet_concentration: 50
+  vary_dimension_exponents: true
+  confidence_classes:
+    high: 0.8                # P(top 20%) >= 0.8
+    medium: 0.5              # 0.5 <= P < 0.8
+    # below medium is "low"

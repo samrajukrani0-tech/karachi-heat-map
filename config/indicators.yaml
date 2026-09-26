@@ -1,0 +1,116 @@
+# Indicators. Decision D4 (see DECISIONS.md).
+# direction: +1 means a higher raw value means MORE risk.
+# name_ur / reason_ur are intentionally empty: D9 ships English only for v1, but the
+# fields stay so Urdu can be added later without a schema change.
+
+indicators:
+  - id: lst_day_mean
+    name_en: Daytime surface temperature
+    name_ur: ""
+    dimension: hazard
+    unit: "degC"
+    direction: 1
+    transform: none
+    source: Landsat 8/9 Collection 2 Level-2, April-June median composite
+    reason_en: "The ground here gets hotter on summer afternoons"
+    reason_ur: ""
+
+  - id: population
+    name_en: People living here
+    name_ur: ""
+    dimension: exposure
+    unit: "people per cell"
+    direction: 1
+    transform: log1p
+    source: Meta high-resolution population density / WorldPop constrained 100 m
+    reason_en: "More people live in this area"
+    reason_ur: ""
+
+  - id: share_over60
+    name_en: Share aged 60 and over
+    name_ur: ""
+    dimension: vulnerability
+    unit: "fraction"
+    direction: 1
+    transform: none
+    source: Meta demographic layers (HDX)
+    reason_en: "More older residents, who are at greater risk in heat"
+    reason_ur: ""
+
+  - id: share_under5
+    name_en: Share aged under 5
+    name_ur: ""
+    dimension: vulnerability
+    unit: "fraction"
+    direction: 1
+    transform: none
+    source: Meta demographic layers (HDX)
+    reason_en: "More young children, who are at greater risk in heat"
+    reason_ur: ""
+
+  - id: built_fraction
+    name_en: Built-up surface
+    name_ur: ""
+    dimension: vulnerability
+    unit: "fraction"
+    direction: 1
+    transform: none
+    source: Google Open Buildings / Microsoft Global ML Building Footprints (OSM fallback)
+    reason_en: "Densely built, so the area holds heat"
+    reason_ur: ""
+
+  - id: lack_green
+    name_en: Lack of green cover
+    name_ur: ""
+    dimension: vulnerability
+    unit: "fraction"
+    direction: 1
+    transform: none
+    source: ESA WorldCover 10 m and/or Sentinel-2 hot-season NDVI
+    reason_en: "Little greenery or shade"
+    reason_ur: ""
+
+  - id: dist_health
+    name_en: Distance to nearest health facility
+    name_ur: ""
+    dimension: vulnerability
+    unit: "m"
+    direction: 1
+    transform: none
+    source: OpenStreetMap hospitals, clinics and doctors (ODbL 1.0)
+    reason_en: "Further from the nearest clinic or hospital"
+    reason_ur: ""
+
+  - id: dist_centre
+    name_en: Distance to nearest verified relief centre
+    name_ur: ""
+    dimension: vulnerability
+    unit: "m"
+    direction: 1
+    transform: none
+    source: data/manual/centres.csv, verified in person by Samraj
+    reason_en: "Further from the nearest relief centre"
+    reason_ur: ""
+    notes: >
+      Also used by the allocation planner (Phase 4). The model report must state
+      this double use. Blocked until at least one centre is verified (QUESTIONS.md Q2).
+
+# Recorded so the reasons are not lost. See DECISIONS.md D4.
+dropped:
+  - id: lst_night
+    reason: >
+      MODIS night LST is 1 km. About 25 pixels cover the whole 25.37 km2 pilot area
+      across 242 cells, so between-cell variation would be an artefact of area
+      weighting rather than a measurement. ECOSTRESS (~70 m) is a v2 candidate.
+  - id: rwi
+    reason: >
+      Meta Relative Wealth Index tiles are ~2.4 km; four or five cover all of Landhi,
+      so the indicator would be near-constant and would cost an AHP comparison for
+      no information.
+
+# Built only if Samraj approves after reading docs/load-shedding-feasibility.md (P1-10).
+gated:
+  - id: load_shedding
+    name_en: Load-shedding exposure
+    dimension: vulnerability
+    source: K-Electric published load-shed schedules by area or feeder

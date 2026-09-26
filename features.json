@@ -1,0 +1,732 @@
+{
+ "schema_version": 1,
+ "project": "karachi-heat-map",
+ "generated": "2026-09-26",
+ "note": "Source of truth for progress. A feature is RESOLVED when passes is true, or when dropped is a non-empty reason approved by Samraj and recorded in DECISIONS.md. Never delete a feature or loosen an acceptance criterion.",
+ "features": [
+  {
+   "id": "P0-01",
+   "phase": 0,
+   "title": "Machine ready",
+   "acceptance": [
+    "Tool versions printed for OS, git, Python, Node and free disk space",
+    "`gh auth status` shows Samraj is logged in"
+   ],
+   "depends_on": [],
+   "passes": false,
+   "blocked_on": null,
+   "dropped": null,
+   "evidence": null
+  },
+  {
+   "id": "P0-02",
+   "phase": 0,
+   "title": "Decisions recorded",
+   "acceptance": [
+    "D1 to D12 appear in DECISIONS.md",
+    "each has a status of approved, provisional or deferred",
+    "each records Samraj's decision in his own words"
+   ],
+   "depends_on": [],
+   "passes": false,
+   "blocked_on": null,
+   "dropped": null,
+   "evidence": null
+  },
+  {
+   "id": "P0-03",
+   "phase": 0,
+   "title": "Scaffold",
+   "acceptance": [
+    "the PROMPT.md section 4 layout exists (adapted: DESIGN.md is created in P3-01)",
+    "CLAUDE.md is at most 150 lines",
+    "features.json validates against the schema test",
+    "`uv run python scripts/features.py` prints per-phase counts"
+   ],
+   "depends_on": [
+    "P0-02"
+   ],
+   "passes": false,
+   "blocked_on": null,
+   "dropped": null,
+   "evidence": null
+  },
+  {
+   "id": "P0-04",
+   "phase": 0,
+   "title": "Checks and CI",
+   "acceptance": [
+    "`uv run python scripts/check.py --quick` prints CHECK: PASS on the scaffold",
+    "the first GitHub Actions run is green, with its status printed via gh"
+   ],
+   "depends_on": [
+    "P0-03"
+   ],
+   "passes": false,
+   "blocked_on": null,
+   "dropped": null,
+   "evidence": null
+  },
+  {
+   "id": "P0-05",
+   "phase": 0,
+   "title": "Live placeholder",
+   "acceptance": [
+    "the public repo is pushed",
+    "Pages deploys from GitHub Actions",
+    "the placeholder URL returns HTTP 200, printed"
+   ],
+   "depends_on": [
+    "P0-04"
+   ],
+   "passes": false,
+   "blocked_on": null,
+   "dropped": null,
+   "evidence": null
+  },
+  {
+   "id": "P1-01",
+   "phase": 1,
+   "title": "Pilot boundary",
+   "acceptance": [
+    "data/processed/pilot_area.geojson exists in EPSG:4326 with provenance",
+    "area in km2 printed and within config/area.yaml tolerance of 25.37",
+    "preview PNG written to artifacts/"
+   ],
+   "depends_on": [
+    "P0-05"
+   ],
+   "passes": false,
+   "blocked_on": null,
+   "dropped": null,
+   "evidence": null
+  },
+  {
+   "id": "P1-02",
+   "phase": 1,
+   "title": "Grid",
+   "acceptance": [
+    "H3 resolution 9 cells cover the boundary",
+    "the inclusion rule from config/area.yaml is implemented and documented",
+    "cell count printed",
+    "tests: IDs valid, no duplicates, cells cover at least 99% of the boundary"
+   ],
+   "depends_on": [
+    "P1-01"
+   ],
+   "passes": false,
+   "blocked_on": null,
+   "dropped": null,
+   "evidence": null
+  },
+  {
+   "id": "P1-03",
+   "phase": 1,
+   "title": "Download cache",
+   "acceptance": [
+    "pipeline/fetch.py handles retries, backoff, checksums and manifest.json",
+    "a second run uses the cache and downloads nothing",
+    "tests use mocked responses"
+   ],
+   "depends_on": [
+    "P0-03"
+   ],
+   "passes": false,
+   "blocked_on": null,
+   "dropped": null,
+   "evidence": null
+  },
+  {
+   "id": "P1-04",
+   "phase": 1,
+   "title": "Daytime heat per cell",
+   "acceptance": [
+    "per-cell mean and 90th-percentile hot-season LST in degC",
+    "scene list and cloud statistics recorded",
+    "values inside a documented plausible range",
+    "map PNG in artifacts/"
+   ],
+   "depends_on": [
+    "P1-02",
+    "P1-03"
+   ],
+   "passes": false,
+   "blocked_on": null,
+   "dropped": null,
+   "evidence": null
+  },
+  {
+   "id": "P1-05",
+   "phase": 1,
+   "title": "Night heat",
+   "acceptance": [
+    "per-cell night LST, area-weighted and labelled coarse"
+   ],
+   "depends_on": [
+    "P1-02",
+    "P1-03"
+   ],
+   "passes": false,
+   "blocked_on": null,
+   "dropped": "Dropped by D4 (2026-09-26). MODIS night LST is 1 km: ~25 pixels cover the whole 25.37 km2 pilot area across 242 cells, so between-cell variation would be an artefact of area weighting, not a measurement. The model report states that night heat matters medically but could not be resolved at this scale. ECOSTRESS (~70 m) is recorded as a v2 candidate.",
+   "evidence": null
+  },
+  {
+   "id": "P1-06",
+   "phase": 1,
+   "title": "People per cell",
+   "acceptance": [
+    "per-cell counts from Meta and from WorldPop, with a comparison table",
+    "source chosen and recorded per D4",
+    "pilot total within the documented tolerance of an independent figure, or the gap explained",
+    "map PNG"
+   ],
+   "depends_on": [
+    "P1-02",
+    "P1-03"
+   ],
+   "passes": false,
+   "blocked_on": null,
+   "dropped": null,
+   "evidence": null
+  },
+  {
+   "id": "P1-07",
+   "phase": 1,
+   "title": "Age groups",
+   "acceptance": [
+    "per-cell share aged 60+ and share under 5, each within [0,1]",
+    "the zero-population rule is implemented and tested"
+   ],
+   "depends_on": [
+    "P1-06"
+   ],
+   "passes": false,
+   "blocked_on": null,
+   "dropped": null,
+   "evidence": null
+  },
+  {
+   "id": "P1-08",
+   "phase": 1,
+   "title": "Built environment",
+   "acceptance": [
+    "building footprint fraction per cell",
+    "green cover fraction per cell",
+    "coverage caveats recorded in data/SOURCES.md"
+   ],
+   "depends_on": [
+    "P1-02",
+    "P1-03"
+   ],
+   "passes": false,
+   "blocked_on": null,
+   "dropped": null,
+   "evidence": null
+  },
+  {
+   "id": "P1-09",
+   "phase": 1,
+   "title": "Access",
+   "acceptance": [
+    "distance per cell to the nearest health facility",
+    "distance per cell to the nearest verified relief centre",
+    "centres.csv schema enforced",
+    "unverified centres excluded and listed for Samraj"
+   ],
+   "depends_on": [
+    "P1-02"
+   ],
+   "passes": false,
+   "blocked_on": "QUESTIONS.md Q2: no verified relief centre yet. OSM contains zero Edhi or Saylani facilities inside Landhi Town, so there is no open-data fallback.",
+   "dropped": null,
+   "evidence": null
+  },
+  {
+   "id": "P1-10",
+   "phase": 1,
+   "title": "Load-shedding feasibility",
+   "acceptance": [
+    "docs/load-shedding-feasibility.md covers what K-Electric publishes, whether areas or feeders can be matched to cells reliably, and a recommendation",
+    "the indicator is built only if Samraj approves; otherwise he approves dropping it"
+   ],
+   "depends_on": [
+    "P1-02"
+   ],
+   "passes": false,
+   "blocked_on": null,
+   "dropped": null,
+   "evidence": null
+  },
+  {
+   "id": "P1-11",
+   "phase": 1,
+   "title": "Indicator table",
+   "acceptance": [
+    "data/processed/indicators.parquet and .csv",
+    "docs/data-dictionary.md",
+    "QA report with histograms and a missing-value summary",
+    "schema tests"
+   ],
+   "depends_on": [
+    "P1-04",
+    "P1-06",
+    "P1-07",
+    "P1-08",
+    "P1-09"
+   ],
+   "passes": false,
+   "blocked_on": null,
+   "dropped": null,
+   "evidence": null
+  },
+  {
+   "id": "P2-01",
+   "phase": 2,
+   "title": "Normalisation",
+   "acceptance": [
+    "robust min-max and percentile rank both implemented",
+    "tests: output within [0,1], monotonic, direction respected, ties and constant columns handled",
+    "checker subagent verdict recorded"
+   ],
+   "depends_on": [
+    "P1-11"
+   ],
+   "passes": false,
+   "blocked_on": null,
+   "dropped": null,
+   "evidence": null
+  },
+  {
+   "id": "P2-02",
+   "phase": 2,
+   "title": "AHP tool",
+   "acceptance": [
+    "`uv run python -m pipeline.ahp` works end to end in the terminal",
+    "reports lambda-max, CI and CR using Saaty's random index table",
+    "re-asks conflicting answers when CR >= 0.10",
+    "tests: a published textbook example reproduced within tolerance; a consistent matrix gives CR about 0; an inconsistent matrix is caught",
+    "checker subagent verdict recorded"
+   ],
+   "depends_on": [
+    "P1-11"
+   ],
+   "passes": false,
+   "blocked_on": null,
+   "dropped": null,
+   "evidence": null
+  },
+  {
+   "id": "P2-02b",
+   "phase": 2,
+   "title": "Samraj's weights",
+   "acceptance": [
+    "config/weights.yaml written by the AHP tool from Samraj's own answers",
+    "CR < 0.10",
+    "provisional flag cleared, decided_by and decided_on set"
+   ],
+   "depends_on": [
+    "P2-02"
+   ],
+   "passes": false,
+   "blocked_on": "Samraj runs the AHP tool himself (D7b). Until then the model runs on provisional equal weights, labelled provisional everywhere.",
+   "dropped": null,
+   "evidence": null
+  },
+  {
+   "id": "P2-03",
+   "phase": 2,
+   "title": "Scores",
+   "acceptance": [
+    "H, E, V, Priority, Intensity and top three reasons per cell",
+    "D6b floor applied to H and V only, and tested",
+    "property tests: weights sum to 1; raising a risk-increasing indicator never lowers Priority; results do not depend on indicator order",
+    "checker subagent verdict recorded"
+   ],
+   "depends_on": [
+    "P2-01"
+   ],
+   "passes": false,
+   "blocked_on": null,
+   "dropped": null,
+   "evidence": null
+  },
+  {
+   "id": "P2-04",
+   "phase": 2,
+   "title": "Sensitivity",
+   "acceptance": [
+    "seeded Monte Carlo, N >= 1000",
+    "per-cell median rank, 90% rank interval, P(top 20%) and confidence class",
+    "reproducibility test and figures",
+    "checker subagent verdict recorded"
+   ],
+   "depends_on": [
+    "P2-03"
+   ],
+   "passes": false,
+   "blocked_on": null,
+   "dropped": null,
+   "evidence": null
+  },
+  {
+   "id": "P2-05",
+   "phase": 2,
+   "title": "Validation pack",
+   "acceptance": [
+    "equal-weights comparison with Spearman rho",
+    "face-validity check against cited June 2024 reporting, no invented locations",
+    "expert-ranking form plus an analysis script tested on SYNTHETIC data only",
+    "checker subagent verdict recorded"
+   ],
+   "depends_on": [
+    "P2-03"
+   ],
+   "passes": false,
+   "blocked_on": null,
+   "dropped": null,
+   "evidence": null
+  },
+  {
+   "id": "P2-06",
+   "phase": 2,
+   "title": "Model report",
+   "acceptance": [
+    "docs/model-report.md with a plain summary, a maths appendix, figures and limitations",
+    "the checker subagent's verdict is included"
+   ],
+   "depends_on": [
+    "P2-04",
+    "P2-05"
+   ],
+   "passes": false,
+   "blocked_on": null,
+   "dropped": null,
+   "evidence": null
+  },
+  {
+   "id": "P3-01",
+   "phase": 3,
+   "title": "DESIGN.md",
+   "acceptance": [
+    "the plan: 4-6 named hex colours, type roles, ASCII wireframes at 375 px and 1280 px, alignment rules and three project-specific principles",
+    "a written review against the brief and the avoid-list, and the revisions made",
+    "Samraj approves it, or it stays provisional"
+   ],
+   "depends_on": [
+    "P2-06"
+   ],
+   "passes": false,
+   "blocked_on": null,
+   "dropped": null,
+   "evidence": null
+  },
+  {
+   "id": "P3-02",
+   "phase": 3,
+   "title": "Shell",
+   "acceptance": [
+    "all pages exist and are responsive",
+    "html-validate passes",
+    "no horizontal scrolling at 375 px"
+   ],
+   "depends_on": [
+    "P3-01"
+   ],
+   "passes": false,
+   "blocked_on": null,
+   "dropped": null,
+   "evidence": null
+  },
+  {
+   "id": "P3-03",
+   "phase": 3,
+   "title": "Map and legend",
+   "acceptance": [
+    "cells render from site data",
+    "quintile legend in plain words",
+    "basemap attribution visible"
+   ],
+   "depends_on": [
+    "P3-02"
+   ],
+   "passes": false,
+   "blocked_on": null,
+   "dropped": null,
+   "evidence": null
+  },
+  {
+   "id": "P3-04",
+   "phase": 3,
+   "title": "Layers and panel",
+   "acceptance": [
+    "all five layers work: Priority, Heat, People, Vulnerability, Confidence",
+    "the panel shows class, rank, top three reasons, raw values with units, confidence, and what this cannot tell you",
+    "keyboard accessible with visible focus",
+    "end-to-end tests"
+   ],
+   "depends_on": [
+    "P3-03"
+   ],
+   "passes": false,
+   "blocked_on": null,
+   "dropped": null,
+   "evidence": null
+  },
+  {
+   "id": "P3-05",
+   "phase": 3,
+   "title": "Confidence",
+   "acceptance": [
+    "confidence layer and panel wording based on P2-04"
+   ],
+   "depends_on": [
+    "P3-04"
+   ],
+   "passes": false,
+   "blocked_on": null,
+   "dropped": null,
+   "evidence": null
+  },
+  {
+   "id": "P3-06",
+   "phase": 3,
+   "title": "Content pages",
+   "acceptance": [
+    "How it works: plain version plus maths appendix",
+    "Data and credits: every attribution and licence, including ODbL for OSM",
+    "About: disclaimer and the D12 AI-assistance disclosure; no contact, per D11c"
+   ],
+   "depends_on": [
+    "P3-02"
+   ],
+   "passes": false,
+   "blocked_on": null,
+   "dropped": null,
+   "evidence": null
+  },
+  {
+   "id": "P3-07",
+   "phase": 3,
+   "title": "Urdu strings",
+   "acceptance": [
+    "full Urdu string set, RTL layout, Nastaliq font, remembered language toggle"
+   ],
+   "depends_on": [
+    "P3-06"
+   ],
+   "passes": false,
+   "blocked_on": null,
+   "dropped": "Dropped for v1 by D9 (2026-09-26): Samraj chose English only. UI strings are still externalised in site/i18n/en.json and dir is driven by the language setting, so adding Urdu later is a translation task, not a rewrite.",
+   "evidence": null
+  },
+  {
+   "id": "P3-07b",
+   "phase": 3,
+   "title": "Urdu reviewed",
+   "acceptance": [
+    "Samraj has approved every Urdu string"
+   ],
+   "depends_on": [
+    "P3-07"
+   ],
+   "passes": false,
+   "blocked_on": null,
+   "dropped": "Not applicable for v1: its only dependency P3-07 was dropped by D9 (2026-09-26), which chose English only. There are no Urdu strings for Samraj to review, so this feature has nothing to verify. If Urdu is added in a later version, both features are reinstated together and P3-07b again blocks release until every string is approved.",
+   "evidence": null
+  },
+  {
+   "id": "P3-08",
+   "phase": 3,
+   "title": "Quality gates",
+   "acceptance": [
+    "Playwright at 375x812 and 1280x800 passes with no console errors",
+    "axe-core reports zero serious or critical violations",
+    "first load at most 1.5 MB excluding basemap tiles",
+    "Lighthouse mobile: performance >= 85, accessibility >= 95, best practices >= 90, SEO >= 90"
+   ],
+   "depends_on": [
+    "P3-05",
+    "P3-06"
+   ],
+   "passes": false,
+   "blocked_on": null,
+   "dropped": null,
+   "evidence": null
+  },
+  {
+   "id": "P3-09",
+   "phase": 3,
+   "title": "Deploy",
+   "acceptance": [
+    "Pages deploys from CI",
+    "the live URL returns 200",
+    "the Playwright smoke suite passes against the live URL"
+   ],
+   "depends_on": [
+    "P3-08"
+   ],
+   "passes": false,
+   "blocked_on": null,
+   "dropped": null,
+   "evidence": null
+  },
+  {
+   "id": "P4-01",
+   "phase": 4,
+   "title": "Solver",
+   "acceptance": [
+    "LP and greedy baseline in pipeline/allocate.py",
+    "docs/allocation.md with the formulation and a hand-solvable example",
+    "tests: stock never exceeded; nothing sent beyond D; LP objective >= greedy objective; unlimited stock meets all reachable need; zero stock sends nothing; results deterministic",
+    "checker subagent verdict recorded"
+   ],
+   "depends_on": [
+    "P2-06"
+   ],
+   "passes": false,
+   "blocked_on": null,
+   "dropped": null,
+   "evidence": null
+  },
+  {
+   "id": "P4-02",
+   "phase": 4,
+   "title": "Scenarios",
+   "acceptance": [
+    "precomputed scenarios per D8, exported for the site with plain-language summaries",
+    "the Sphere litres-per-person figure verified against the Sphere Handbook and cited"
+   ],
+   "depends_on": [
+    "P4-01"
+   ],
+   "passes": false,
+   "blocked_on": null,
+   "dropped": null,
+   "evidence": null
+  },
+  {
+   "id": "P4-03",
+   "phase": 4,
+   "title": "Planner page",
+   "acceptance": [
+    "pick centres and stock, then see the allocation on the map and in a table",
+    "approximate greedy mode clearly labelled",
+    "end-to-end tests show totals never exceed stock"
+   ],
+   "depends_on": [
+    "P4-02",
+    "P3-09"
+   ],
+   "passes": false,
+   "blocked_on": null,
+   "dropped": null,
+   "evidence": null
+  },
+  {
+   "id": "P5-01",
+   "phase": 5,
+   "title": "Field briefs",
+   "acceptance": [
+    "one A4 page per named locality inside the pilot area, in English (D9)",
+    "rendered from HTML with Playwright",
+    "PDF and PNG each under 1 MB"
+   ],
+   "depends_on": [
+    "P4-03"
+   ],
+   "passes": false,
+   "blocked_on": null,
+   "dropped": null,
+   "evidence": null
+  },
+  {
+   "id": "P5-02",
+   "phase": 5,
+   "title": "Offline",
+   "acceptance": [
+    "a service worker caches the app shell and the data",
+    "the offline view uses a simplified road outline instead of basemap tiles",
+    "tested offline in Playwright"
+   ],
+   "depends_on": [
+    "P3-09"
+   ],
+   "passes": false,
+   "blocked_on": null,
+   "dropped": null,
+   "evidence": null
+  },
+  {
+   "id": "P5-03",
+   "phase": 5,
+   "title": "NGO one-pager",
+   "acceptance": [
+    "docs/pitch/one-pager.md and a PDF",
+    "covers what it is, what it is not, how to read the map in two minutes, and what feedback is wanted",
+    "leaves a blank line for a handwritten contact, per D11c",
+    "a draft for Samraj to edit; Claude never sends it"
+   ],
+   "depends_on": [
+    "P4-02"
+   ],
+   "passes": false,
+   "blocked_on": null,
+   "dropped": null,
+   "evidence": null
+  },
+  {
+   "id": "P5-04",
+   "phase": 5,
+   "title": "README",
+   "acceptance": [
+    "overview, screenshots, reproduce steps, credits, all three licences, the D12 AI disclosure, and CITATION.cff"
+   ],
+   "depends_on": [
+    "P3-09"
+   ],
+   "passes": false,
+   "blocked_on": null,
+   "dropped": null,
+   "evidence": null
+  },
+  {
+   "id": "P5-05",
+   "phase": 5,
+   "title": "Release",
+   "acceptance": [
+    "`uv run python scripts/check.py --lighthouse` prints CHECK: PASS",
+    "P2-02b is resolved",
+    "CHANGELOG.md written",
+    "v1.0.0 tagged and pushed"
+   ],
+   "depends_on": [
+    "P5-01",
+    "P5-02",
+    "P5-03",
+    "P5-04"
+   ],
+   "passes": false,
+   "blocked_on": null,
+   "dropped": null,
+   "evidence": null
+  },
+  {
+   "id": "P6-01",
+   "phase": 6,
+   "title": "Expert agreement",
+   "acceptance": [
+    "real rankings imported",
+    "agreement computed with confidence intervals and written up",
+    "Samraj decides any model changes"
+   ],
+   "depends_on": [
+    "P2-05"
+   ],
+   "passes": false,
+   "blocked_on": "Not a goal until Samraj has real field rankings.",
+   "dropped": null,
+   "evidence": null
+  }
+ ]
+}

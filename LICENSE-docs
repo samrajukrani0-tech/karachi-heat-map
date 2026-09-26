@@ -1,0 +1,19 @@
+Documentation and site text: Creative Commons Attribution 4.0 International
+(CC BY 4.0)
+
+Copyright (c) 2026 Samraj Lal Ukrani
+
+This licence covers everything in docs/, the prose content of site/, and the
+Markdown files at the repository root, EXCEPT the files listed below.
+
+You are free to share and adapt this material for any purpose, including
+commercially, provided you give appropriate credit, link to the licence, and
+indicate if changes were made.
+
+Full licence text: https://creativecommons.org/licenses/by/4.0/legalcode
+Summary: https://creativecommons.org/licenses/by/4.0/
+
+NOT covered by this licence:
+- source code -> see LICENSE (MIT)
+- data/processed/ -> see LICENSE-data (ODbL 1.0)
+- third-party datasets -> each keeps its own licence, recorded in data/SOURCES.md

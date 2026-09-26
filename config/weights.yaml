@@ -1,0 +1,34 @@
+# Weights. Decision D7 (see DECISIONS.md).
+#
+# PROVISIONAL. These are equal weights, NOT Samraj's judgement. They are replaced
+# by `uv run python -m pipeline.ahp`, which Samraj runs himself (feature P2-02b).
+# While provisional: true, every figure, export and page that uses them must say so.
+
+provisional: true
+decided_by: null
+decided_on: null
+consistency_ratio: null
+
+# D7a: the three dimension exponents are FIXED at 1/3 and are not set by AHP.
+# In a multiplicative model an exponent is an elasticity, not an importance, so
+# Saaty's 1-9 importance scale does not map onto it. The sensitivity analysis
+# still varies these to show the ranking does not depend on the choice.
+dimensions:
+  hazard: 0.3333333333333333
+  exposure: 0.3333333333333333
+  vulnerability: 0.3333333333333333
+
+# AHP sets these six, as a weighted ARITHMETIC mean within the dimension.
+vulnerability:
+  share_over60: 0.16666666666666666
+  share_under5: 0.16666666666666666
+  built_fraction: 0.16666666666666666
+  lack_green: 0.16666666666666666
+  dist_health: 0.16666666666666666
+  dist_centre: 0.16666666666666666
+
+# Single-indicator dimensions; nothing to weight.
+hazard:
+  lst_day_mean: 1.0
+exposure:
+  population: 1.0

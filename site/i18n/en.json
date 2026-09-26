@@ -1,0 +1,9 @@
+{
+  "site.title": "Karachi Heat Priority Map",
+  "site.placeholder": "This is a placeholder. The site is being built in the open and is not ready to be used for anything yet. The map, the data and the wording will all change.",
+  "heading.what": "What this will be",
+  "heading.whatNot": "What it is not",
+  "heading.how": "How it will work",
+  "credit.ai": "Built with Claude Code as a coding assistant. Research question, modelling decisions, weights and fieldwork by Samraj Lal Ukrani.",
+  "credit.licences": "Code MIT. Text CC BY 4.0. Processed data ODbL 1.0, and it contains data derived from OpenStreetMap, © OpenStreetMap contributors."
+}

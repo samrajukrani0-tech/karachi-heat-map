@@ -1,0 +1,20 @@
+# raw download cache (rebuildable via `uv run python -m pipeline.run --all`)
+data/raw/*
+!data/raw/.gitignore
+!data/raw/manifest.json
+
+# screenshots, logs, Lighthouse reports
+artifacts/
+
+# python
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+
+# node (site checks only)
+node_modules/
+
+# os
+.DS_Store

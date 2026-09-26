@@ -1,0 +1,42 @@
+# Allocation planner. Decision D8 (see DECISIONS.md).
+#
+# PROVISIONAL: every value here is a documented assumption, not a field figure.
+# Revisit after the centre visit. Until then the site labels scenarios illustrative.
+provisional: true
+
+commodities:
+  - id: water
+    name_en: Drinking water
+    unit: "litres per day"
+    units_per_person_per_day: 3.0
+    basis: >
+      Sphere minimum survival water allocation for drinking and food intake is
+      about 2.5-3 litres per person per day. UNVERIFIED - P4-02 must check this
+      against the Sphere Handbook and record the exact citation before it is used
+      anywhere public.
+  - id: ors
+    name_en: Oral rehydration salts
+    unit: "sachets per day"
+    units_per_person_per_day: 1.0
+    basis: "Working assumption pending a centre manager's figure."
+
+need:
+  definition: age_vulnerable          # residents aged 60+ plus children under 5
+  rationale: >
+    Need is deliberately NOT defined from Priority. Priority is already the LP's
+    objective, so using it to define need would count the model's own judgement
+    twice and make the allocation look well targeted by construction. Age shares
+    are measured independently of the model.
+
+service:
+  max_distance_m: 5000                # road distance
+  circuity_factor: 1.3                # used when only straight-line distance is available
+  sensitivity_distances_m: [3000, 8000]
+
+equity:
+  min_share_top_quintile: 0.25        # soft constraint with a penalty
+  epsilon_distance_tiebreak: 0.001    # the small eps in the objective
+
+solver:
+  method: highs
+  rounding: largest_remainder         # never exceeds stock
