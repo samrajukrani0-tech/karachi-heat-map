@@ -99,7 +99,7 @@
    "passes": true,
    "blocked_on": null,
    "dropped": null,
-   "evidence": "uv run python -m pipeline.boundary -> 'Area: 25.370 km2 (config expects 25.37 +/- 0.75)', 1 ring, 0 interior holes; wrote data/processed/pilot_area.geojson (4.4 kB, EPSG:4326) and artifacts/pilot_area_preview.png (56 kB), which was viewed and shows a single closed polygon, centroid 24.84449, 67.18136. Provenance in the file: OSM relation 16350631, admin_level 7, ODbL 1.0, accessed 2026-09-26, raw response sha256 f0509baf17a429c28200f5ba1bd8366159c611d5146e23c971c6470410acfdd7. uv run pytest -> 39 passed in 0.76s; uv run python scripts/check.py --quick -> 'CHECK: PASS (3 checks)'."
+   "evidence": "uv run python -m pipeline.boundary -> 'Area: 25.370 km2 (config expects 25.37 +/- 0.75)', 1 ring, 0 interior holes; wrote data/processed/pilot_area.geojson (4.4 kB, EPSG:4326) and artifacts/pilot_area_preview.png (56 kB), which was viewed and shows a single closed polygon, centroid 24.84449, 67.18136. Provenance in the file: OSM relation 16350631, admin_level 7, ODbL 1.0, accessed 2026-09-26, raw response sha256 0a9b249905a9e5ff039f4239e548b90ac247bf9e9d749cad4697ff8af96181e8 (fingerprints the download, not the geometry: Overpass embeds a timestamp). uv run pytest -> 39 passed in 0.76s; uv run python scripts/check.py --quick -> 'CHECK: PASS (3 checks)'."
   },
   {
    "id": "P1-02",
@@ -131,10 +131,10 @@
    "depends_on": [
     "P0-03"
    ],
-   "passes": false,
+   "passes": true,
    "blocked_on": null,
    "dropped": null,
-   "evidence": null
+   "evidence": "pipeline/fetch.py streams to a .part file while hashing, renames atomically, retries only the transient statuses {408,425,429,500,502,503,504} with exponential backoff capped at 120 s and honours Retry-After, and records url, sha256, bytes, date and licence in data/raw/manifest.json. Cache reuse verified live: a second 'uv run python -m pipeline.boundary' printed the same 'Area: 25.370 km2' with no download line; 'uv run python -m pipeline.fetch --verify' -> 'Verified 1 cached file(s): all match the manifest'. tests/test_fetch.py adds 17 tests on a mocked transport with SYNTHETIC payloads, covering: manifest contents, zero network calls on the second run, refresh, tampered cache re-downloaded, an unmanifested file not trusted, checksum mismatch raising IntegrityError and removing the file, retry-then-succeed with growing backoff, Retry-After honoured, backoff capped, 404 never retried, give-up after the try limit, and .part cleanup. uv run pytest -> 68 passed in 1.49s; check.py --quick -> 'CHECK: PASS (3 checks)'."
   },
   {
    "id": "P1-04",

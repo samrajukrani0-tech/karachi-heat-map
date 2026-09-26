@@ -1,8 +1,9 @@
 """A small, polite Overpass client with an on-disk cache.
 
-PROMPT.md section 2.8: be gentle with Overpass and cache downloads. P1-03 replaces
-this module's caching with the full manifest-and-checksum version; until then the
-cache is a plain file plus the sha256 recorded in whatever output uses it.
+PROMPT.md section 2.8: be gentle with Overpass and cache downloads. Overpass takes a
+POSTed query rather than serving a file at a URL, so it keeps its own small cache
+rather than going through pipeline.fetch; every cached response is still registered in
+data/raw/manifest.json so the manifest accounts for every byte downloaded.
 """
 
 from __future__ import annotations
@@ -16,6 +17,7 @@ import urllib.request
 from pathlib import Path
 from typing import Any
 
+from pipeline import fetch
 from pipeline.config import RAW
 
 ENDPOINTS = (
@@ -46,6 +48,11 @@ def query(body: str, cache_key: str, *, refresh: bool = False,
         text = cached.read_text(encoding="utf-8")
         return json.loads(text), sha256(text)
 
+    def _register(path: Path, digest: str) -> None:
+        fetch.record(path, url=ENDPOINTS[0], licence="ODbL 1.0 - (c) OpenStreetMap contributors",
+                     note="Overpass query response; rebuildable from the query in the caller",
+                     digest=digest)
+
     last: Exception | None = None
     for attempt in range(tries):
         endpoint = ENDPOINTS[attempt % len(ENDPOINTS)]
@@ -59,7 +66,9 @@ def query(body: str, cache_key: str, *, refresh: bool = False,
                 text = response.read().decode("utf-8")
             json.loads(text)  # fail here rather than later if it is not JSON
             cached.write_text(text, encoding="utf-8")
-            return json.loads(text), sha256(text)
+            digest = sha256(text)
+            _register(cached, digest)
+            return json.loads(text), digest
         except (urllib.error.URLError, OSError, ValueError) as exc:
             last = exc
             wait = 8 * (attempt + 1)

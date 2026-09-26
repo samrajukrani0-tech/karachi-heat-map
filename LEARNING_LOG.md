@@ -193,3 +193,61 @@ meet the threshold. It matters because a reader should know the map does not cla
 cover every square metre; an unstated gap is the kind of thing that quietly undermines
 trust when someone notices it themselves.
 </details>
+
+---
+
+## P1-03 — Why a download cache needs a hash, not just a filename
+
+**What and why.** Everything this project downloads now lands in `data/raw/` with an
+entry in `manifest.json` giving its URL, size, date, licence and sha256. A repeated run
+uses the cached copy and touches the network zero times. That is partly politeness —
+Overpass and the satellite archives are free services — and partly reproducibility: a
+year from now the model should rebuild from exactly the bytes it was built from.
+
+**The key idea in A Level terms.** The cache's rule is that a file is reused only if it
+still hashes to the value in the manifest. A hash function like SHA-256 takes any input
+and produces a fixed 256-bit output, designed so that changing a single bit anywhere
+changes the output unrecognisably. Hashing is a mapping from an infinite set to a finite
+one, so collisions must exist by the pigeonhole principle — but with 2²⁵⁶ possible
+outputs, finding one is not something that happens by accident. This is what makes the
+check meaningful: if the recomputed hash matches, the file is the one we downloaded.
+
+There is a subtlety the project ran into immediately, and it is a nice lesson in what a
+measurement actually measures. Re-running the same Overpass query returned a *different*
+sha256 while producing a geometrically identical boundary, because Overpass stamps each
+response with a timestamp. So the hash proves "these bytes are unchanged"; it does not
+prove "this query returns the same answer". Reproducibility of the *result* is checked a
+different way: the area came out at 25.370 km² both times.
+
+The retry logic contains a second idea. Failures are split into those worth repeating
+(503 "busy", 429 "too many requests") and those that never will be (404 "not there").
+Retrying a 404 is just asking the same wrong question more politely. Waits between
+retries grow exponentially — 4 s, 8 s, 16 s — so a struggling server is not hammered by
+a client convinced it is special.
+
+**Questions.**
+
+1. Why does the cache verify the hash instead of just checking the file exists?
+<details><summary>Answer</summary>
+Existence proves nothing about contents. A download interrupted halfway leaves a file
+that looks fine to `ls` but is truncated; an edited file looks identical too. Verifying
+the hash means the pipeline either uses the exact bytes it recorded or fetches them
+again — it never half-trusts.
+</details>
+
+2. Given that hash collisions must exist, why is a hash check still convincing?
+<details><summary>Answer</summary>
+By the pigeonhole principle an infinite input set mapped to 2²⁵⁶ outputs guarantees
+collisions. But SHA-256 is built so that finding one takes work on the order of 2¹²⁸
+operations, far beyond anything feasible. The guarantee is computational, not
+mathematical impossibility — which is enough for detecting a truncated download.
+</details>
+
+3. The Overpass response hash changes on every download. What does that tell you about
+   using hashes as evidence of reproducibility?
+<details><summary>Answer</summary>
+A hash certifies bytes, not meaning. Any content with a timestamp, ordering that is not
+guaranteed, or compression metadata will hash differently while being equivalent. To
+show a *result* reproduces you must re-derive the result itself — here, re-measuring the
+area — and say plainly which of the two you have checked.
+</details>

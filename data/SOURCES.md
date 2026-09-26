@@ -25,8 +25,15 @@ Storage CRS: EPSG:4326. All distances and areas: EPSG:32642 (UTM zone 42N).
   raw Overpass response. The build **refuses to write** if the measured area falls
   outside `config/area.yaml`'s 25.37 ± 0.75 km², so a silent upstream boundary change
   fails the build instead of quietly redefining the pilot area.
-- **Raw cache:** `data/raw/osm/relation_16350631.json` (gitignored). P1-03 will bring it
-  under the full manifest-and-checksum scheme.
+- **Raw cache:** `data/raw/osm/relation_16350631.json` (gitignored). Registered in
+  `data/raw/manifest.json` (tracked in git) with its url, sha256, size, date and licence
+  since P1-03.
+- **What the response hash does and does not prove:** Overpass embeds a timestamp in
+  every response, so re-running the identical query yields a different sha256 while the
+  geometry is unchanged. The hash fingerprints one download; it is **not** a content hash
+  of the boundary. Reproducibility of the result is checked by re-measuring the area
+  (25.370 km² on both downloads), and `pilot_area.geojson` carries a
+  `raw_response_sha256_note` saying exactly this.
 
 ### Derived: H3 analysis grid (P1-02, 2026-09-26)
 - **Output:** `data/processed/grid.geojson` — 265 H3 resolution-9 cells, EPSG:4326.

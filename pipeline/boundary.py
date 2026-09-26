@@ -118,6 +118,11 @@ def build(*, refresh: bool = False) -> dict[str, Any]:
             "licence": "ODbL 1.0 - (c) OpenStreetMap contributors",
             "accessed": dt.date.today().isoformat(),
             "raw_response_sha256": digest,
+            "raw_response_sha256_note": (
+                "fingerprints this particular download, not the geometry: Overpass "
+                "embeds a timestamp, so an identical query returns a different hash. "
+                "Reproducibility is checked by re-measuring the area, not by this hash."
+            ),
             "generated_by": "uv run python -m pipeline.boundary (feature P1-01)",
             "decision": "D2 (see DECISIONS.md)",
         },

@@ -164,3 +164,33 @@ edge, is covered by no cell.
 clipped area, and contiguity are all re-derived from the stored geometry, so a wrong
 number in the file's own metadata fails the suite.
 **Next:** P1-03 Download cache.
+
+## 2026-09-26 — P1-03 Download cache
+**What changed:** `pipeline/fetch.py` — streaming download with a `.part` file and an
+atomic rename, sha256 computed while streaming, exponential backoff capped at 120 s,
+`Retry-After` honoured, and `data/raw/manifest.json` recording url, sha256, bytes, date
+and licence for every file. `pipeline/overpass.py` now registers its cached responses in
+the same manifest, so the manifest accounts for every byte downloaded. Added
+`tests/test_fetch.py`, 17 tests, all on a mocked transport with SYNTHETIC payloads.
+**Evidence:** a second `uv run python -m pipeline.boundary` printed the same
+"Area: 25.370 km2" with no download line; `uv run python -m pipeline.fetch --verify` ->
+"Verified 1 cached file(s): all match the manifest". `uv run pytest` -> 68 passed.
+`check.py --quick` -> `CHECK: PASS (3 checks)`.
+**Latent Phase 0 bug found and fixed:** `data/raw/.gitignore` contained a bare `*`,
+which overrides the root negation, so `data/raw/manifest.json` **would never have been
+committable** — the provenance record PROMPT.md §6 requires would have stayed on this
+laptop only. The nested ignore file now reads `*`, `!.gitignore`, `!manifest.json`, and
+`git check-ignore` confirms the manifest is tracked.
+**An honest limit on what a hash proves:** re-downloading the same Overpass query
+produced a different sha256 while the geometry stayed byte-identical, because Overpass
+embeds a timestamp in every response. The boundary file now carries
+`raw_response_sha256_note` saying so explicitly: that hash fingerprints one download, it
+is not a content hash of the geometry, and reproducibility is checked by re-measuring
+the area (25.370 km2 both times) rather than by comparing hashes.
+**Design choice:** the cache is trusted only when the file on disk still hashes to what
+the manifest says. A truncated, edited or unmanifested file is re-downloaded rather than
+silently used — tested both ways.
+**A test corrected, not loosened:** `test_verify_cache_detects_tampering` asserted
+exactly one problem; tampering correctly reports two (hash *and* size). The assertion
+was tightened to require both rather than relaxed to accept either.
+**Next:** P1-04 Daytime heat per cell.
