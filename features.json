@@ -335,10 +335,10 @@
    "depends_on": [
     "P1-11"
    ],
-   "passes": false,
+   "passes": true,
    "blocked_on": null,
    "dropped": null,
-   "evidence": null
+   "evidence": "pipeline/normalise.py implements both D5 methods. Applied to the real table: lst_day_mean/population/lack_green/dist_health all normalise into [0,1] under both, Spearman rho 0.9999 between methods per indicator (below 1.0 only because robust min-max creates ties in the clipped tails). dist_centre skipped, no values yet. 32 tests cover every acceptance criterion: output in [0,1], monotonicity on 200 random values, direction respected and invalid directions rejected, ties equal, constant columns -> 0 with a warning, NaN preserved, clipping exact at the percentiles, linearity between clip points, and a demonstration that robust min-max resists an outlier that crushes plain min-max. CHECKER SUBAGENT (section 3.1): given the written spec and the data but not the implementation, it re-derived 18 spot values (3 cells x 3 columns x 2 methods) and ALL 18 AGREED to 6 decimal places. Its critique produced four real improvements, now applied and pinned by tests: the constant test is relative to magnitude rather than absolute; a column flat between p5 and p95 but varying in the tails now raises FlatCoreWarning instead of silently discarding that variation; the direction flip is documented and tested as NOT applying to the constant case (read literally the rule would map a constant direction -1 indicator to 1.0, maximum risk everywhere); and log1p is documented and tested as rank-invariant. uv run pytest -> ${ALL}; check.py --quick -> 'CHECK: PASS (3 checks)'."
   },
   {
    "id": "P2-02",

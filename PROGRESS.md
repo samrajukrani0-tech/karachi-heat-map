@@ -448,3 +448,57 @@ data dictionary states the known biases — not air temperature, population unde
 distance overstated, D16/D17/D20 — so a reader does not have to dig through DECISIONS.md
 to learn the numbers are biased.
 **Next:** Phase 1 is complete except P1-09b, which is blocked on Samraj.
+
+## 2026-09-26 — P2-01 Normalisation
+**What changed:** `pipeline/normalise.py` (both D5 methods), `tests/test_normalise.py`
+(32 tests), `data/processed/indicators_normalised.csv`.
+**Evidence:** all four available indicators normalise into [0,1] under both methods;
+Spearman rho 0.9999 between methods per indicator. `uv run pytest` -> 181 passed (177 in CI);
+`check.py --quick` -> `CHECK: PASS (3 checks)`.
+
+### Checker subagent verdict (PROMPT.md §3.1) — AGREES
+A fresh subagent was given the written specification and the data, but **not** the
+implementation or any expected answers, and asked to re-derive three spot values. It
+computed **18 numbers** (3 cells × 3 columns × 2 methods) and **all 18 matched to six
+decimal places**. Verified in-turn by comparison against the implementation.
+
+**Four improvements from its critique, applied and pinned by tests:**
+1. **The constant test is now relative to magnitude**, not an absolute 1e-12. An absolute
+   tolerance misjudges columns far from 1.0.
+2. **A flat core with live tails now warns** (`FlatCoreWarning`) instead of silently
+   returning zeros. A column can be constant between the 5th and 95th percentiles while
+   varying in the tails; robust min–max would discard that variation without saying so.
+3. **The direction flip is documented and tested as NOT applying to the constant case.**
+   The checker found the written rule genuinely ambiguous: read as steps-in-order, a
+   constant indicator with direction −1 gives 1 − 0 = 1 — *maximum risk in every cell*.
+   The short-circuit reading is now pinned by a test.
+4. **`log1p` is documented and tested as rank-invariant**, so a future non-monotone
+   transform cannot silently change the percentile-rank branch.
+
+**A real finding about our own data, confirmed independently.** `population`'s 5th
+percentile is **exactly 0.000000**, because 21 cells hold no people. So **not one cell is
+clipped at the bottom** while 14 are clipped at the top — "robust" min–max is one-sided in
+practice on this indicator. Assessed: this is harmless here rather than a defect. The 21
+zero-population cells map to exactly 0, which is what D6b wants, since Exposure is
+deliberately unfloored so those cells get Priority 0 regardless. But the name implies
+symmetric trimming, so it belongs in the model report.
+
+**Two disagreements recorded rather than silently accepted:**
+- The checker argued a constant indicator should be **dropped with weights renormalised**,
+  not mapped to 0, because 0 drags every composite down by that indicator's full weight
+  and because a constant column is usually a symptom of an upstream bug. That is a good
+  argument, but **PROMPT.md §7 explicitly specifies "becomes 0, with a warning"**, and
+  §2.2 forbids changing a criterion without Samraj. Noted for the model report; currently
+  moot, as no indicator is constant. Its force is also reduced by D21: we publish ranks
+  and shares, and the rule is rank-neutral either way.
+- It suggested masking zero-population cells out of the ranking entirely. **Already
+  handled by D6b**: Exposure is unfloored, so those cells score Priority 0 by construction
+  rather than by exclusion.
+
+**Carried forward to P2-04.** The checker measured that swapping normalisation method
+reorders **4,048 of 34,980 cell pairs** in an equal-weight composite (Spearman 0.926).
+Within a single indicator the methods cannot invert order — both are monotone — but the
+composite is a sum of differently-*spaced* components, and spacing changes rank. That is
+exactly what the sensitivity analysis must quantify, and it is now a concrete target
+rather than a vague intention.
+**Next:** P2-02 AHP tool.
