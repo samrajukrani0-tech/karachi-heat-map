@@ -44,9 +44,11 @@ owns every modelling decision.
 
 - **D2** pilot area: Landhi Town, OSM relation 16350631, 25.37 km².
 - **D3** grid: H3 resolution 9 (~0.105 km², ~242 cells).
-- **D4/D17** 6 indicators. Night LST and RWI dropped as too coarse for 25 km²; the two
-  age **shares** dropped by D17 (they correlate at exactly −1.0 — one administrative zone
-  variable, not demography). Age **counts** are kept for D8's need definition.
+- **D4/D17/D19** 5 indicators: `lst_day_mean` (H), `population` (E), and `lack_green`,
+  `dist_health`, `dist_centre` (V). Dropped: night LST and RWI (too coarse for 25 km²);
+  the two age **shares** (correlate at exactly −1.0 — one administrative zone variable);
+  `built_fraction` (≈ +0.93 with `lack_green`, and double-counts Hazard). Age **counts**
+  and `built_fraction` are still computed as panel context, like the LST p90.
   Load-shedding is gated behind the P1-10 feasibility study.
 - **D5** robust min–max, clipped at the 5th/95th percentile.
 - **D6** Priority = weighted geometric mean of H, E, V; H and V floored at 0.01,

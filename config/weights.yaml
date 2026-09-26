@@ -19,13 +19,13 @@ dimensions:
   vulnerability: 0.3333333333333333
 
 # AHP sets these six, as a weighted ARITHMETIC mean within the dimension.
-# Four indicators since D17 dropped the two age shares, so AHP asks 6 pairwise
-# questions instead of 15 -- which also makes CR < 0.10 easier to reach.
+# Three indicators: D17 dropped the two age shares, D19 dropped built_fraction as a
+# near-duplicate of lack_green that also double-counted Hazard. AHP now asks just 3
+# pairwise questions, so a consistency ratio below 0.10 is very achievable.
 vulnerability:
-  built_fraction: 0.25
-  lack_green: 0.25
-  dist_health: 0.25
-  dist_centre: 0.25
+  lack_green: 0.3333333333333333
+  dist_health: 0.3333333333333333
+  dist_centre: 0.3333333333333333
 
 # Single-indicator dimensions; nothing to weight.
 hazard:

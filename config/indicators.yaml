@@ -26,17 +26,6 @@ indicators:
     reason_en: "More people live in this area"
     reason_ur: ""
 
-  - id: built_fraction
-    name_en: Built-up surface
-    name_ur: ""
-    dimension: vulnerability
-    unit: "fraction"
-    direction: 1
-    transform: none
-    source: Google Open Buildings / Microsoft Global ML Building Footprints (OSM fallback)
-    reason_en: "Densely built, so the area holds heat"
-    reason_ur: ""
-
   - id: lack_green
     name_en: Lack of green cover
     name_ur: ""
@@ -75,6 +64,16 @@ indicators:
 
 # Recorded so the reasons are not lost. See DECISIONS.md D4.
 dropped:
+  - id: built_fraction
+    reason: >
+      Dropped by D19 (2026-09-26), approved by Samraj. Measured from ESA WorldCover, which
+      assigns each 10 m pixel exactly one class, built_fraction and lack_green correlate at
+      about +0.93 (built vs green r = -0.929), so two of Vulnerability's four indicators were
+      near-duplicates. More importantly, built-up surface is a CAUSE of the high land surface
+      temperature that the Hazard dimension already measures directly, so keeping it would
+      count the same physical fact twice -- once as cause, once as effect. Still computed and
+      stored in data/processed/landcover_cells.csv as context for the cell panel, in the same
+      way the LST 90th percentile is computed but not indexed.
   - id: share_over60
     reason: >
       Dropped by D17 (2026-09-26), approved by Samraj. Measured over Landhi, share_over60

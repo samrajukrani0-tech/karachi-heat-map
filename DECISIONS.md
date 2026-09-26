@@ -700,3 +700,35 @@ the same caveat for health facilities.
 
 **Status: PROVISIONAL** — a source substitution, which §6 says to log as provisional.
 **Date:** 2026-09-26
+
+---
+
+## D19 — Drop `built_fraction` (2026-09-26)
+
+**Question:** After D17 left Vulnerability with four indicators, `built_fraction` and
+`lack_green` were measured at about **+0.93** correlation (built vs green r = −0.929),
+because ESA WorldCover assigns each 10 m pixel exactly one class. Keep both?
+
+**Recommendation (Claude):** drop `built_fraction`, keep `lack_green`.
+1. They are redundant **by construction**, not by coincidence — in a dense town, "not
+   green" and "built" are nearly the same pixel set.
+2. "Little greenery or shade" is more actionable and legible to a field coordinator than
+   "densely built".
+3. The decisive reason: **built-up surface is a cause of the high land surface
+   temperature that the Hazard dimension already measures directly.** Keeping it in
+   Vulnerability counts the same physical fact twice — once as cause, once as effect —
+   and inflates the weight of a single underlying phenomenon.
+
+**Samraj's decision:** "drop built_fraction".
+
+**Result:** the model has **five** indicators — `lst_day_mean` (Hazard), `population`
+(Exposure), and `lack_green`, `dist_health`, `dist_centre` (Vulnerability). AHP asks
+**3** pairwise comparisons, down from 15 as originally designed, so a consistency ratio
+below 0.10 is very achievable.
+
+**Still computed, just not indexed:** `built_fraction` remains in
+`data/processed/landcover_cells.csv` and will appear in the cell panel as context, in
+exactly the way the LST 90th percentile is computed and shown but not indexed (D4).
+
+**Status:** approved
+**Date:** 2026-09-26

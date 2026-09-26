@@ -176,7 +176,7 @@ pairwise questions instead of 15.
 
 ---
 
-## Q8 — `built_fraction` and `lack_green` are 0.93 correlated (OPEN, decide before Phase 2)
+## Q8 — `built_fraction` and `lack_green` are 0.93 correlated — ANSWERED 2026-09-26
 
 P1-08 measured both from ESA WorldCover, where each 10 m pixel gets exactly one class.
 In a dense town that makes them near-complements: **r = −0.929** between built and green,
@@ -204,4 +204,6 @@ into a single "hard surface, little shade" indicator.
 If both are dropped in favour of one, Vulnerability has three indicators and AHP asks
 just 3 pairwise questions.
 
-**Answer:**
+**Samraj's answer:** "drop built_fraction". Applied; recorded as **D19**. Vulnerability
+has three indicators (`lack_green`, `dist_health`, `dist_centre`) and AHP will ask 3
+pairwise questions. `built_fraction` is still computed and stored as panel context.
