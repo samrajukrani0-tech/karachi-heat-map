@@ -354,10 +354,10 @@
    "depends_on": [
     "P1-11"
    ],
-   "passes": false,
+   "passes": true,
    "blocked_on": null,
    "dropped": null,
-   "evidence": null
+   "evidence": "pipeline/ahp.py works end to end in the terminal, demonstrated live: `printf 'a\\n3\\na\\n5\\na\\n3\\n' | uv run python -m pipeline.ahp --dry-run` -> lambda_max = 3.038511, CI = 0.019256, CR = 0.0332, kappa = 1.8, 'CR is below 0.05 (Saaty's limit for 3 items)', weights lack_green 0.6370 / dist_health 0.2583 / dist_centre 0.1047. A --dry-run flag was added so Samraj can practise without writing weights; config/weights.yaml remains provisional: True, decided_by: None, so P2-02b is untouched and no judgement has been fabricated. 34 tests: the published worked example reproduced (lambda_max 3.085771896 -> CI 0.042885948 -> CR 0.0739412), Saaty's RI table asserted, a consistent matrix gives lambda_max = n and CR = 0 and recovers the weights that built it, an inconsistent matrix is caught, power iteration cross-validated against numpy.linalg.eig on 60 random matrices, and the interactive session tested end to end with scripted input including bad input and a refusal to save weights it cannot justify. CHECKER SUBAGENT (section 3.1): given the spec and three matrices but not the implementation, it re-derived all three independently -- weights, lambda_max, CI and CR -- and ALL THREE AGREED exactly (M1 lambda_max 3.038511090558, M2 exactly 6.2, M3 exactly 4). Its critique produced six applied changes, all pinned by tests: graduated CR threshold per Saaty (D22), kappa reported for n=3, CI clamped at 0, Collatz-Wielandt bracket as a certified convergence diagnostic, input validated for positivity/reciprocity/unit diagonal, and a sharp regression test that the eigenvector equals the row geometric mean at n=3 only. uv run pytest -> 215 passed (211 in CI); check.py --quick -> 'CHECK: PASS (3 checks)'."
   },
   {
    "id": "P2-02b",

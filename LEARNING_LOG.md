@@ -448,3 +448,67 @@ data dictionary, and in a test that fails if it is ever quietly filled without t
 documentation being updated. Omitting it would let the model be read as complete when it
 is not.
 </details>
+
+---
+
+## P2-02 — Turning opinions into numbers, and checking they hold together
+
+**What and why.** The AHP tool asks you to compare indicators two at a time — "for heat
+harm in Landhi, does lack of greenery matter more than distance to a clinic, and by how
+much?" — and turns those answers into weights. It also tells you whether your answers
+agree with each other, and if they do not, it says so instead of quietly averaging them.
+
+**The key idea in A Level terms.** Suppose the true importances are w₁, w₂, w₃. If you
+judged perfectly, your answer comparing indicator i with indicator j would be exactly
+aᵢⱼ = wᵢ/wⱼ. Written as a matrix, that means **A·w = 3w** — the weight vector is an
+eigenvector of your own comparison matrix, with eigenvalue equal to the number of items.
+
+Real answers are never perfect, so A·w = λw with λ slightly larger than n, and the weights
+are the **principal eigenvector**: the direction that A stretches most. The tool finds it
+by power iteration — start with any positive vector, multiply by A over and over, and
+renormalise. Each multiplication amplifies the dominant direction relative to the others
+by the ratio of their eigenvalues, so the vector converges to the one that matters. That
+is the same eigenvector algebra as in Further Maths, used here on a matrix of opinions.
+
+How far λ exceeds n measures how much you contradicted yourself. That gap is scaled into
+the **consistency ratio**, which compares your inconsistency against what randomly-filled
+answers would produce.
+
+**The part worth understanding for three indicators specifically.** With three items there
+is exactly *one* way to be inconsistent. Multiply your three answers around the loop:
+κ = a₁₂ × a₂₃ ÷ a₁₃. If you said greenery is 3× clinics, clinics are 3× centres, then
+consistency demands greenery is 9× centres. Say 5 instead and κ = 9/5 = 1.8. Everything —
+λmax, CI, CR — is a function of κ alone.
+
+That has a consequence the tool now states out loud: because the contradiction is a single
+loop, it is shared **equally** among all three answers. In logarithms the three errors come
+out as exactly +d/3, +d/3, −d/3. So there is no "bad answer" to correct; the tool asks all
+three again rather than pretending it can identify a culprit.
+
+**Questions.**
+
+1. You say greenery is 3× more important than clinic distance, and clinic distance is 2×
+   more important than centre distance. What must you say about greenery versus centre
+   distance to be perfectly consistent, and what is κ if you say 4 instead?
+<details><summary>Answer</summary>
+Consistency requires 3 × 2 = 6. Saying 4 gives κ = (3 × 2)/4 = 1.5 — your answers multiply
+out to 1.5 where perfect agreement would be 1.
+</details>
+
+2. Why is a *perfectly consistent* set of answers not necessarily a *good* set?
+<details><summary>Answer</summary>
+Consistency measures only whether your judgements agree with each other, not whether they
+are right. You could believe something entirely wrong and believe it coherently: a matrix
+built as aᵢⱼ = wᵢ/wⱼ from any weights at all has CR = 0. The consistency ratio bounds
+internal coherence, never validity.
+</details>
+
+3. The tool reports weights to four decimal places from answers picked off a 1–9 scale.
+   What is wrong with reading them that precisely?
+<details><summary>Answer</summary>
+The input is coarse — whole numbers attached to verbal descriptions — so the output cannot
+be finer than the input. Four decimals are useful for reproducing the computation exactly,
+but interpreting 0.6370 as distinguishable from 0.63 reads precision into a judgement that
+never had it. One scale point of change in a single answer moves the weights by several
+percentage points.
+</details>

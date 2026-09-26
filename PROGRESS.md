@@ -502,3 +502,62 @@ composite is a sum of differently-*spaced* components, and spacing changes rank.
 exactly what the sensitivity analysis must quantify, and it is now a concrete target
 rather than a vague intention.
 **Next:** P2-02 AHP tool.
+
+## 2026-09-26 — P2-02 AHP tool
+**What changed:** `pipeline/ahp.py` (eigenvector by power iteration, CI/CR, conflict
+detection, interactive session, `--dry-run`), `tests/test_ahp.py` (34 tests).
+**Evidence:** demonstrated live in the terminal —
+`printf 'a\n3\na\n5\na\n3\n' | uv run python -m pipeline.ahp --dry-run` ->
+lambda_max 3.038511, CI 0.019256, CR 0.0332, kappa 1.8, weights lack_green 0.6370 /
+dist_health 0.2583 / dist_centre 0.1047. `config/weights.yaml` still reads
+`provisional: True, decided_by: None`, so **no judgement of Samraj's has been
+fabricated** — P2-02b remains genuinely blocked on him.
+`uv run pytest` -> 215 passed (211 in CI); `check.py --quick` -> `CHECK: PASS (3 checks)`.
+**A `--dry-run` flag was added** so he can practise the tool before it counts.
+
+### Checker subagent verdict (PROMPT.md §3.1) — AGREES
+Given the specification and three matrices but not the implementation, it re-derived all
+three independently by four cross-checking routes (LAPACK, power iteration, exact
+characteristic polynomial, and Collatz–Wielandt bracketing) and **all three agreed
+exactly**: M1 λmax = 3.038511090558; M2 λmax = **6.2 exactly** (circulant, so the common
+row sum); M3 λmax = **4 exactly** (perfectly consistent).
+
+**Six improvements applied and pinned by tests:**
+1. **Graduated CR threshold** — Saaty published 0.05 for n = 3, not a flat 0.10, and our
+   case is n = 3. Recorded as **D22 (provisional)** and **Q10**; a tightening, never a
+   loosening.
+2. **κ is now reported.** For a 3×3, λmax, CI and CR are all functions of
+   κ = a₀₁·a₁₂/a₀₂ alone — it *is* the inconsistency, and it is far more interpretable.
+3. **CI clamped at 0.** λmax ≥ n is a theorem, but floating point returns
+   3.9999999999999996 for a consistent 4×4, which would print "CR = -0.0000".
+4. **Collatz–Wielandt bracket** reported as a certified convergence diagnostic — honest
+   evidence, unlike an iteration count.
+5. **Input validation** for positivity, unit diagonal and exact reciprocity. Someone
+   typing 0.33 for 1/3 would manufacture inconsistency that was never in the judgements.
+6. **A sharp regression test:** at n = 3 the eigenvector equals the row geometric mean,
+   which catches sign, normalisation and eigenvalue-selection bugs at once. A second test
+   documents that this coincidence **fails from n = 4**, so nobody assumes it survives if
+   indicators are added back.
+
+**It also confirmed and proved the n = 3 finding this feature had already hit.** A 3×3
+reciprocal matrix has trace 3 and zero principal 2×2 minors, so its characteristic
+polynomial collapses to λ³ − 3λ² − det = 0 with det = (√κ − 1/√κ)². In log space the
+three residuals are exactly +d/3, +d/3, −d/3 — identical in magnitude. So inconsistency
+at n = 3 is one degree of freedom shared equally, and **no single answer can be blamed**,
+which is what the tool now tells the user.
+
+**A consequence worth carrying to the model report:** the three equally-consistent
+repairs of M1 give the third item a weight anywhere from **0.077 to 0.130** — a factor of
+1.7. "Inconsistency is small and unattributable" must not be read as "the weights are
+pinned down".
+
+**Points recorded for P2-06 (the model report), citations to be verified first.** The
+checker explicitly said it was working from recall and asked that its references be
+checked before publication, so they are recorded as arguments to verify, not as facts:
+right–left asymmetry of the eigenvector method (we are immune at n = 3); rank reversal
+when the item set changes; the bounded 1–9 scale forcing some inconsistency; disputed
+RI(3) values (0.58 vs ≈0.5245, which would move our CR from 0.0332 to 0.0367);
+consistency is not validity; weights are not influence, since realised influence depends
+on each indicator's spread after scaling; and group judgements must be aggregated by
+**geometric** mean, which matters for D7b's planned re-run with a field coordinator.
+**Next:** P2-03 Scores.

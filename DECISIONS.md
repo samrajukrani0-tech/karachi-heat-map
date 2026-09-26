@@ -810,3 +810,30 @@ actually support.
 
 **Status:** approved
 **Date:** 2026-09-26
+
+---
+
+## D22 — Use Saaty's graduated CR threshold, not a flat 0.10 (2026-09-26, PROVISIONAL)
+
+**What the checker found.** PROMPT.md §7 specifies re-asking when CR ≥ 0.10. Saaty's own
+published guidance is **graduated**: CR < 0.05 for n = 3, < 0.08 for n = 4, and 0.10 only
+from n = 5. Vulnerability has exactly three indicators (D19), so **n = 3 is the case that
+applies**, and a flat 0.10 is twice as permissive as the standard it cites.
+
+**Decision:** use the graduated threshold. This is a **tightening**, never a loosening
+(§2.2), and it costs nothing in practice — a realistic session came out at CR = 0.0332,
+which passes either way.
+
+**Why it matters more than it looks.** At n = 3 the whole inconsistency is one number:
+κ = a₀₁·a₁₂/a₀₂, where 1 is perfect agreement. CR < 0.10 permits κ anywhere in
+0.362–2.765 — the three judgements may fail to multiply through by a factor of **2.76**.
+CR < 0.05 tightens that to 0.486–2.056. Calling a 2.76× transitivity violation
+"acceptably consistent" is a claim that would be hard to defend.
+
+**Also implemented from the same review:** the tool now reports κ directly, because at
+n = 3 it *is* the inconsistency story and it is far more interpretable than CI.
+
+**Status: PROVISIONAL** — it deviates from PROMPT.md §7's literal text, so it is Samraj's
+to confirm. Raised as QUESTIONS.md Q10. Nothing is blocked: his answers would have to be
+unusually contradictory for the two thresholds to differ in practice.
+**Date:** 2026-09-26

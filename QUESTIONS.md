@@ -246,3 +246,24 @@ or ask for one of the alternatives in the study to be attempted anyway.
 marked `dropped` in features.json with the study as its evidence, so it counts as
 resolved. The feasibility study stays in `docs/` as the record of why, and as the method
 for the v2 fieldwork route.
+
+---
+
+## Q10 — Confirm the stricter AHP consistency threshold (OPEN, not blocking)
+
+PROMPT.md §7 says re-ask when CR ≥ 0.10. Saaty's own published guidance is graduated:
+**0.05 for three items**, 0.08 for four, 0.10 only from five. Vulnerability has exactly
+three indicators, so the stricter figure is the one that applies to you.
+
+Claude implemented the graduated threshold (**D22, provisional**). It is a tightening, not
+a loosening, and it costs nothing: a trial session scored CR = 0.0332, which passes either
+way.
+
+**Why it is worth the stricter bar.** With three items the entire inconsistency is one
+number, κ = a₀₁·a₁₂/a₀₂, where 1 means your answers multiply through perfectly. A CR of
+0.10 allows κ to be off by a factor of **2.76**; 0.05 allows **2.06**. If an examiner asks
+"what does your consistency check actually rule out?", 2.06 is a much easier answer.
+
+**Asked of Samraj:** confirm the graduated threshold, or revert to PROMPT.md's flat 0.10.
+
+**Answer:**
