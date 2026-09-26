@@ -19,6 +19,7 @@ dependencies = [
   "planetary-computer>=1.0",
   "matplotlib>=3.9",
   "jsonschema>=4.23",
+  "pypdf>=6.19.0",
 ]
 
 [dependency-groups]

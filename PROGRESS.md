@@ -387,3 +387,34 @@ two do not cancel: they act on different dimensions, and both belong in the mode
 needs osmnx and networkx and would refine an estimate whose dominant error is OSM's
 coverage, not the circuity approximation. Logged as a v2 refinement in data/SOURCES.md.
 **Next:** P1-10 Load-shedding feasibility. P1-09b stays blocked on Q2.
+
+## 2026-09-26 — P1-10 Load-shedding feasibility (study written; decision blocked on Samraj)
+**What changed:** `docs/load-shedding-feasibility.md` (97 lines), K-Electric schedule PDF
+cached and manifested at `data/raw/kelectric/`, `pypdf` added to read it.
+**What was found — the data exists and varies:** the published schedule has **620 feeder
+rows** across **58 grid stations**, **26 on the LANDHI grid**, with daily outage from
+**4.0 to 10.0 hours, median 7.5**. That is a 6-hour spread, large enough that it might
+matter more than several indicators that are in the model.
+**Why it still cannot be built.** The schedule gives a feeder name and a grid station —
+no coordinates, no boundaries, no street lists. K-Electric's own route from place to
+feeder is a 13-digit account number in their app, which cannot be run for 265 cells. Many
+feeder names are businesses or bare codes (`ZAFAR ICE`, `ROTI PLANT`, `36 B RMU`,
+`NOOR BHAI`). And even with every feeder located as a point, spreading 26 feeders across
+265 cells would mean **inventing a service boundary K-Electric has not published** — which
+§2.1 forbids. The document found is also the **Ramadan 2026** schedule, not April–June.
+**A security line not crossed:** `ke.com.pk` resolves but presents a **self-signed
+certificate**, so TLS verification fails and plain HTTP times out. Disabling certificate
+verification to scrape a utility's site is not something this project will do, so there
+is no reproducible automated source either.
+**Read the primary document rather than a summary.** A bill-help website described the
+structure second-hand; the PDF was fetched, cached, manifested and parsed directly, which
+is how the 620/58/26 counts and the 4–10 hour range were obtained.
+**Recommendation (Q9):** approve dropping the indicator for v1, and say plainly in the
+model report that **the mechanism Edhi actually named is the one this model cannot see.**
+**The v2 route is fieldwork, not scraping:** feeder names printed on 10–15 K-Electric
+bills from different parts of Landhi would tie feeder names to real addresses — exactly
+the link the published schedule omits.
+**Status:** P1-10 blocked on Samraj (Q9); the acceptance criterion requires his decision
+either way.
+**Next:** P1-11 Indicator table. Note it depends on P1-09b, which is blocked on Q2, so it
+will be built with the indicators available and the gap documented.

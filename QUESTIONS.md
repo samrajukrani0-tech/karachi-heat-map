@@ -207,3 +207,35 @@ just 3 pairwise questions.
 **Samraj's answer:** "drop built_fraction". Applied; recorded as **D19**. Vulnerability
 has three indicators (`lack_green`, `dist_health`, `dist_centre`) and AHP will ask 3
 pairwise questions. `built_fraction` is still computed and stored as panel context.
+
+---
+
+## Q9 — Load-shedding indicator: approve dropping it? (OPEN, blocks P1-10)
+
+`docs/load-shedding-feasibility.md` is written. Summary of what was found:
+
+**The data exists and varies.** K-Electric's published schedule has 620 feeder rows
+across 58 grid stations, 26 of them on the LANDHI grid, with daily outage ranging from
+**4.0 to 10.0 hours** (median 7.5). That spread is large enough to matter.
+
+**But it cannot be mapped honestly.** The schedule publishes a feeder name and a grid
+station — no coordinates, no boundaries, no street lists. K-Electric's own route from
+place to feeder is a 13-digit account number in their app, which cannot be run for 265
+cells. Many feeder names are businesses or bare codes (`ZAFAR ICE`, `ROTI PLANT`,
+`36 B RMU`). And even with every feeder located as a point, spreading 26 feeders over 265
+cells would mean inventing a service boundary K-Electric has not published — which §2.1
+forbids. The schedule found is also the Ramadan 2026 one, not the April–June hot season,
+and `ke.com.pk` presents a self-signed certificate so it cannot be fetched automatically.
+
+**Claude's recommendation: approve dropping the indicator for v1**, and state in the model
+report that the mechanism Edhi actually named is the one this model cannot see.
+
+**The v2 route is fieldwork, not scraping:** collect feeder names from 10–15 K-Electric
+bills across different parts of Landhi. A bill ties a feeder name to a real address, which
+is exactly the link the published schedule omits. Ask a centre manager too — people know
+precisely where power goes longest, because it structures their day.
+
+**Asked of Samraj:** approve dropping P1-10's indicator for v1 (Claude's recommendation),
+or ask for one of the alternatives in the study to be attempted anyway.
+
+**Answer:**

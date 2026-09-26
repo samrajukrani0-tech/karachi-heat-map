@@ -7,6 +7,14 @@
   "licence": "HDX metadata; the dataset carries its own licence",
   "note": "package_show for pakistan-india_all-files-high-resolution-population-density-maps"
  },
+ "kelectric/Load-Shed-Schedule-Ramadan26.pdf": {
+  "url": "https://ke.com.pk/wp-content/uploads/2026/02/Load-Shed-Schedule-Ramadan26.pdf",
+  "sha256": "355a710b6a1cade6edc958c4dfe917b4ebcb67253a3bcd3dd7b739b69e569d97",
+  "bytes": 128653,
+  "downloaded": "2026-09-26",
+  "licence": "K-Electric published schedule; terms not stated on the document",
+  "note": "Load-shed schedule PDF, fetched 2026-09-26 for the P1-10 feasibility study"
+ },
  "meta/population_20_lon_60_children_under_five-v1.5.tif": {
   "url": "https://data.humdata.org/dataset/2c8cfe67-448f-4a27-94b3-aaa944598cba/resource/34198f61-8b4e-4622-a4d7-929e88b5a2d9/download/population_ind_pak_children_under_five.zip",
   "sha256": "b5bb3080a375bc88adbfcf296904d1d4c19d86ae4c311118f136261dea5f2b35",

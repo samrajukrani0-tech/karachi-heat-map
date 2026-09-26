@@ -295,7 +295,7 @@
     "P1-02"
    ],
    "passes": false,
-   "blocked_on": null,
+   "blocked_on": "QUESTIONS.md Q9: the feasibility study is written (docs/load-shedding-feasibility.md) and recommends dropping the indicator for v1, because the published schedule has no geography and any per-cell value would require inventing a service boundary. The acceptance criterion requires Samraj's decision either way.",
    "dropped": null,
    "evidence": null
   },
