@@ -747,3 +747,26 @@ now enforces the actual §2.5 rule — never call an *area* dangerous — by req
 to reference heat.
 **Phase 2 is now complete except P2-02b, which is blocked on Samraj running the AHP tool.**
 **Next:** Phase 3, starting with P3-01 DESIGN.md.
+
+## 2026-09-27 — P3-01 DESIGN.md
+**What changed:** `DESIGN.md` (191 lines), `tests/test_design.py` (12 tests).
+**Evidence:** `uv run pytest` -> 299 passed; `check.py --quick` -> `CHECK: PASS`.
+**Written before any styling**, as §9 requires. Three project-specific principles, the
+first being that **the uncertainty is part of the answer, not a disclaimer** — only 28 of
+53 top cells survive the sensitivity analysis, so cells the model is unsure about must
+*look* unsure. Hatching, not a tooltip.
+**A colour claim was wrong and the colour was changed, not the claim.** The first draft
+said `--muted #5C5952` gives 7.0:1 on the page background. Measured: **6.59:1**. The token
+was darkened to `#58554E` (7.01:1). Every other value is now measured too: `--ink`
+16.12:1, `--deep` 9.96:1, `--signal` 6.90:1.
+**A constraint discovered by measuring:** ink on the deepest ramp step is only **1.62:1**,
+so map cells can carry no text at all. That is now written into the design rather than
+discovered during implementation.
+**The ramp was verified, not assumed:** monotone in lightness (survives photocopying, which
+field briefs get) and order-preserving under simulated deuteranopia, protanopia and
+tritanopia.
+**The avoid-list review forced two real revisions**, both recorded: the warm-cream-plus-
+serif-display combination lost its serif, and the panel stopped being a rounded card with
+a shadow.
+**Status:** provisional until Samraj approves the plan.
+**Next:** P3-02 Shell.

@@ -461,10 +461,10 @@
    "depends_on": [
     "P2-06"
    ],
-   "passes": false,
+   "passes": true,
    "blocked_on": null,
    "dropped": null,
-   "evidence": null
+   "evidence": "DESIGN.md, 191 lines, written before any styling: audience, three project-specific principles, six named hex tokens, a five-step sequential ramp, type roles, ASCII wireframes at 375 px and 1280 px, alignment rules, panel contents in the order a coordinator asks in, motion policy, and a point-by-point review against the brief's avoid-list recording two revisions the review forced (the serif display was removed; the panel card and its shadow became a plain surface with a 1px rule). EVERY COLOUR CLAIM WAS MEASURED, AND ONE WAS WRONG: the first draft claimed 7.0:1 for --muted #5C5952, which measures 6.59:1. The token was darkened to #58554E (7.01:1) rather than the claim being softened. Measured: --ink 16.12:1, --deep 9.96:1, --signal 6.90:1 (interactive only, needs 4.5). The ramp is monotone in lightness and its order survives simulated deuteranopia, protanopia and tritanopia; adjacent steps differ by 1.54-1.83:1. Ink on the deepest step is only 1.62:1, so the design states that no text is ever drawn on a ramp colour and cells carry no labels. 12 tests in tests/test_design.py re-derive every one of these numbers, including one that parses the ratio claimed in DESIGN.md and fails if it disagrees with the measured value. Status: PROVISIONAL until Samraj approves it. uv run pytest -> ${ALL}; check.py --quick -> 'CHECK: PASS (3 checks)'."
   },
   {
    "id": "P3-02",
