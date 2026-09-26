@@ -6,13 +6,14 @@ This file drives a loop-based build in Claude Code. Section 0 is for Samraj. Eve
 
 ## 0. For Samraj: how to run it
 
-1. Open the Claude desktop app, go to the **Code** tab, and start a new session. Environment: **Local**. Model: **Opus 5.5**. Permission mode: **Auto**. Folder: an empty folder that contains only this file (for example `karachi-heat-map`).
+1. Open the Claude desktop app, go to the **Code** tab, and start a new session. Environment: **Local**. Model: **Opus 5**. Permission mode: **Auto**. Folder: an empty folder that contains only this file (for example `karachi-heat-map`).
 2. Send this as your first message. Phase 0 is a conversation, not a loop:
    > Read PROMPT.md in full and run Phase 0 with me — check my setup first, then ask me the decisions one at a time. Don't start Phase 1.
-3. At the end of Phase 0, Claude prints one `/goal` command per phase, filled in with your decisions. Paste the Phase 1 goal and let it run.
-   - `/goal` on its own shows turns, time, token spend, and the evaluator's latest reason. `/goal clear` stops the loop.
+3. At the end of Phase 0, Claude prints one instruction per phase, filled in with your decisions (§13). Paste the Phase 1 instruction and send it as an ordinary message; Claude works through the phase across turns on its own until the finish line is met.
+   - Ask for the STATUS block at any point to see progress: which feature is in flight, turns used against the phase's cap, and anything blocked on you.
+   - To stop early, tell it to stop after the current feature.
    - You can type a message at any time. Claude reads it once its current action finishes.
-   - If you hit your usage limit, the goal pauses and continues when the limit resets. Keep the laptop plugged in and awake.
+   - If you hit your usage limit, the session pauses; once it resumes, resend the same phase instruction so Claude picks up where it left off. Keep the laptop plugged in and awake.
 4. Between phases: ask Claude for a code review of that phase's changes (`/code-review`), read the new entries in `LEARNING_LOG.md`, answer anything in `QUESTIONS.md`, then paste the next goal.
 5. If checks fail and keep failing, use the fix-it goal at the end of §13.
 
@@ -26,7 +27,8 @@ Why it matters:
 - June 2015: about 1,200 people died in southern Pakistan during a heatwave. Source: AFP, reported by Newsweek Pakistan, https://www.newsweekpakistan.com/?p=867013
 - June 2024: Edhi Foundation said it received 568 bodies in Karachi in the five days to 25 June, against a usual ~40 a day. Faisal Edhi said most came from poorer workers' neighbourhoods hit by long power cuts. The Sindh health department disputed that the deaths were heat-related. Sources:
   - Bloomberg: https://bnnbloomberg.ca/karachi-sees-a-surge-in-deaths-as-heat-wave-sears-pakistan-1.2090293
-  - Express Tribune: https://tribune.com.pk/story/2473712/heatwave-wreaks-havoc-15-found-dead-on-streets
+  - Dawn, 25 June 2024: https://www.dawn.com/news/1841754 — names Landhi and records Edhi's Korangi mortuary receiving 10 bodies against a normal 5–6
+  - Express Tribune: https://tribune.com.pk/story/2473712/heatwave-wreaks-havoc-15-found-dead-on-streets (returns HTTP 403 as of Phase 0; treat as needing re-verification before citing further)
 - Causes of death are disputed, so this tool never estimates deaths or assigns causes. Instead it maps three things so field teams can plan ahead:
   - conditions: heat
   - people: exposure
@@ -75,7 +77,7 @@ He makes the judgement calls (§5); your job is to make them easy to make well. 
    - Follow basemap tile usage policies.
    - Cache downloads.
    - Read cloud-optimised rasters in windows rather than downloading whole scenes.
-9. **Windows and macOS.** Write scripts in Python (no bash-only tooling), use `pathlib` everywhere, and don't hard-code absolute paths.
+9. **Windows and macOS.** Write scripts in Python (no bash-only tooling), use `pathlib` everywhere, and don't hard-code absolute paths. Python itself comes from `uv python install 3.12` into a project-local `.venv`, never the system interpreter; 3.12 is chosen for geospatial wheel support (rasterio, h3, pyproj) on Intel macOS. Pin `h3` to `>=4.3,<4.4` in `pyproject.toml`: 4.4 and later ship no x86_64 macOS wheel, which breaks this machine. Run every repo command through `uv run` (e.g. `uv run python scripts/check.py`), and add dependencies with `uv add` so `pyproject.toml` and `uv.lock` stay the source of truth for the environment.
 
 ---
 
@@ -83,10 +85,10 @@ He makes the judgement calls (§5); your job is to make them easy to make well. 
 
 1. **Orient.**
    - Read the last three entries of `PROGRESS.md`.
-   - Run `python scripts/features.py`.
+   - Run `uv run python scripts/features.py`.
    - Skim `DECISIONS.md` and `QUESTIONS.md` for new answers.
    - Check `git status` and `git log --oneline -10`.
-2. **Health check.** Run `python scripts/check.py --quick`. If anything that used to pass now fails, fixing it becomes this turn's feature.
+2. **Health check.** Run `uv run python scripts/check.py --quick`. If anything that used to pass now fails, fixing it becomes this turn's feature.
 3. **Pick** the lowest-numbered unresolved feature in the current phase that isn't blocked and whose dependencies pass. If it's too big for one turn, split it (`P1-04a`, `P1-04b`). Splitting and adding features is fine; deleting features or loosening acceptance criteria is not.
 4. **Plan** in three to six lines in the transcript.
 5. **Build** the smallest complete version. Write or extend tests first where practical.
@@ -131,7 +133,7 @@ Progress: Phase 1 6 of 11 resolved; overall 11 of 42
 Blocked on Samraj: 1 (Q2: approve pilot boundary)
 Next: P1-05 Night heat
 Explain it: hotter ground on summer afternoons is the "heat" part of the score.
-Turns this goal: 7 (limit 30)
+Turns this phase: 7 (limit 30)
 ```
 
 ---
@@ -142,12 +144,17 @@ Turns this goal: 7 (limit 30)
 karachi-heat-map/
   CLAUDE.md             condensed rules, commands, file map (written in Phase 0)
   PROMPT.md             this file
+  pyproject.toml        project metadata and dependencies (managed with uv)
+  uv.lock               locked dependency versions
   features.json         backlog and source of truth for progress
   PROGRESS.md           append-only turn log
   DECISIONS.md          judgement calls: proposed, approved, provisional, deferred
   QUESTIONS.md          things only Samraj can answer
   LEARNING_LOG.md       plain-language explanations and practice questions
   DESIGN.md             site design plan (Phase 3)
+  LICENSE               MIT, for code (D10)
+  LICENSE-docs          CC BY 4.0, for docs and site text (D10)
+  LICENSE-data          ODbL 1.0, for data/processed (D10)
   .claude/launch.json   preview server for the desktop Browser pane
   config/               area, indicators, weights, allocation settings (YAML)
   pipeline/             Python package: fetch, grid, indicators, model, ahp,
@@ -181,25 +188,24 @@ Record each decision in `DECISIONS.md` with:
   - Credible flood modelling needs drainage and hydrology data that isn't openly available for Karachi.
   - Edhi was on the front line in 2024.
   - The May–June heat season gives a natural pilot window.
-- **D2 Pilot area.** One locality of roughly 10–60 km² where Samraj can visit a relief centre in person. Before he chooses, compare three to five candidates on:
-  - area
-  - modelled population
-  - known relief centres
-  - whether credible June 2024 reporting mentions it (Orangi Town appears in the Express Tribune report above)
-- **D3 Grid.** Recommend H3 resolution 9, about 0.105 km² per cell. Landsat's thermal sensor has a native resolution of about 100 m (delivered at 30 m), so much smaller cells would claim precision the heat data doesn't have. Alternative: resolution 8, about 0.74 km² per cell.
-- **D4 Indicators.** Approve or edit the list in §6, including the optional ones.
+- **D2 Pilot area.** Resolved: **Landhi Town** (OSM relation 16350631), 25.37 km² measured in EPSG:32642, about 242 cells at H3 resolution 9. Chosen after comparing candidates on area, modelled population, known relief centres, and whether credible June 2024 reporting mentions them — Landhi is directly named in the Dawn report cited in §1, and it's a realistic distance for Samraj to visit in person. Korangi Town has Edhi's own named mortuary but exceeds the 10–60 km² band and includes industrial and creek land with near-zero population; it stayed the alternative rather than the pick.
+- **D3 Grid.** Recommend H3 resolution 9, about 0.105 km² per cell. Landsat's thermal sensor has a native resolution of about 100 m (delivered at 30 m), so much smaller cells would claim precision the heat data doesn't have. Alternative: resolution 8, about 0.74 km² per cell. Resolved: resolution 9, about 242 cells across Landhi Town.
+- **D4 Indicators.** Approve or edit the list in §6, including the optional ones. Resolved: night-time LST and the Relative Wealth Index are dropped for v1 — at Landhi's 25 km², MODIS's 1 km night-LST pixels give only ~25 samples and Meta's 2.4 km RWI tiles give only ~5, both close to constant across the area and not worth building on. Both move to the "v2 candidates" note in §6. The hot-season daytime LST 90th percentile (P90) is computed and shown in the cell panel, but it is **not** an index indicator: it correlates strongly with the mean, so including both would double-count hazard (see the indicator table in §6).
 - **D5 Normalisation.** Recommend robust min–max: clip at the 5th and 95th percentiles, then scale to 0–1. Alternative: percentile rank.
-- **D6 Combining dimensions.** Recommend geometric: Priority = H^(1/3) × E^(1/3) × V^(1/3). With this, high values in two dimensions can't hide a near-zero third. Alternative: weighted arithmetic mean.
-- **D7 Weights.** Samraj sets them with the AHP tool (§7). Until then, use equal weights and flag them as "provisional" in the data and on the site.
+- **D6 Combining dimensions.** Priority = H^wH × E^wE × V^wV, with wH + wE + wV = 1. Resolved: the three dimension exponents stay fixed at 1/3 each; AHP (D7) sets weights within Vulnerability's six indicators only, not across H/E/V. Reason: in a multiplicative model an exponent is an elasticity, not an importance weight, and Saaty's 1–9 pairwise scale doesn't map onto an elasticity the way it maps onto a weighted mean. The sensitivity analysis (§7) varies these exponents directly. With any weighting, high values in two dimensions still can't hide a near-zero third.
+  - **D5/D6 interaction.** Robust min–max produces exact zeros for the bottom 5% of any indicator, which under multiplication would force Priority to 0 for that cell. Hazard and Vulnerability are floored at 0.01 after normalisation to prevent this; Exposure is deliberately **not** floored, because E = 0 genuinely means nobody lives there.
+- **D7 Weights.** Samraj sets the six Vulnerability-indicator weights with the AHP tool (§7); the H/E/V dimension exponents are fixed by D6, not by AHP. Until D7 is resolved, use equal weights within Vulnerability and flag them as "provisional" in the data and on the site.
 - **D8 Allocation.** Decide:
   - what is distributed (water, ORS, heat kits)
   - units per person in need
   - who counts as in need
   - maximum service distance
   - whether a minimum share goes to the highest-priority cells
-- **D9 Languages.** Recommend English and Urdu. Samraj reviews every Urdu string before it counts as final.
-- **D10 Licences.** Recommend MIT for code and CC BY 4.0 for docs and site text. Each dataset keeps its own licence.
-- **D11 Public identity.** Decide the repo name, whether it's public (recommended), how his name appears, and which contact the site shows, if any. A project-only email is safer than a personal one.
+
+  Resolved, provisional: need is defined as residents aged 60+ plus children under 5 — deliberately **not** taken from Priority, which is already the allocation LP's objective, to avoid counting the model's own judgement twice. The Sphere Handbook litres-per-person figure in `config/allocation.yaml` is marked `UNVERIFIED` until P4-02 checks it against the Handbook directly.
+- **D9 Languages.** Resolved: **English only for v1.** The Urdu string set, the RTL/Nastaliq typography work, and the Urdu Playwright check are dropped from this version (§9, §10, §12); P3-07 and P3-07b are marked dropped. UI strings still live in `site/i18n/en.json`, externalised rather than inline, so Urdu can be added later without a rewrite.
+- **D10 Licences.** Three licences, not two: MIT for code; CC BY 4.0 for docs and site text; **ODbL 1.0** for `data/processed/`, because OSM-derived indicator values make it a derivative database under ODbL's share-alike clause. `LICENSE-data` sits alongside `LICENSE` and `LICENSE-docs` in the repo root (§4). Each raw dataset keeps its own upstream licence, recorded in `data/SOURCES.md`.
+- **D11 Public identity.** Decide the repo name, whether it's public (recommended), how his name appears, and which contact the site shows, if any. A project-only email is safer than a personal one. Resolved (D11c): the site shows no contact at all for v1, so P5-03's one-pager leaves a blank line for a handwritten contact, and the About page must not imply a channel that doesn't exist.
 - **D12 AI-assistance disclosure.** Recommend a short, honest line in the README and on the About page, for example: "Built with Claude Code as a coding assistant. Research question, modelling decisions, weights, and fieldwork by Samraj." Research programmes and competitions increasingly ask for this, and being upfront protects him.
 
 ---
@@ -216,20 +222,22 @@ Store and export data in EPSG:4326. Measure distances and areas in UTM zone 42N 
 
 | Indicator | Dimension | Primary source | Fallback and notes |
 |---|---|---|---|
-| Hot-season daytime land surface temperature, °C (per-cell mean and 90th percentile) | Hazard | Landsat 8/9 Collection 2 Level-2 via the Microsoft Planetary Computer STAC API (`landsat-c2-l2`, surface-temperature asset such as `lwir11`). Use April–June across several recent years, mask cloud and shadow with `qa_pixel`, and take a median composite. Check the USGS scale and offset (documented as 0.00341802 × DN + 149.0 = kelvin). | AWS Earth Search (Element 84) STAC. Use Google Earth Engine only if Samraj has set it up. |
-| Night-time land surface temperature, °C (optional) | Hazard | MODIS LST night band (daily or 8-day) via Planetary Computer, same season | 1 km resolution, so area-weight to cells and label it coarse. Nights that don't cool down matter for health. |
+| Hot-season daytime land surface temperature, °C (per-cell mean enters the index; the 90th percentile is computed and shown in the panel only — see D4) | Hazard | Landsat 8/9 Collection 2 Level-2 via the Microsoft Planetary Computer STAC API (`landsat-c2-l2`, surface-temperature asset such as `lwir11`). Use April–June across several recent years, mask cloud and shadow with `qa_pixel`, and take a median composite. Check the USGS scale and offset (documented as 0.00341802 × DN + 149.0 = kelvin). | AWS Earth Search (Element 84) STAC. Use Google Earth Engine only if Samraj has set it up. |
 | People per cell | Exposure | Meta (Data for Good) high-resolution population density for Pakistan on HDX (about 30 m), and WorldPop constrained 100 m | Compute both, compare, and choose per D4. Sanity-check the pilot total against an independent figure (e.g. Pakistan Bureau of Statistics 2023 census for a matching unit), using a documented tolerance. Never adjust data to hit that figure. |
 | Share aged 60+; share under 5 | Vulnerability | Meta demographic layers on HDX | Handle zero-population cells explicitly. |
 | Building footprint fraction | Vulnerability | Google Open Buildings or Microsoft Global ML Building Footprints (check Karachi coverage) | OSM buildings, with a completeness caveat. |
 | Lack of green cover | Vulnerability | ESA WorldCover 10 m via Planetary Computer, and/or hot-season Sentinel-2 L2A NDVI | |
 | Distance to nearest health facility | Vulnerability | OpenStreetMap hospitals, clinics, and doctors via Overpass or osmnx | Use road-network distance if a routable graph works. Otherwise use straight-line distance × a documented circuity factor (e.g. 1.3). Measure and report gaps in OSM coverage. |
 | Distance to nearest verified relief centre | Vulnerability and allocation | `data/manual/centres.csv` (name, org, lat, lon, source, verified_by, verified_on), confirmed by Samraj | OSM can suggest candidates, but exclude them until he verifies them. This indicator is used in both the index and the allocation; note that double use in the model report. |
-| Relative wealth (optional) | Vulnerability | Meta Relative Wealth Index for Pakistan on HDX, about 2.4 km tiles | Coarse: area-weight and label it. |
 | Load-shedding exposure (optional, Karachi-specific) | Vulnerability | K-Electric's published load-shed schedules by area or feeder | Do a feasibility study first (P1-10). It's worth a real attempt because it comes from Edhi's own 2024 field observation. It never blocks other work, and it is built only if Samraj approves. |
+
+**v2 candidates (dropped for v1 by D4):**
+- **Night-time heat.** MODIS LST night band is 1 km resolution — over Landhi's 25 km² that's only ~25 pixels, too coarse to differentiate cells. ECOSTRESS (~70 m) is the v2 route if a future pilot area is large enough, or temperature-diverse enough, for night heat to earn its place in the index.
+- **Relative wealth.** Meta's Relative Wealth Index tiles are about 2.4 km — only ~5 tiles across Landhi, effectively constant at this scale.
 
 Housekeeping:
 - Raw downloads live in `data/raw/` (gitignored), with `manifest.json` recording URL, sha256, bytes, date, and licence.
-- `python -m pipeline.run --all` rebuilds everything from the cache.
+- `uv run python -m pipeline.run --all` rebuilds everything from the cache.
 - Record exactly which scenes and years were used and the population data's reference year. Note any mismatch in the model report.
 
 ---
@@ -239,18 +247,18 @@ Housekeeping:
 - **Framework.** IPCC-style risk with three dimensions: Hazard (H), Exposure (E), and Vulnerability (V).
 - **Indicator config.** `config/indicators.yaml` holds, for each indicator:
   - id
-  - English and Urdu names
+  - English name (v1 is English-only per D9; leave room to add a `name_ur` field later without a schema change)
   - dimension
   - unit
   - direction (+1 means higher = more risk)
   - source
   - transform (e.g. `log1p` for people)
-  - a short plain-language phrase in both languages for the "top reasons" list
-- **Normalise** each indicator to 0–1 per D5, where 1 means more risk. A constant indicator becomes 0, with a warning.
-- **Within a dimension**, take a weighted mean using the weights in `config/weights.yaml`.
-- **Across dimensions**, combine per D6 to get **Priority**, which accounts for how many people live in the cell. Also compute **Intensity** = √(H × V), the per-person view, for the equity discussion in the report.
-- **Top reasons.** For each cell, list the three indicators that push its score furthest above the pilot-area median, as short phrases in both languages.
-- **AHP tool** (`python -m pipeline.ahp`). Samraj runs it himself in the terminal pane.
+  - a short plain-language phrase in English for the "top reasons" list
+- **Normalise** each indicator to 0–1 per D5, where 1 means more risk. A constant indicator becomes 0, with a warning. After normalising, floor Hazard's and Vulnerability's per-indicator values at 0.01 (D5/D6 interaction, §5) so an exact zero from clipping can't force Priority to zero by itself; leave Exposure unfloored, since E = 0 means the cell is genuinely unpopulated.
+- **Within a dimension**, Vulnerability's six indicators take a weighted mean using the weights in `config/weights.yaml`, set by AHP (D7). Hazard and Exposure currently have one core indicator each, so no within-dimension weighting applies to them yet.
+- **Across dimensions**, combine as Priority = H^wH × E^wE × V^wV (D6), with wH + wE + wV = 1 and, for v1, each fixed at 1/3. Also compute **Intensity** = √(H × V), the per-person view, for the equity discussion in the report.
+- **Top reasons.** For each cell, list the three indicators that push its score furthest above the pilot-area median, as short phrases in English.
+- **AHP tool** (`uv run python -m pipeline.ahp`). Samraj runs it himself in the terminal pane. It sets the weights **within Vulnerability's six indicators only** — the H/E/V dimension exponents are fixed by D6 and are not part of this tool's scope.
   1. It asks pairwise questions in plain English on Saaty's 1–9 scale, e.g. "For heat harm in this area, how much more important is X than Y?"
   2. It computes the weights as the principal eigenvector, using power iteration.
   3. It reports λmax, CI = (λmax − n) / (n − 1), and CR = CI / RI, using Saaty's random-index table.
@@ -258,14 +266,14 @@ Housekeeping:
   5. It saves the answers, weights, CR, `decided_by: Samraj`, and the date.
   - Tests: a published textbook example is reproduced within tolerance; a perfectly consistent matrix gives CR ≈ 0; an inconsistent matrix is caught.
 - **Sensitivity analysis** (fixed seed, N ≥ 1000).
-  - Perturb the weights with a Dirichlet distribution centred on the chosen weights; document the concentration parameter.
-  - Swap between the normalisation choices and between the aggregation choices.
+  - Perturb the Vulnerability weights with a Dirichlet distribution centred on the chosen weights; document the concentration parameter.
+  - Also perturb the three dimension exponents (wH, wE, wV) around their fixed 1/3 values, and swap between the normalisation choices.
   - Report, per cell: median rank, 90% rank interval, and probability of being in the top 20%.
   - Confidence classes: high (≥ 0.8), medium (0.5–0.8), low (< 0.5), unless Samraj decides otherwise.
 - **Validation**, honest and clearly labelled:
   - (a) Agreement with an equal-weights baseline (Spearman ρ).
   - (b) Face validity at locality level against credible, cited reporting on the June 2024 heatwave. No invented locations.
-  - (c) An expert-ranking protocol: a bilingual one-page form on which field staff rank 10–15 named localities, plus an analysis script (Spearman ρ, Kendall τ, bootstrap confidence intervals). Test the script only on SYNTHETIC data until Samraj brings real rankings.
+  - (c) An expert-ranking protocol: a one-page English-language form (per D9) on which field staff rank 10–15 named localities, plus an analysis script (Spearman ρ, Kendall τ, bootstrap confidence intervals). Test the script only on SYNTHETIC data until Samraj brings real rankings.
 - **Limitations the report must state:**
   - Land surface temperature isn't air temperature or heat index, and humidity matters a lot in Karachi.
   - Modelled population has error.
@@ -310,7 +318,7 @@ On the site, show precomputed exact scenarios. Also offer an interactive greedy 
 ## 9. Website
 
 **Audiences:**
-1. Field coordinators on phones, often outdoors in bright sun. Many of them read Urdu more comfortably than English.
+1. Field coordinators on phones, often outdoors in bright sun.
 2. NGO leadership, donors, and mentors on laptops, deciding whether to trust the tool.
 
 **Primary job:** within ten seconds, a visitor can see which parts of the pilot area need heat support first, and why.
@@ -321,7 +329,7 @@ On the site, show precomputed exact scenarios. Also offer an interactive greedy 
 - Static HTML, CSS, and vanilla JavaScript, with no framework and no build step.
 - Leaflet pinned to an exact version, either vendored in `site/vendor/` or loaded from a pinned CDN URL with SRI.
 - `scripts/build_site_data.py` writes the site's data into `site/data/`.
-- Serve locally with `python -m http.server`, configured in `.claude/launch.json` (for the Browser pane) and in the Playwright config.
+- Serve locally with `uv run python -m http.server`, configured in `.claude/launch.json` (for the Browser pane) and in the Playwright config.
 - Basemap: a light raster basemap that needs no API key, with correct attribution.
 - Nothing on the site needs a secret.
 
@@ -337,11 +345,7 @@ On the site, show precomputed exact scenarios. Also offer an interactive greedy 
   - "what this can't tell you"
 - If the weights are provisional, the map says so.
 
-**Urdu:**
-- Every UI string lives in `site/i18n/en.json` and `site/i18n/ur.json`.
-- Use `dir="rtl"`, and Noto Nastaliq Urdu with sensible fallbacks.
-- Remember the language choice in localStorage, wrapped in try/catch.
-- Put draft Urdu strings in a review queue in `QUESTIONS.md`. Until Samraj approves them, show a small "translation under review" note.
+**Strings:** English only for v1 (D9). Every UI string still lives in `site/i18n/en.json`, externalised rather than inline, so a future v2 can add `ur.json` and RTL/Nastaliq support without restructuring the site.
 
 **Quality floor:**
 - First load ≤ 1.5 MB, excluding basemap tiles.
@@ -357,7 +361,7 @@ On the site, show precomputed exact scenarios. Also offer an interactive greedy 
 - The map is the one memorable element. Everything around it stays quiet and restrained.
 - Write a compact plan containing:
   - four to six named hex colours
-  - type roles: one Latin typeface, one Nastaliq typeface
+  - type roles: one Latin typeface for everything (English only for v1, per D9)
   - ASCII wireframes at 375 px and 1280 px
   - alignment rules
   - three principles specific to this project
@@ -383,7 +387,7 @@ On the site, show precomputed exact scenarios. Also offer an interactive greedy 
 
 ## 10. Quality gates
 
-`python scripts/check.py [--quick] [--lighthouse]` runs, in order:
+`uv run python scripts/check.py [--quick] [--lighthouse]` runs, in order:
 1. ruff (Python lint)
 2. pytest (pipeline)
 3. data validation: schemas, value ranges, missing-value policy, size budget
@@ -394,7 +398,6 @@ On the site, show precomputed exact scenarios. Also offer an interactive greedy 
    - the expected number of cells renders
    - switching layers changes colours
    - panel values match the data
-   - Urdu flips to RTL and key strings change
    - no horizontal overflow
    - everything reachable by keyboard
 7. axe-core: zero serious or critical violations
@@ -404,7 +407,7 @@ It ends with exactly one line: `CHECK: PASS (n checks)` or `CHECK: FAIL (k of n 
 
 Tests that need the raw-data cache are marked `raw` and run locally; CI runs everything else. Define this split once, in Phase 0, and never use it to hide a failure.
 
-`python scripts/features.py [--phase N]` prints `Phase N: a of b resolved, c blocked` for each phase, then lists anything unresolved along with its blocker. A feature counts as resolved when either:
+`uv run python scripts/features.py [--phase N]` prints `Phase N: a of b resolved, c blocked` for each phase, then lists anything unresolved along with its blocker. A feature counts as resolved when either:
 - it passes, or
 - Samraj has approved dropping it, recorded in `DECISIONS.md` and in the feature's `dropped` field.
 
@@ -417,8 +420,8 @@ CI (GitHub Actions) runs the quick checks on every push. The site deploys to Git
 1. **Check the machine:**
    - OS
    - git
-   - `gh auth status` (if he isn't logged in, ask Samraj to run `gh auth login` himself)
-   - Python ≥ 3.11
+   - `gh`, the GitHub CLI. This Mac has no Homebrew, so if `gh` isn't found, install it as a checksum-verified release binary into `~/.local/bin` (no sudo, no Homebrew) rather than proposing a package manager. Once it's installed, ask Samraj to run `gh auth login` himself; never run it for him.
+   - `uv`. If missing, install it, then run `uv python install 3.12` and create the project's `.venv` with it (§2.9). Confirm `uv run python --version` reports 3.12 before continuing; the system Python (3.9.6) is never used for this project.
    - Node LTS
    - free disk space
 
@@ -436,7 +439,7 @@ CI (GitHub Actions) runs the quick checks on every push. The site deploys to Git
    - a placeholder site page
 4. **Publish.** Create the GitHub repo with `gh`, push, set Pages to deploy from GitHub Actions, and print the placeholder URL's HTTP status.
 5. **Explain the plan.** Give Samraj a five-minute plain-language walkthrough. Then ask him to say in one sentence what the Priority score means. This checks that the plan is clear; it isn't a test of him.
-6. **Hand over the goals.** Print the `/goal` commands for Phases 1–5 from §13, filled in with his decisions. Then stop.
+6. **Hand over the instructions.** Print the phase instructions for Phases 1–5 from §13, filled in with his decisions. Then stop.
 
 ---
 
@@ -478,7 +481,7 @@ Feature schema:
   - Scene list and cloud statistics recorded.
   - Values fall inside a documented plausible range.
   - Map PNG.
-- **P1-05 Night heat (optional).** Per-cell night LST, area-weighted and labelled coarse. If the data can't be obtained, record why and ask Samraj to approve dropping this feature.
+- **P1-05 Night heat — dropped by D4.** MODIS's 1 km pixels give only ~25 samples over Landhi's 25 km², too coarse to be useful. See the "v2 candidates" note in §6 (ECOSTRESS, ~70 m) for the v2 route.
 - **P1-06 People.**
   - Per-cell counts from two sources, with a comparison table.
   - Source chosen per D4.
@@ -490,6 +493,7 @@ Feature schema:
   - Distance per cell to the nearest health facility and to the nearest verified relief centre.
   - `centres.csv` schema enforced.
   - Unverified centres excluded, and listed for Samraj.
+  - OSM has no Edhi or Saylani facility recorded in Landhi as of Phase 0, so this feature has no fallback centre to fall back on. If it's still blocked when Phase 1 runs, split it into P1-09a (health-facility distance, unblocked) and P1-09b (relief-centre distance, blocked on Samraj verifying a centre in person).
 - **P1-10 Load-shedding feasibility (optional).** Write `docs/load-shedding-feasibility.md` covering what K-Electric publishes, whether areas can be matched to cells reliably, and a recommendation. Build the indicator only if Samraj approves; otherwise he approves dropping it.
 - **P1-11 Indicator table.**
   - `data/processed/indicators.parquet` and `.csv`.
@@ -511,7 +515,7 @@ Feature schema:
 - **P2-05 Validation pack.**
   - Equal-weights comparison.
   - Cited face-validity check.
-  - Bilingual expert-ranking form, plus an analysis script tested on SYNTHETIC data.
+  - English-language expert-ranking form (D9), plus an analysis script tested on SYNTHETIC data.
 - **P2-06 Model report.** `docs/model-report.md` containing a plain summary, a maths appendix, figures, limitations, and the checker subagent's verdict.
 
 ### Phase 3: website
@@ -528,8 +532,8 @@ Feature schema:
   - How it works: plain version plus maths appendix.
   - Data and credits: every attribution and licence.
   - About: disclaimer, AI disclosure, and contact per D11.
-- **P3-07 Urdu.** Full string set, RTL layout, Nastaliq font, and a remembered language toggle, with the review queue in `QUESTIONS.md`.
-- **P3-07b Urdu reviewed.** Samraj has approved every string. Blocked on Samraj until then.
+- **P3-07 Urdu — dropped by D9.** English only for v1. UI strings stay externalised in `site/i18n/en.json` so Urdu can be added in a later version.
+- **P3-07b Urdu reviewed — dropped by D9.** No longer applicable; dropped alongside P3-07.
 - **P3-08 Quality gates.** Playwright, axe, the page-weight budget, and the §10 Lighthouse thresholds all pass.
 - **P3-09 Deploy.** Pages deploys from CI, the live URL returns 200, and the Playwright smoke suite passes against the live URL.
 
@@ -539,7 +543,7 @@ Feature schema:
   - `docs/allocation.md` with the formulation and a hand-solvable example.
   - All §8 tests pass.
   - Checker subagent's verdict recorded.
-- **P4-02 Scenarios.** Precomputed scenarios per D8, exported for the site with plain-language summaries.
+- **P4-02 Scenarios.** Precomputed scenarios per D8, exported for the site with plain-language summaries. Verify the litres-per-person figure against the Sphere Handbook and record the citation — `config/allocation.yaml` starts marked `UNVERIFIED`.
 - **P4-03 Planner page.**
   - Pick centres and stock, then see the allocation on the map and in a table.
   - Approximate mode is labelled.
@@ -547,22 +551,23 @@ Feature schema:
 
 ### Phase 5: field kit and release
 - **P5-01 Field briefs.**
-  - One A4 page per named locality inside the pilot area, in English and Urdu.
-  - Rendered from HTML with Playwright, because the browser shapes Nastaliq correctly and matplotlib doesn't.
+  - One A4 page per named locality inside the pilot area, in English (D9).
+  - Rendered from HTML with Playwright for consistent, testable output.
   - PDF and PNG each under 1 MB, so they send easily on WhatsApp.
 - **P5-02 Offline.**
   - A service worker caches the app shell and the data.
   - The offline view uses a simplified road outline instead of basemap tiles.
   - Tested offline in Playwright.
 - **P5-03 NGO one-pager.**
-  - `docs/pitch/one-pager.md` and a PDF.
+  - `docs/pitch/one-pager.md` and a PDF, in English (D9).
   - Covers: what it is, what it isn't, how to read the map in two minutes, and what feedback is wanted.
   - Written for a local Edhi centre manager and for Saylani, including its SMIT IT-training team.
+  - Leaves a blank line for a handwritten contact (D11c); the site itself shows none.
   - A draft for Samraj to edit. Claude never sends it.
 - **P5-04 README.** Overview, screenshots, reproduce steps, credits, licences, AI disclosure, and `CITATION.cff`.
 - **P5-05 Release.**
   - The full check, including Lighthouse, passes.
-  - P2-02b and P3-07b are resolved.
+  - P2-02b is resolved.
   - `CHANGELOG.md` is written.
   - `v1.0.0` is tagged and pushed.
 
@@ -571,38 +576,38 @@ Feature schema:
 
 ---
 
-## 13. Goal templates
+## 13. Phase instructions
 
-Each goal is its own finish line, so don't combine phases. The evaluator sees only the transcript, which means the evidence has to be printed there.
+Each block below is a plain message Samraj pastes and sends as-is; it is not a slash command. Each is its own finish line, so don't combine phases. There is no separate evaluator model here — after every turn, judge for yourself, against the finish line stated in the message, whether the phase is done; if it isn't, continue immediately with the next turn without waiting to be told to carry on, until the finish line is met, the turn cap is hit, or you must stop and print "BLOCKED ON SAMRAJ". Print the STATUS block (§3.3) at the end of every turn regardless, so progress is visible even mid-phase.
 
 **Phase 1**
 ```
-/goal Phase 1 of PROMPT.md is complete, or you have printed "BLOCKED ON SAMRAJ" followed by every open question from QUESTIONS.md, or 30 turns have passed. Complete means that in a single turn you ran `python scripts/features.py --phase 1` and it printed "Phase 1: N of N resolved, 0 blocked", and `python scripts/check.py --quick` printed "CHECK: PASS". While working, follow the loop protocol in CLAUDE.md: one feature per turn, verify before marking anything passing, commit after each feature, and end every turn with the STATUS block. Never fabricate data or evidence; never delete, skip, or loosen a test or acceptance criterion; document every dataset in data/SOURCES.md. Print "BLOCKED ON SAMRAJ" only when every unresolved Phase 1 feature is blocked on him.
+Work through Phase 1 of PROMPT.md, one feature per turn, following the loop protocol in CLAUDE.md. After each turn, without waiting for me, continue straight into the next turn until one of these is true: `uv run python scripts/features.py --phase 1` prints "Phase 1: N of N resolved, 0 blocked" and `uv run python scripts/check.py --quick` prints "CHECK: PASS" in the same turn (phase complete); every remaining unresolved Phase 1 feature is blocked on me, in which case print "BLOCKED ON SAMRAJ" followed by every open question from QUESTIONS.md and stop; or 30 turns have passed, in which case stop and report where things stand. Verify before marking anything passing, commit after each feature, and end every turn with the STATUS block. Never fabricate data or evidence; never delete, skip, or loosen a test or acceptance criterion; document every dataset in data/SOURCES.md. If P1-09 is blocked because no centre is verified yet, split it into P1-09a (distance to nearest health facility, from OSM) and P1-09b (distance to nearest verified relief centre), and carry on with P1-09a while P1-09b stays blocked.
 ```
 
 **Phase 2**
 ```
-/goal Phase 2 of PROMPT.md is complete, or you have printed "BLOCKED ON SAMRAJ" followed by every open question from QUESTIONS.md, or 30 turns have passed. Complete means that in a single turn you ran `python scripts/features.py --phase 2` and it showed every Phase 2 feature resolved, except that P2-02b may remain as the only unresolved feature, blocked on Samraj (the model then runs on provisional equal weights, labelled as provisional), and `python scripts/check.py --quick` printed "CHECK: PASS". For P2-01 to P2-05, use the checker subagent from PROMPT.md section 3.1 and record its verdict before marking a feature passing. While working, follow the loop protocol in CLAUDE.md: one feature per turn, verify before marking anything passing, commit after each feature, and end every turn with the STATUS block. Never fabricate data, results, or validation; never delete, skip, or loosen a test or acceptance criterion. Print "BLOCKED ON SAMRAJ" only when every unresolved Phase 2 feature is blocked on him.
+Work through Phase 2 of PROMPT.md, one feature per turn, following the loop protocol in CLAUDE.md. After each turn, without waiting for me, continue straight into the next turn until one of these is true: `uv run python scripts/features.py --phase 2` shows every Phase 2 feature resolved, except that P2-02b may remain as the only unresolved feature blocked on me (the model then runs on provisional equal weights, labelled as provisional), and `uv run python scripts/check.py --quick` prints "CHECK: PASS" in the same turn (phase complete); every remaining unresolved Phase 2 feature is blocked on me, in which case print "BLOCKED ON SAMRAJ" followed by every open question from QUESTIONS.md and stop; or 30 turns have passed, in which case stop and report where things stand. For P2-01 to P2-05, use the checker subagent from PROMPT.md section 3.1 and record its verdict before marking a feature passing. Remember D6: AHP weights Vulnerability's six indicators only; the three H/E/V dimension exponents stay fixed at 1/3. Verify before marking anything passing, commit after each feature, and end every turn with the STATUS block. Never fabricate data, results, or validation; never delete, skip, or loosen a test or acceptance criterion.
 ```
 
 **Phase 3**
 ```
-/goal Phase 3 of PROMPT.md is complete, or you have printed "BLOCKED ON SAMRAJ" followed by every open question from QUESTIONS.md, or 35 turns have passed. Complete means that in a single turn: `python scripts/features.py --phase 3` showed every Phase 3 feature resolved, except that P3-07b may remain as the only unresolved feature, blocked on Samraj; `python scripts/check.py --lighthouse` printed "CHECK: PASS"; and you printed the live GitHub Pages URL with its HTTP status (200) and the result of the Playwright smoke suite run against that live URL. Write DESIGN.md before any styling, and review screenshots at 375 px and 1280 px after every UI feature. While working, follow the loop protocol in CLAUDE.md: one feature per turn, verify before marking anything passing, commit after each feature, and end every turn with the STATUS block. Never fabricate evidence; never delete, skip, or loosen a test, threshold, or acceptance criterion. Print "BLOCKED ON SAMRAJ" only when every unresolved Phase 3 feature is blocked on him.
+Work through Phase 3 of PROMPT.md, one feature per turn, following the loop protocol in CLAUDE.md. Note that P3-07 and P3-07b are dropped by D9 — English only for v1 — so no Urdu or RTL check is part of the gates. After each turn, without waiting for me, continue straight into the next turn until one of these is true: `uv run python scripts/features.py --phase 3` shows every Phase 3 feature resolved, `uv run python scripts/check.py --lighthouse` prints "CHECK: PASS", and you have printed the live GitHub Pages URL with its HTTP status (200) and the result of the Playwright smoke suite run against that live URL, all in the same turn (phase complete); every remaining unresolved Phase 3 feature is blocked on me, in which case print "BLOCKED ON SAMRAJ" followed by every open question from QUESTIONS.md and stop; or 35 turns have passed, in which case stop and report where things stand. Write DESIGN.md before any styling, and review screenshots at 375 px and 1280 px after every UI feature. Verify before marking anything passing, commit after each feature, and end every turn with the STATUS block. Never fabricate evidence; never delete, skip, or loosen a test, threshold, or acceptance criterion.
 ```
 
 **Phase 4**
 ```
-/goal Phase 4 of PROMPT.md is complete, or you have printed "BLOCKED ON SAMRAJ" followed by every open question from QUESTIONS.md, or 20 turns have passed. Complete means that in a single turn you ran `python scripts/features.py --phase 4` and it printed "Phase 4: N of N resolved, 0 blocked", `python scripts/check.py --quick` printed "CHECK: PASS", and the allocation test output you printed shows the LP objective is at least the greedy objective on every test instance. Use the checker subagent for P4-01 and record its verdict. While working, follow the loop protocol in CLAUDE.md: one feature per turn, verify before marking anything passing, commit after each feature, and end every turn with the STATUS block. Never fabricate results; never delete, skip, or loosen a test or acceptance criterion. Print "BLOCKED ON SAMRAJ" only when every unresolved Phase 4 feature is blocked on him.
+Work through Phase 4 of PROMPT.md, one feature per turn, following the loop protocol in CLAUDE.md. After each turn, without waiting for me, continue straight into the next turn until one of these is true: `uv run python scripts/features.py --phase 4` prints "Phase 4: N of N resolved, 0 blocked", `uv run python scripts/check.py --quick` prints "CHECK: PASS", and the allocation test output you printed shows the LP objective is at least the greedy objective on every test instance, all in the same turn (phase complete); every remaining unresolved Phase 4 feature is blocked on me, in which case print "BLOCKED ON SAMRAJ" followed by every open question from QUESTIONS.md and stop; or 20 turns have passed, in which case stop and report where things stand. Use the checker subagent for P4-01 and record its verdict. In P4-02, verify the litres-per-person figure against the Sphere Handbook and record the exact citation — `config/allocation.yaml` currently marks it `UNVERIFIED` (D8). Never fabricate results; never delete, skip, or loosen a test or acceptance criterion.
 ```
 
 **Phase 5**
 ```
-/goal Phase 5 of PROMPT.md is complete, or you have printed "BLOCKED ON SAMRAJ" followed by every open question from QUESTIONS.md, or 25 turns have passed. Complete means that in a single turn: `python scripts/features.py` showed every feature in Phases 0 to 5 resolved, including P2-02b and P3-07b; `python scripts/check.py --lighthouse` printed "CHECK: PASS"; and `git ls-remote --tags origin` showed v1.0.0. Never send, post, or submit the NGO one-pager or anything else on Samraj's behalf. While working, follow the loop protocol in CLAUDE.md: one feature per turn, verify before marking anything passing, commit after each feature, and end every turn with the STATUS block. Never fabricate evidence; never delete, skip, or loosen a test, threshold, or acceptance criterion. Print "BLOCKED ON SAMRAJ" only when every unresolved feature is blocked on him.
+Work through Phase 5 of PROMPT.md, one feature per turn, following the loop protocol in CLAUDE.md. After each turn, without waiting for me, continue straight into the next turn until one of these is true: `uv run python scripts/features.py` shows every feature in Phases 0 to 5 resolved, including P2-02b, and `uv run python scripts/check.py --lighthouse` prints "CHECK: PASS", and `git ls-remote --tags origin` shows v1.0.0, all confirmed in the same turn (phase complete); every remaining unresolved feature is blocked on me, in which case print "BLOCKED ON SAMRAJ" followed by every open question from QUESTIONS.md and stop; or 25 turns have passed, in which case stop and report where things stand. Never send, post, or submit the NGO one-pager or anything else on my behalf. Verify before marking anything passing, commit after each feature, and end every turn with the STATUS block. Never fabricate evidence; never delete, skip, or loosen a test, threshold, or acceptance criterion.
 ```
 
 **Fix-it (whenever checks fail and keep failing)**
 ```
-/goal First print the current commit hash as the start point. The goal is met when `python scripts/check.py --quick` prints "CHECK: PASS" and you have printed `git diff --stat <start-hash> -- tests/` with a short explanation showing no test was deleted, skipped, or loosened; or when you have printed "BLOCKED ON SAMRAJ" with a diagnosis in PROGRESS.md and QUESTIONS.md; or when 10 turns have passed. Fix causes, not symptoms. If the same failure defeats you twice, write the diagnosis and print "BLOCKED ON SAMRAJ".
+First print the current commit hash as the start point. Then work turn by turn to find and fix the root cause, not the symptom. After each turn, without waiting for me, continue straight into the next turn until one of these is true: `uv run python scripts/check.py --quick` prints "CHECK: PASS" and you have printed `git diff --stat <start-hash> -- tests/` with a short explanation showing no test was deleted, skipped, or loosened (fixed); the same failure has defeated you twice, in which case write the diagnosis in PROGRESS.md and QUESTIONS.md and print "BLOCKED ON SAMRAJ"; or 10 turns have passed, in which case stop and report where things stand. End every turn with the STATUS block.
 ```
 
 ---
@@ -610,7 +615,7 @@ Each goal is its own finish line, so don't combine phases. The evaluator sees on
 ## 14. What "done" means for v1
 
 - The site is live on GitHub Pages, every check passes (including Lighthouse), and `v1.0.0` is tagged.
-- The weights are Samraj's own, set with the AHP tool, or he has recorded a decision to ship equal weights. He has also reviewed every Urdu string.
+- The weights are Samraj's own, set with the AHP tool, or he has recorded a decision to ship equal weights.
 - A mentor could check the model report and the allocation doc line by line.
 - The README explains how to reproduce everything, credits every source, and discloses the AI assistance.
 - Samraj has a field brief and a one-pager he can take into a relief centre and explain in his own words.

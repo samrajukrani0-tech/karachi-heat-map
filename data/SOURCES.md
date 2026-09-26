@@ -28,15 +28,60 @@ Storage CRS: EPSG:4326. All distances and areas: EPSG:32642 (UTM zone 42N).
 - **Caveats:** OSM coverage of Karachi health facilities is incomplete and
   unevenly maintained. P1-09 must measure and report the gap, not assume coverage.
 
-### OpenStreetMap relief-centre search — negative result
-- **Query:** names matching `Edhi|Saylani` inside each candidate town
-- **Result:** **zero** matches in Landhi, Korangi, Shah Faisal and Malir Towns;
-  55 matches across the wider Karachi bounding box, several of them false positives
-  ("Edhi Interchange", "Medhi Manji Lab")
+### OpenStreetMap relief-centre search — negative result, re-run and widened
+- **First query (2026-09-26, superseded):** names matching `Edhi|Saylani` inside each
+  candidate town. Result: zero. **That query was weaker than it was first reported to
+  be** — it missed spelling variants, and the wider search below found a Saylani branch
+  recorded in OSM as "Silani Welfare - Korangi 4", which the original pattern could not
+  have matched anywhere.
+- **Widened query (2026-09-26):** `name` or `operator` matching
+  `Edhi|Edhee|Aidhi|Saylani|Silani|Sailani|Saylany|Chhipa|Chipa|Chippa|Cheepa|Alkhidmat|
+  Al-Khidmat|Al Khidmat|Aman Foundation|JDC|Khidmat-e-Khalq` plus the Urdu forms
+  `ایدھی|سیلانی|چھیپا|الخدمت`, over bbox 24.74,67.03,25.00,67.42; plus
+  `amenity=social_facility|charity`, `office=charity|ngo`,
+  `emergency=ambulance_station` and `amenity=ambulance_station` over the same area.
+- **Result:** 133 distinct objects across the bounding box; **zero inside the Landhi
+  Town boundary.** The single OSM `social_facility` inside Landhi is
+  "Maqsood Haleem karkhana" (node/12142718007), which is a food workshop, not a welfare
+  facility — an example of the tagging noise that makes OSM unusable as a relief-centre
+  source here.
+- **Consequence, unchanged:** there is no open-data source for relief centres in the
+  pilot area. `data/manual/centres.csv` remains the only source and requires in-person
+  verification (QUESTIONS.md Q2). Candidates found nearby are recorded separately in
+  `data/manual/centre_candidates.csv`, all marked `UNVERIFIED`; nothing in that file
+  enters the model.
+- **Licence:** ODbL 1.0 — © OpenStreetMap contributors.
+
+### OpenStreetMap health facilities inside Landhi Town
+- **Query:** `amenity=hospital|clinic|doctors|pharmacy` inside relation 16350631
+- **Result:** 37 named objects (16 tagged `hospital`, 14 `clinic`, 5 `pharmacy`,
+  plus others). Named landmarks include Landhi Medical Complex, Landhi Cardiac
+  Emergency Center, Urban Health Center Babar Market Landhi, MALC Landhi Leprosy
+  Centre, Awadh Hospital, Al Razi Hospital and Razia Sultana Hospital.
 - **Accessed:** 2026-09-26
-- **Consequence:** there is no open-data source for relief centres in the pilot area.
-  `data/manual/centres.csv` is the only source, and it requires in-person
-  verification (QUESTIONS.md Q2).
+- **Caveat for P1-09:** at least two objects tagged `amenity=hospital` are clearly
+  mis-tagged ("Finger steel ring cutting master" node/12140157270, "Alhameed Welvear
+  Medical Store" node/12139620326). P1-09 must filter on more than the tag alone and
+  must report the error rate it finds, not assume the tagging is correct.
+
+### Express Tribune, 25 June 2024 — text supplied by Samraj
+- **URL:** https://tribune.com.pk/story/2473712/heatwave-wreaks-havoc-15-found-dead-on-streets
+- **Status:** returns HTTP 403 to automated fetching. Samraj opened it in a browser and
+  supplied the text on 2026-09-26. The article text is **not** stored in this repo
+  (copyright); only extracted facts are recorded, here and in QUESTIONS.md Q1.
+- **Facts used:** 15 bodies recovered from streets on 24 June 2024, of which Chhipa
+  volunteers moved 12 and Edhi 3; 526 bodies to three Edhi Karachi morgues over the
+  week against a normal 30–40 a day, risen to 100–140; Faisal Edhi said some deaths may
+  be heat-related but unconfirmed; Police Surgeon Dr Summaiya Syed confirmed 4
+  heatstroke deaths on 24 June; Edhi's three cold storages are at Moosa Line, Sohrab
+  Goth and Korangi.
+- **Localities named:** Orangi Town (×3), MA Jinnah Road, Karimabad, Super Highway
+  (Faqira Goth), Old Golimar, Gulistan-e-Johar Block 11, **Landhi (near Landhi
+  Hospital's Chowrangi)**, New Karachi Sector 11-D, Surgical Market, Civil Lines,
+  Mahmoodabad, North Karachi UP Mor, Shah Faisal Colony / Green Town.
+- **Caveat that must travel with this source:** only one named locality falls inside the
+  pilot area, so it supports a weak face-validity check for Landhi, not a strong one.
+  Causes of death were disputed; this project never estimates deaths or assigns causes.
 
 ### 2023 census population (context for D2)
 - **URL:** https://www.citypopulation.de/en/pakistan/admin/

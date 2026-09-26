@@ -383,3 +383,21 @@ it later.
 
 **Status:** approved
 **Date:** 2026-09-26
+
+---
+
+## D2 — correction to the evidence (2026-09-26)
+
+The relief-centre finding recorded under D2 was produced by an OSM query matching only
+the spellings `Edhi` and `Saylani`. A widened re-run (all spelling variants, Urdu forms,
+plus welfare, charity and ambulance-station tags, over a bounding box extending about
+12 km around Landhi) found a Saylani branch that OSM records as **"Silani Welfare -
+Korangi 4"** — a spelling the original pattern could not have matched.
+
+**The conclusion is unchanged:** zero relief facilities inside the Landhi Town boundary,
+now established across 133 candidate objects rather than a narrow name match. **The
+method was weaker than first stated**, and this entry records that rather than quietly
+re-running it. D2 itself does not change; Landhi remains the pilot area.
+
+Candidates found near Landhi are in `data/manual/centre_candidates.csv`, all
+`UNVERIFIED`. None enters the model (PROMPT.md §6).

@@ -1,0 +1,12 @@
+name,org,kind,lat,lon,km_from_landhi_centroid,locality,inside_landhi,source,osm_id,status
+Silani Welfare - Korangi 4,Saylani,social_facility,24.827801,67.158697,2.94,کورنگی,False,"OpenStreetMap via Overpass, 2026-09-26",node/5128042353,UNVERIFIED
+Al-Khidmat Hospital,Al-Khidmat,hospital,24.825902,67.151849,3.62,کورنگی,False,"OpenStreetMap via Overpass, 2026-09-26",node/5130353814,UNVERIFIED
+Edhi Ambulance,Edhi,ambulance_station,24.837597,67.225285,4.51,"Majeed Colony, ضلع ملیر",False,"OpenStreetMap via Overpass, 2026-09-26",node/5103467658,UNVERIFIED
+Chhipa Ambulance,Chhipa,ambulance_station,24.83688,67.225845,4.58,"Labour Colony, ضلع ملیر",False,"OpenStreetMap via Overpass, 2026-09-26",node/5103467659,UNVERIFIED
+Malir Station 1 Aman Ambulance Service,Aman Foundation,ambulance_station,24.893184,67.177718,5.41,"Tariq Bin Ziyad Colony, ضلع گلشن",False,"OpenStreetMap via Overpass, 2026-09-26",node/4764379358,UNVERIFIED
+KKF Emergency Service Centre,unknown,social_facility,24.880874,67.145324,5.43,"Shah Faisal Block 1, ضلع کورنگی",False,"OpenStreetMap via Overpass, 2026-09-26",node/5146930697,UNVERIFIED
+Edhi Star Gate Centre,Edhi,ambulance_station,24.887146,67.154517,5.45,ضلع گلشن,False,"OpenStreetMap via Overpass, 2026-09-26",node/5226556633,UNVERIFIED
+"Al-Khidmat Hospital, Shahfaisal",Al-Khidmat,hospital,24.880143,67.141919,5.61,"Shah Faisal Block 1, ضلع کورنگی",False,"OpenStreetMap via Overpass, 2026-09-26",node/5130353812,UNVERIFIED
+Jeremiah Institute of Nursing Karachi,unknown,social_facility,24.826558,67.120797,6.44,"کورنگی, ضلع کورنگی",False,"OpenStreetMap via Overpass, 2026-09-26",node/12141750009,UNVERIFIED
+Korangi Station 3 Aman Ambulance Service,Aman Foundation,ambulance_station,24.82086,67.121899,6.56,کورنگی,False,"OpenStreetMap via Overpass, 2026-09-26",node/5132942498,UNVERIFIED
+Al-Khidmat Hospital,Al-Khidmat,hospital,24.903499,67.205265,6.97,"Khokrapar No 1, Malir, ضلع ملیر",False,"OpenStreetMap via Overpass, 2026-09-26",node/5130353811,UNVERIFIED

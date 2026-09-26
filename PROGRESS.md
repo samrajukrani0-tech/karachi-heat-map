@@ -66,3 +66,29 @@ person (QUESTIONS.md Q2). OSM has no Edhi or Saylani facility inside Landhi Town
 there is no fallback. Expect to split P1-09 into P1-09a (distance to health facility,
 from OSM) and P1-09b (distance to verified relief centre, blocked on Samraj).
 **Next:** P1-01 Pilot boundary.
+
+## 2026-09-26 — Pre-Phase-1 side task: relief-centre candidates
+**Why:** P1-09b is blocked with nothing to act on. Samraj asked for real named places
+near Landhi to ask his contacts about, and supplied the Express Tribune text that Q1
+was waiting for.
+**What changed:** PROMPT.md replaced with the revised version from Samraj; widened OSM
+search; `data/manual/centre_candidates.csv` created with 11 unverified candidates;
+QUESTIONS.md Q1 answered and Q3/Q4 opened; SOURCES.md corrected; DECISIONS.md D2
+correction appended.
+**Evidence:** widened Overpass query over bbox 24.74,67.03,25.00,67.42 returned 133
+distinct objects, **0 inside the Landhi boundary**; nearest candidate "Silani Welfare -
+Korangi 4" at 24.8278,67.1587, 2.94 km from the Landhi centroid (24.84449, 67.18136),
+corroborated by a directory listing giving "Sector 48-E, near Mobile Market, Korangi
+No. 4". 37 named health facilities found inside Landhi. `check.py --quick` ->
+`CHECK: PASS (3 checks)`.
+**Correction recorded, not hidden:** the original "zero Edhi/Saylani" query matched only
+two spellings and would have missed "Silani" even inside Landhi. The conclusion stands;
+the method did not. Logged in DECISIONS.md and data/SOURCES.md.
+**Two findings that change later phases:**
+1. Chhipa Welfare moved 12 of the 15 bodies on 24 June 2024 against Edhi's 3, and has
+   ambulance points nearer Landhi than any Edhi or Saylani facility. PROMPT.md §1 names
+   only Edhi and Saylani. Raised as QUESTIONS.md Q3.
+2. Only 1 of ~13 localities named in that reporting is inside the pilot area, so P2-05's
+   face-validity check for Landhi rests on a single incident. Raised as QUESTIONS.md Q4
+   before Phase 2 builds it.
+**Next:** Phase 1, P1-01 Pilot boundary.
