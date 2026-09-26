@@ -58,6 +58,9 @@ owns every modelling decision.
 - **D7** AHP weights the six vulnerability indicators only; dimension exponents stay
   fixed at ⅓. Weights are provisional until Samraj runs the tool (P2-02b).
 - **D8** allocation settings are **provisional** until the field visit.
+- **D21** **shares and relative priorities only — never absolute litre or supply totals.**
+  The population layer undercounts by ~2.3x (D16); a ratio cancels that bias, a total
+  does not. State the undercount wherever any total appears. Binds Phase 4 and the site.
 - **D9** English only for v1; strings still externalised in `site/i18n/en.json`.
 - **D10** MIT code, CC BY 4.0 docs, **ODbL 1.0 for `data/processed`** (OSM-derived).
 - **D11** public repo `karachi-heat-map`; full name, no school named; no contact.

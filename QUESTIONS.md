@@ -93,7 +93,7 @@ not re-made later. P2-05 geocodes the single Landhi incident and reports its cel
 
 ---
 
-## Q5 — Confirm the grid inclusion rule (OPEN, not blocking)
+## Q5 — Confirm the grid inclusion rule — ANSWERED 2026-09-26
 
 P1-02 found that two Phase 0 statements contradicted each other: the "centre inside OR
 ≥50% of area" rule tops out at 96.55% coverage, but the P1-02 acceptance criterion
@@ -110,11 +110,12 @@ DECISIONS.md.
 very little real evidence — at 3% inside, a cell contains about three population pixels.
 0.885% of Landhi is currently uncovered and is recorded as a limitation.
 
-**Answer:**
+**Samraj's answer:** "confirmed, keep the 0.25 inclusion threshold (265 cells, 99.115%
+coverage)." D15 moves from provisional to approved.
 
 ---
 
-## Q6 — Population undercount: how should the model handle it? (OPEN, not blocking)
+## Q6 — Population undercount: how should the model handle it? — ANSWERED 2026-09-26
 
 Both modelled population sources put Landhi at about **300,000 people**. The 2023 census
 says **681,293**. The same shortfall appears across all of Korangi District (models 1.81–1.93M
@@ -139,7 +140,10 @@ areas are undercounted most — under-ranking exactly the places that need suppo
 This is worth asking a centre manager too: they will know whether 300,000 or 681,000
 matches what they see on the ground in Landhi.
 
-**Answer:**
+**Samraj's answer:** "yes, keep Meta as the population source. Use shares and relative
+priorities only — never absolute litre or supply totals — and state the undercount
+wherever a total appears on the site or in the report." D16 moves to approved, and the
+presentation rule is recorded separately as **D21** because it binds Phase 4 and the site.
 
 ---
 

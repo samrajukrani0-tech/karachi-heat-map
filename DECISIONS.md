@@ -533,9 +533,10 @@ The threshold is a floor on how much real evidence a cell must contain.
 **Cost, stated honestly:** 0.885% of Landhi — thin slivers along the edge — is not
 covered by any cell. This belongs in the model report's limitations.
 
-**Status: PROVISIONAL.** Claude changed its own Phase 0 config default to satisfy a
-PROMPT.md criterion, and the choice of 0.25 is a modelling judgement that belongs to
-Samraj (§2.4). Raised as QUESTIONS.md Q5. Nothing downstream is blocked meanwhile.
+**Samraj's decision (2026-09-26):** "confirmed, keep the 0.25 inclusion threshold (265
+cells, 99.115% coverage)."
+
+**Status: approved.**
 **Date:** 2026-09-26
 
 ---
@@ -597,8 +598,11 @@ cell by 2.3 and the ranking is unchanged.
 forbids adjusting data to hit a figure), and a uniform rescale would not fix a
 non-uniform bias anyway.
 
-**Status: PROVISIONAL** — the source choice is a judgement call belonging to Samraj, and
-the undercount has consequences he should decide on. Raised as QUESTIONS.md Q6.
+**Samraj's decision (2026-09-26):** "yes, keep Meta as the population source. Use shares
+and relative priorities only — never absolute litre or supply totals — and state the
+undercount wherever a total appears." The presentation rule is recorded as **D21**.
+
+**Status: approved.**
 **Date:** 2026-09-26
 
 ---
@@ -769,6 +773,40 @@ not matter.
 **The v2 route, recorded in the study:** feeder names are printed on K-Electric bills.
 Ten to fifteen bills from different parts of Landhi would tie feeder names to real
 addresses, which is exactly the link the published schedule omits. Fieldwork, not scraping.
+
+**Status:** approved
+**Date:** 2026-09-26
+
+---
+
+## D21 — Shares and relative priorities only; never absolute supply totals (2026-09-26)
+
+**Why this exists.** D16 established that the population layer undercounts Landhi by
+roughly a factor of 2.3 against the 2023 census (295,132 modelled against 681,293
+counted). Relative ranking survives a uniform factor because normalisation is relative.
+**Absolute quantities do not.** D8 defines need from age-vulnerable population, so every
+litre and every sachet computed from this data inherits the undercount: a centre planning
+water for 300,000 people in a town of 681,000 under-supplies by more than half.
+
+**Samraj's decision:** "Use shares and relative priorities only — never absolute litre or
+supply totals — and state the undercount wherever a total appears on the site or in the
+report."
+
+**What this binds, concretely:**
+- **Phase 4 (P4-02, P4-03).** The allocation planner reports **shares of available
+  supply** and the **order** in which cells should be served. It does not publish
+  "this cell needs N litres" as a standalone figure. The LP still computes quantities
+  internally — it must, to allocate — but what is *presented* is the split of whatever
+  stock the user enters, not an independent estimate of need.
+- **The site.** The cell panel and the planner page show priority class, rank and share.
+  Any figure that is an absolute count of people or units carries the undercount note.
+- **The model report.** States the undercount, its measured size, and the reason absolute
+  quantities are withheld.
+
+**Why this is the right constraint rather than a cautious one.** A share is a ratio of two
+quantities carrying the same bias, so the bias largely cancels. An absolute total carries
+it in full. Publishing shares is not a softer claim — it is the claim the data can
+actually support.
 
 **Status:** approved
 **Date:** 2026-09-26
