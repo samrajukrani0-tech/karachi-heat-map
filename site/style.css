@@ -1,0 +1,96 @@
+/* Tokens from DESIGN.md. Every contrast ratio here is measured in tests/test_design.py. */
+:root {
+  --ink: #1A1C1E;
+  --paper: #FAF8F5;
+  --rule: #D8D2C9;
+  --deep: #6C2A1F;
+  --signal: #1F5E6B;
+  --muted: #58554E;
+
+  --ramp-1: #F6E3D0;
+  --ramp-2: #D4B5A4;
+  --ramp-3: #B18678;
+  --ramp-4: #8E584B;
+  --ramp-5: #6C2A1F;
+
+  --gutter: 16px;
+  --tap: 44px;
+  --font: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html, body { margin: 0; padding: 0; }
+
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font: 1rem/1.55 var(--font);
+  -webkit-text-size-adjust: 100%;
+  overflow-x: hidden;
+}
+
+/* One column, left-aligned to a single edge. The map is the only full-bleed element. */
+.wrap { max-width: 44rem; margin: 0 auto; padding: 0 var(--gutter); }
+
+a { color: var(--signal); }
+a:focus-visible, button:focus-visible, summary:focus-visible, select:focus-visible {
+  outline: 3px solid var(--deep);
+  outline-offset: 2px;
+}
+
+header.site { border-bottom: 1px solid var(--rule); }
+header.site h1 { font-size: 1.35rem; font-weight: 600; margin: 0; padding: 10px 0 4px; }
+@media (max-width: 480px) {
+  header.site h1 { font-size: 1.1rem; padding: 8px 0 2px; }
+  /* Tighter horizontal padding keeps six links to two rows without shrinking the
+     44px tap height, which is the part that matters standing up in the sun. */
+  header.site nav a { padding: 0 8px; font-size: 0.9rem; }
+  header.site nav { margin-left: -8px; }
+}
+header.site nav { display: flex; flex-wrap: wrap; gap: 2px; margin-left: -12px; }
+header.site nav a {
+  display: inline-flex; align-items: center;
+  min-height: var(--tap); padding: 0 12px;
+  text-decoration: none; color: var(--signal); font-size: 0.95rem;
+}
+header.site nav a[aria-current="page"] {
+  color: var(--ink); font-weight: 600; box-shadow: inset 0 -3px 0 var(--deep);
+}
+
+main { padding-bottom: 3rem; }
+h2 { font-size: 1.05rem; font-weight: 600; margin: 2rem 0 0.5rem; }
+h3 { font-size: 0.95rem; font-weight: 600; margin: 1.4rem 0 0.4rem; }
+p, li { max-width: 38rem; }
+.muted { color: var(--muted); }
+.small { font-size: 0.875rem; }
+
+.notice {
+  border-left: 3px solid var(--deep);
+  padding: 0.6rem 0 0.6rem 12px;
+  margin: 1rem 0;
+  background: none;
+}
+
+table { border-collapse: collapse; width: 100%; font-size: 0.9rem; }
+th, td { text-align: left; padding: 6px 10px 6px 0; border-bottom: 1px solid var(--rule); }
+th { font-weight: 600; }
+td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+
+footer.site {
+  border-top: 1px solid var(--rule);
+  margin-top: 2.5rem; padding: 1rem 0 2rem;
+  color: var(--muted); font-size: 0.875rem;
+}
+footer.site p { max-width: 38rem; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+
+.skip {
+  position: absolute; left: -9999px;
+  background: var(--paper); color: var(--ink);
+  padding: 10px 14px; border: 2px solid var(--deep); z-index: 100;
+}
+.skip:focus { left: var(--gutter); top: 8px; }

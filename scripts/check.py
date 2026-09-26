@@ -104,10 +104,55 @@ def check_data() -> tuple[str, str]:
 
 
 def check_site_data() -> tuple[str, str]:
-    site_data = ROOT / "site" / "data"
-    if not any(site_data.glob("*.json")):
-        return NA, "no site/data yet - enabled by P1-11 and P3-03"
-    return FAIL, "site-data consistency check not implemented yet"
+    """Every cell the site serves must exist in the processed data with matching values."""
+    path = ROOT / "site" / "data" / "cells.geojson"
+    if not path.exists():
+        return NA, "site/data/cells.geojson not built yet - run scripts/build_site_data.py"
+    import pandas as pd
+
+    doc = json.loads(path.read_text(encoding="utf-8"))
+    scores = pd.read_csv(ROOT / "data" / "processed" / "scores.csv").set_index("h3")
+    indicators = pd.read_parquet(
+        ROOT / "data" / "processed" / "indicators.parquet").set_index("h3")
+
+    required = {"h3", "rank", "priority", "hazard", "exposure", "vulnerability",
+                "reasons", "stability", "lst", "people", "dist_health"}
+    problems: list[str] = []
+    site_cells = set()
+    for feature in doc["features"]:
+        props = feature["properties"]
+        missing = required - set(props)
+        if missing:
+            problems.append(f"{props.get('h3', '?')}: missing fields {sorted(missing)}")
+            continue
+        cell = props["h3"]
+        site_cells.add(cell)
+        if cell not in scores.index:
+            problems.append(f"{cell}: served by the site but absent from scores.csv")
+            continue
+        if abs(float(props["priority"]) - float(scores.loc[cell, "priority"])) > 5e-4:
+            problems.append(f"{cell}: priority {props['priority']} != processed value")
+        if int(props["rank"]) != int(scores.loc[cell, "rank"]):
+            problems.append(f"{cell}: rank {props['rank']} != processed value")
+        if abs(float(props["lst"]) - float(indicators.loc[cell, "lst_mean_c"])) > 0.05:
+            problems.append(f"{cell}: lst {props['lst']} != processed value")
+
+    if site_cells != set(scores.index):
+        problems.append(f"the site serves {len(site_cells)} cells, the model has "
+                        f"{len(scores)}")
+    meta = doc.get("metadata", {})
+    for flag in ("weights_provisional", "model_incomplete"):
+        if flag not in meta:
+            problems.append(f"metadata is missing {flag}; the site must not present "
+                            f"provisional results as final")
+
+    size_kb = path.stat().st_size / 1024
+    if size_kb > 1024:
+        problems.append(f"cells.geojson is {size_kb:.0f} kB, over the 1 MB budget")
+    if problems:
+        return FAIL, "\n".join(problems[:10])
+    return PASS, (f"{len(site_cells)} cells match the processed data; "
+                  f"{size_kb:.0f} kB")
 
 
 def _node_tooling_ready() -> bool:
@@ -131,6 +176,9 @@ def check_playwright() -> tuple[str, str]:
 def check_axe() -> tuple[str, str]:
     if not _node_tooling_ready():
         return NA, "node tooling not installed - enabled by P3-04"
+    listed, _ = run(["npx", "playwright", "test", "--grep", "axe", "--list"])
+    if not listed:
+        return NA, "no axe-tagged end-to-end test yet - enabled by P3-04"
     ok, out = run(["npx", "playwright", "test", "--grep", "axe"])
     return (PASS, "no serious or critical violations") if ok else (FAIL, out)
 
