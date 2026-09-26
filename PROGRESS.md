@@ -291,3 +291,40 @@ that most need support. And D8's need definition inherits the undercount, so abs
 supply quantities are underestimates: a centre planning water for 300,000 in a town of
 681,000 under-supplies by more than half.
 **Next:** P1-07 Age groups.
+
+## 2026-09-26 — P1-07 Age groups
+**What changed:** `pipeline/demographics.py`, age-layer config and the zero-population
+rule in `config/population.yaml`, `tests/test_demographics.py` (9 tests). Two more Meta
+tiles fetched by the same range-request route (18.5 MB each rather than 549 MB each).
+**Evidence:** 265 cells; shares defined 244; undefined 21. share_over60 0.0447–0.0620,
+share_under5 0.0909–0.1097, all within [0,1]. Elderly 17,084 (5.8%), under-5 28,148
+(9.5%). `uv run pytest` -> 122 passed (118 in CI); `check.py --quick` -> `CHECK: PASS (3 checks)`.
+**Zero-population rule, as specified and tested:** a share is a ratio, so with no
+residents it is **undefined** — written empty and flagged `no_population` — never 0, and
+never imputed from neighbours, which would invent data. Treating it as 0 in the index is
+safe rather than arbitrary, because Exposure is deliberately unfloored (D6b), so such a
+cell already has Priority 0 whatever its Vulnerability.
+**THE FINDING — two of the six vulnerability indicators carry no signal.** The shares
+looked suspiciously narrow, so they were measured rather than accepted:
+- correlation between `share_over60` and `share_under5`: **exactly −1.0000**
+- 86% of cells sit on just two values
+- their sum spans 0.15291–0.15441, a range of 0.0015, CV **0.0045** (LST 0.028,
+  population 0.994)
+Meta applies an administrative-unit age profile to the population raster; Landhi spans
+two such zones, so the two shares are one binary variable with opposite signs. Both have
+direction +1 and would sit in the same weighted mean, so they would largely cancel while
+consuming two of six weights and diluting the four indicators that do carry information.
+A combined dependency ratio does not help, because the sum is the constant thing.
+**Same failure mode as D4's dropped indicators, but only findable by measurement.** Night
+LST and RWI were dropped because their resolution was visibly too coarse. This one looks
+fine on paper — 31 m data — and only betrays itself in the numbers.
+**What survives:** only the shares are uninformative. The **counts** vary with population
+and are exactly what D8's need definition uses, so Phase 4 is unaffected. They are
+written to `age_cells.csv` and retained.
+**Recorded as D17 (provisional) and Q7.** Dropping a D4-approved indicator is Samraj's
+call. P1-07 itself passes: it produced the shares in [0,1] with the zero rule implemented
+and tested, exactly as specified.
+**Tests pin the finding:** assertions require the anti-correlation to stay below −0.99
+and the combined ratio's CV below 0.02, so if a future Meta release fixes this, the suite
+fails and D17 gets revisited rather than silently outliving its evidence.
+**Next:** P1-08 Built environment.

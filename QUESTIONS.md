@@ -140,3 +140,34 @@ This is worth asking a centre manager too: they will know whether 300,000 or 681
 matches what they see on the ground in Landhi.
 
 **Answer:**
+
+---
+
+## Q7 — Drop the two age-share indicators? (OPEN, decide before Phase 2)
+
+P1-07 built `share_over60` and `share_under5` as D4 specified. Measured, they turn out to
+be **the same binary variable with opposite signs**: correlation exactly −1.0000, 86% of
+cells on just two values, and their sum constant to within 0.0015. Meta applies an
+administrative age profile rather than modelling age spatially, and Landhi spans two such
+zones. Recorded as **D17**.
+
+Because both have direction +1 and sit in the same weighted mean, they would largely
+cancel while still consuming two of Vulnerability's six weights.
+
+**Claude's recommendation:** drop both from the index for v1. Vulnerability keeps four
+indicators; AHP drops from 15 pairwise questions to 6, which also makes consistency
+easier to reach.
+
+**Alternatives:** (a) keep one, accepting it splits Landhi into two administrative zones
+rather than measuring anything real; (b) look for Union-Council-level age data from the
+2023 census and match it to cells — a real piece of work, and probably a v2 task;
+(c) keep both and let §7's "a constant indicator becomes 0, with a warning" handle them,
+which is honest but leaves two dead weights in the AHP.
+
+**Unaffected either way:** the age **counts** (`people_over60`, `people_under5`) do vary
+across cells and are what D8's need definition uses. Phase 4 does not depend on this.
+
+**Worth telling a centre manager:** the tool cannot see where older residents are
+concentrated. They may know.
+
+**Answer:**

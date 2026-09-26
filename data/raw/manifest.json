@@ -7,6 +7,22 @@
   "licence": "HDX metadata; the dataset carries its own licence",
   "note": "package_show for pakistan-india_all-files-high-resolution-population-density-maps"
  },
+ "meta/population_20_lon_60_children_under_five-v1.5.tif": {
+  "url": "https://data.humdata.org/dataset/2c8cfe67-448f-4a27-94b3-aaa944598cba/resource/34198f61-8b4e-4622-a4d7-929e88b5a2d9/download/population_ind_pak_children_under_five.zip",
+  "sha256": "b5bb3080a375bc88adbfcf296904d1d4c19d86ae4c311118f136261dea5f2b35",
+  "bytes": 33441064,
+  "downloaded": "2026-09-26",
+  "licence": "CC BY 4.0 - Meta (Data for Good) / Columbia University CIESIN",
+  "note": "Meta HRSL v1.5 children_under_five, 10-degree tile containing Karachi"
+ },
+ "meta/population_20_lon_60_elderly_60_plus-v1.5.tif": {
+  "url": "https://data.humdata.org/dataset/2c8cfe67-448f-4a27-94b3-aaa944598cba/resource/14377c01-d4b8-4492-b478-6bc1da6faa46/download/population_ind_pak_elderly_60_plus.zip",
+  "sha256": "3b64c62f066078554c7268aaacb740036c0648f5f418b5e4a496a9a47d0e2372",
+  "bytes": 33450745,
+  "downloaded": "2026-09-26",
+  "licence": "CC BY 4.0 - Meta (Data for Good) / Columbia University CIESIN",
+  "note": "Meta HRSL v1.5 elderly_60_plus, 10-degree tile containing Karachi"
+ },
  "meta/population_20_lon_60_general-v1.5.tif": {
   "url": "https://data.humdata.org/dataset/2c8cfe67-448f-4a27-94b3-aaa944598cba/resource/e3dbe673-4117-4243-93a8-3366c6e6396b/download/population_ind_pak_general.zip",
   "sha256": "d08c2987e0c5b64c2d9477183a7ce14d936bc3b9da9226bc965350d28dd18156",

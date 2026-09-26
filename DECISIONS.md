@@ -600,3 +600,54 @@ non-uniform bias anyway.
 **Status: PROVISIONAL** — the source choice is a judgement call belonging to Samraj, and
 the undercount has consequences he should decide on. Raised as QUESTIONS.md Q6.
 **Date:** 2026-09-26
+
+---
+
+## D17 — Meta's age shares carry no within-Landhi signal (2026-09-26, PROVISIONAL)
+
+**What was found.** P1-07 produced `share_over60` and `share_under5` as specified. On
+inspection they are not spatial demography at all:
+
+| Check | Result |
+|---|---|
+| Correlation between the two shares | **−1.0000** |
+| Cells at the modal `share_over60` value | 132 of 244 (54%); a second value holds 77 more |
+| Distinct values (4 dp) | 28 for over-60, 31 for under-5, but 86% of cells sit on two |
+| Sum of the two shares | 0.15291 to 0.15441 — a range of **0.0015** |
+| Coefficient of variation of that sum | **0.0045** (LST 0.028, population 0.994) |
+
+Meta's age layers apply an **administrative-unit age profile** to the population raster.
+Over Landhi that means essentially two zones, each with a fixed age structure. The two
+shares are therefore the same binary variable with opposite signs, and their sum is
+constant.
+
+**Why this matters to the model, concretely.** Both indicators have direction +1 (higher
+= more risk) and would sit in the same weighted arithmetic mean for Vulnerability. Being
+exactly anti-correlated, a cell high in one is proportionally low in the other, so
+together they contribute a near-constant amount to V — while still consuming two of the
+six weights and diluting the four indicators that do carry information. A combined
+dependency ratio does not rescue them, because the sum is the thing that is constant.
+
+**This is the same failure mode D4 already ruled on** for night-time LST and the Relative
+Wealth Index: a source too coarse to vary within a 25 km² pilot area. The difference is
+that this one could not be predicted from the resolution — it had to be measured.
+
+**Claude's recommendation:** drop `share_over60` and `share_under5` from the index for
+v1, leaving Vulnerability with four indicators (built fraction, lack of green cover,
+distance to health facility, distance to relief centre). AHP then asks 6 pairwise
+comparisons instead of 15, which also makes CR < 0.10 easier to achieve.
+
+**Important distinction — the counts survive.** Only the *shares* are uninformative. The
+**counts** (`people_over60`, `people_under5`) vary with population and are exactly what
+D8's need definition uses, so Phase 4 is unaffected. They are written to
+`data/processed/age_cells.csv` and retained.
+
+**What the report must say.** Age is among the strongest individual risk factors in heat
+mortality, and this project cannot map it within Landhi. That is a real limitation, not a
+tidy simplification. Partial compensation: the expert-ranking protocol (§7c) lets field
+staff bring knowledge the data lacks.
+
+**Status: PROVISIONAL** — dropping an approved D4 indicator is Samraj's decision.
+Raised as QUESTIONS.md Q7. P1-07 itself passes: it produced the shares, in [0, 1], with
+the zero-population rule implemented and tested, exactly as specified.
+**Date:** 2026-09-26

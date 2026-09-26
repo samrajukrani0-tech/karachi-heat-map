@@ -19,6 +19,37 @@ sources:
     reference_year: 2020
     licence: CC BY 4.0 - WorldPop, University of Southampton
 
+# Age layers for P1-07, from the same Meta release so the shares are internally
+# consistent. Being ratios of two layers built the same way, the D16 undercount largely
+# cancels: if both numerator and denominator are low by the same factor, the share is not.
+age_layers:
+  elderly_60_plus:
+    hdx_resource: population_ind_pak_elderly_60_plus.zip
+    zip_member: population_20_lon_60_elderly_60_plus
+    cache_path: meta/population_20_lon_60_elderly_60_plus-v1.5.tif
+    column: share_over60
+  children_under_five:
+    hdx_resource: population_ind_pak_children_under_five.zip
+    zip_member: population_20_lon_60_children_under_five
+    cache_path: meta/population_20_lon_60_children_under_five-v1.5.tif
+    column: share_under5
+
+# The zero-population rule (P1-07 acceptance criterion). A share is a ratio, so it is
+# UNDEFINED where a cell has no modelled residents -- not zero, and never imputed from
+# neighbours, which would invent data. Undefined cells are written as empty, carry the
+# `no_population` flag, are excluded when the indicator is normalised, and are treated as
+# 0 in the index. That last step is safe rather than arbitrary: Exposure is deliberately
+# unfloored (D6b), so a cell with no residents already has Priority 0 whatever its
+# Vulnerability.
+zero_population:
+  rule: undefined
+  flag: no_population
+
+# National reference shares, for a plausibility check only -- never a target.
+# Pakistan Bureau of Statistics / UN WPP order of magnitude.
+plausibility:
+  share_over60_max: 0.25
+  share_under5_max: 0.30
 # Chosen source for the Exposure indicator. See DECISIONS.md D16.
 chosen: meta
 

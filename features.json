@@ -222,10 +222,10 @@
    "depends_on": [
     "P1-06"
    ],
-   "passes": false,
+   "passes": true,
    "blocked_on": null,
    "dropped": null,
-   "evidence": null
+   "evidence": "uv run python -m pipeline.demographics -> 265 cells; shares defined 244; undefined (no_population) 21. share_over60 min 0.0447 median 0.0447 max 0.0620; share_under5 min 0.0909 median 0.1096 max 0.1097; all within [0,1] and inside the documented plausible maxima. Elderly 60+ total 17,084 (5.8%), under-5 total 28,148 (9.5%). Zero-population rule implemented and tested: a share is UNDEFINED (written empty, flagged no_population), never 0 and never imputed. FINDING RECORDED AS D17: the two shares correlate at exactly -1.0000, 86% of cells sit on just two values, and their sum spans only 0.15291-0.15441 (CV 0.0045 against 0.028 for LST and 0.994 for population) -- Meta applies an administrative age profile rather than modelling age spatially, so the SHARES carry no within-Landhi signal. The COUNTS do vary and are what D8's need definition uses, so they are retained. Raised as Q7. 9 new tests, including assertions that pin the D17 evidence so it cannot quietly become untrue. uv run pytest -> 122 passed in 2.48s; CI -> 118 passed, 4 deselected in 1.71s; check.py --quick -> 'CHECK: PASS (3 checks)'."
   },
   {
    "id": "P1-08",
