@@ -131,3 +131,65 @@ with an enclave, that branch runs for the first time in production. The fixtures
 hand-made squares, not measurements of anywhere, so they are labelled SYNTHETIC to
 ensure nobody can mistake them for data or let them reach the live site (§2.1).
 </details>
+
+---
+
+## P1-02 — Tiling a town with hexagons, and a contradiction worth finding
+
+**What and why.** Landhi's outline is now covered by 265 hexagons, each about 0.105 km².
+Choosing *which* hexagons count turned out to be the interesting part, because the edge
+of the town cuts straight through cells: a hexagon might be 3% inside Landhi or 97%
+inside. Two rules written during Phase 0 turned out to contradict each other, and
+measuring them properly is what exposed it.
+
+**The key idea in A Level terms.** The original rule said: include a cell if its centre
+is inside the boundary, *or* if at least 50% of its area is inside. That "or" sounds
+like it adds cells. It adds none — and the reason is a neat piece of geometry.
+
+A hexagon is centrally symmetric: every point P has a partner P′ such that the centre is
+the midpoint of PP′. Now let a straight line cut the hexagon. Reflecting the hexagon
+through its own centre maps it onto itself, and maps the cut line to a parallel line on
+the opposite side of the centre. If the centre lies on the *outside* of the cut, then the
+inside piece maps into the outside piece, so the inside piece has the smaller area —
+less than half. So for a straight boundary, "≥ 50% of area inside" and "centre inside"
+are the same condition. The "or" can only ever matter where the boundary bends sharply
+within a single cell, which for Landhi never happens.
+
+That symmetry argument is why the measurement came back 248 cells under both rules, and
+why coverage stalled at 96.55% against a 99% requirement.
+
+The second idea is **clipping**. Once cells are admitted that stick out past the
+boundary, the hexagons cover 27.08 km² while Landhi is only 25.37 km². If we measured
+temperature or population over whole hexagons, edge cells would report figures partly
+measured in Korangi. So every indicator is computed over the intersection of the cell
+with the boundary — 1.935 km² of hexagon is simply excluded.
+
+**Questions.**
+
+1. Use the symmetry argument to explain why a hexagon whose centre is outside the
+   boundary can never be more than half inside, when the boundary is a straight line.
+<details><summary>Answer</summary>
+Reflect the hexagon through its centre; the hexagon maps onto itself. The straight
+boundary maps to a parallel line on the other side of the centre. If the centre is on the
+outside of the boundary, the inside region reflects to a region strictly contained in the
+outside region, so area(inside) &lt; area(outside), hence inside &lt; 50%.
+</details>
+
+2. Why not simply include every cell that touches the boundary at all, which would give
+   100% coverage?
+<details><summary>Answer</summary>
+It would admit cells that are barely inside — as little as 0.3%. Even with clipping,
+such a cell's analysis area is about 0.003 km², roughly three Meta population pixels, so
+its indicator values would be noise rather than measurement. It would also add about 40
+near-meaningless cells to the map and to the supply allocation. The 0.25 threshold is a
+floor on how much real evidence a cell must contain.
+</details>
+
+3. The grid covers 99.115% of Landhi. Where is the missing 0.885%, and why does it
+   matter that this is written down?
+<details><summary>Answer</summary>
+It is thin slivers along the boundary, where the edge clips corners of cells that did not
+meet the threshold. It matters because a reader should know the map does not claim to
+cover every square metre; an unstated gap is the kind of thing that quietly undermines
+trust when someone notices it themselves.
+</details>

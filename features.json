@@ -114,10 +114,10 @@
    "depends_on": [
     "P1-01"
    ],
-   "passes": false,
+   "passes": true,
    "blocked_on": null,
    "dropped": null,
-   "evidence": null
+   "evidence": "uv run python -m pipeline.grid -> 265 cells at H3 resolution 9 (248 by centre, 17 by the >=25% area rule); 'Coverage of the boundary: 99.115% (minimum 99%)'; hexagon area 27.080 km2, clipped 25.145 km2 against a boundary of 25.370 km2, overhang 1.935 km2 excluded from every indicator by clipping. Wrote data/processed/grid.geojson (130 kB) and artifacts/grid_preview.png, which was viewed and shows a gapless tiling with edge cells exactly where the boundary bulges past a cell centre. tests/test_grid.py adds 12 tests that recompute coverage, the inclusion rule, clipped areas and contiguity from the stored geometry rather than trusting the file's metadata. uv run pytest -> 51 passed in 1.03s; uv run python scripts/check.py --quick -> 'CHECK: PASS (3 checks)'. Inclusion rule revised under D15 (provisional, QUESTIONS.md Q5)."
   },
   {
    "id": "P1-03",

@@ -28,6 +28,20 @@ Storage CRS: EPSG:4326. All distances and areas: EPSG:32642 (UTM zone 42N).
 - **Raw cache:** `data/raw/osm/relation_16350631.json` (gitignored). P1-03 will bring it
   under the full manifest-and-checksum scheme.
 
+### Derived: H3 analysis grid (P1-02, 2026-09-26)
+- **Output:** `data/processed/grid.geojson` — 265 H3 resolution-9 cells, EPSG:4326.
+- **Derived from:** `data/processed/pilot_area.geojson` (OSM relation 16350631) via
+  `pipeline/grid.py`. No new upstream data.
+- **Licence:** ODbL 1.0 — a derived database of OpenStreetMap, © OpenStreetMap contributors.
+- **Inclusion rule (D15, provisional):** centre inside the boundary, or ≥ 25% of the
+  cell's area inside. 248 cells qualify by centre, 17 by the area rule.
+- **Coverage:** 99.115% of the boundary; 0.885% — thin edge slivers — is covered by no
+  cell and must appear in the model report's limitations.
+- **Caveat that travels with every indicator:** hexagons total 27.080 km² while Landhi is
+  25.370 km². Indicators are computed over the **clipped** geometry (cell ∩ boundary),
+  so the 1.935 km² of overhang is excluded and no cell reports a neighbouring town's
+  values. `clipped_area_km2` is stored per cell.
+
 ### OpenStreetMap health facilities (count only, for the D2 comparison)
 - **Query:** `amenity=hospital|clinic|doctors` inside each candidate town
 - **Counts:** Korangi 56, Malir 41, Shah Faisal 39, Landhi 32

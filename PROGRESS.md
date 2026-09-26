@@ -137,3 +137,30 @@ the build and demand a DECISIONS.md entry, which is the behaviour D2 deserves.
 inner-ring subtraction never runs on real data. Four unit tests exercise it with
 hand-made SYNTHETIC squares, which never reach the site (§2.1).
 **Next:** P1-02 Grid.
+
+## 2026-09-26 — P1-02 Grid
+**What changed:** `pipeline/grid.py` covers the pilot boundary with H3 resolution-9
+cells, applies the documented inclusion rule, checks coverage, and writes
+`data/processed/grid.geojson` (130 kB) plus a preview PNG. Added `tests/test_grid.py`,
+12 tests. `config/area.yaml` gains `min_area_fraction`.
+**Evidence:** `uv run python -m pipeline.grid` -> 265 cells (248 by centre, 17 by the
+>=25% rule); "Coverage of the boundary: 99.115% (minimum 99%)"; hexagons 27.080 km2,
+clipped 25.145 km2, boundary 25.370 km2, overhang 1.935 km2 excluded by clipping. PNG
+viewed: gapless tiling, edge cells exactly where the boundary bulges past a cell centre.
+`uv run pytest` -> 51 passed. `check.py --quick` -> `CHECK: PASS (3 checks)`.
+**A contradiction in the Phase 0 spec, found and resolved, not papered over.** The
+config said "centre inside OR >=50% of area"; PROMPT.md §12 said cells must cover >=99%
+of the boundary. Measured, the centre rule reaches only 96.552%, so the two could never
+both hold. Worse, **the 50% clause was dead code**: zero cells ever qualified under it,
+because for a locally straight boundary a hexagon has >=50% of its area inside exactly
+when its centre is inside. The 99% criterion is PROMPT.md's and was left untouched
+(§2.2); the threshold Claude itself wrote in Phase 0 moved to 0.25 instead, and every
+indicator now uses the clipped geometry so no cell can carry a neighbouring town's
+values. Recorded as **D15, provisional**, with the full measured table, and raised as
+QUESTIONS.md Q5 because the threshold is Samraj's judgement to confirm (§2.4).
+**Limitation to carry into the model report:** 0.885% of Landhi, thin slivers along the
+edge, is covered by no cell.
+**Tests deliberately recompute rather than trust:** coverage, the inclusion rule, each
+clipped area, and contiguity are all re-derived from the stored geometry, so a wrong
+number in the file's own metadata fails the suite.
+**Next:** P1-03 Download cache.

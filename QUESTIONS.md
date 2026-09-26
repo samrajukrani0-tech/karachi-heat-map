@@ -90,3 +90,24 @@ across several towns, which needs the model extended beyond the pilot area;
 **D14**, with the three reasons the city-scale alternative was rejected (near-circular,
 sample too small, sample biased by the response itself) written out so the argument is
 not re-made later. P2-05 geocodes the single Landhi incident and reports its cell's rank.
+
+---
+
+## Q5 — Confirm the grid inclusion rule (OPEN, not blocking)
+
+P1-02 found that two Phase 0 statements contradicted each other: the "centre inside OR
+≥50% of area" rule tops out at 96.55% coverage, but the P1-02 acceptance criterion
+requires ≥99%. The 50% clause turned out to be dead code — no cell ever qualified under
+it, because a hexagon has ≥50% inside exactly when its centre is inside.
+
+Claude changed the threshold to **0.25** (265 cells, 99.115% coverage) and made every
+indicator use the clipped geometry, so the 1.935 km² of hexagon outside Landhi is
+excluded from all measurements. Recorded as **D15, provisional**. Full table in
+DECISIONS.md.
+
+**Asked of Samraj:** confirm 0.25, or choose 0.10 (276 cells, 99.83%) or any-intersection
+(290 cells, 100%). Lower thresholds cover more of Landhi but admit edge cells holding
+very little real evidence — at 3% inside, a cell contains about three population pixels.
+0.885% of Landhi is currently uncovered and is recorded as a limitation.
+
+**Answer:**

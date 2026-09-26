@@ -18,10 +18,14 @@ grid:
   resolution: 9              # D3: ~0.105 km2/cell, edge ~174 m
   expected_cells_min: 180    # sanity bounds only; P1-02 prints the real count
   expected_cells_max: 340
+  min_area_fraction: 0.25
   inclusion_rule: >
     A cell is included when its centre lies inside the pilot boundary, OR when at
-    least 50% of its area intersects the boundary. Documented and tested in P1-02;
-    cells must cover at least 99% of the boundary area.
+    least min_area_fraction of the cell's area falls inside it. Every indicator is
+    then computed over the CLIPPED geometry (cell intersect boundary), never the whole
+    hexagon, so no cell can carry values from outside the pilot area. Cells must cover
+    at least 99% of the boundary area.
+    Revised in P1-02 from an original 0.50 threshold; see DECISIONS.md D15.
 
 crs:
   storage: EPSG:4326         # all stored and exported geometry

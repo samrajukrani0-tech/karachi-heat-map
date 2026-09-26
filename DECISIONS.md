@@ -484,3 +484,56 @@ genuine warning sign**. A check that can only confirm is not a check.
 
 **Status:** approved
 **Date:** 2026-09-26
+
+---
+
+## D15 — Grid inclusion rule (2026-09-26, PROVISIONAL)
+
+**Question:** Which H3 cells belong to the grid, given that a hexagon on the edge is
+partly inside Landhi and partly in a neighbouring town?
+
+**The conflict found in P1-02.** Two statements written in Phase 0 cannot both hold:
+- `config/area.yaml`: include a cell when its centre is inside, **or** when ≥ 50% of its
+  area is inside;
+- PROMPT.md §12 P1-02: the cells must cover **≥ 99%** of the boundary.
+
+Measured over the real boundary:
+
+| rule | cells | coverage | hexagon area | overhang |
+|---|---|---|---|---|
+| centre inside only | 248 | 96.552% | 25.343 km² | −0.027 |
+| centre **or ≥50% area** | 248 | 96.552% | 25.343 km² | −0.027 |
+| centre or ≥25% area | 265 | **99.115%** | 27.080 km² | +1.710 |
+| centre or ≥10% area | 276 | 99.826% | 28.204 km² | +2.834 |
+| any intersection | 290 | 100.000% | 29.634 km² | +4.264 |
+
+Two things fall out of that table. First, **the 50% clause was dead code**: not one cell
+qualified under it. For a boundary that is locally a straight line, a hexagon has ≥ 50%
+of its area inside exactly when its centre is inside, so the "OR" could never add
+anything. Second, the centre rule tops out at 96.55%, so it could never meet the 99%
+criterion.
+
+**Decision:** the 99% criterion is from PROMPT.md and is not negotiable (§2.2), so the
+inclusion rule changes instead:
+1. `min_area_fraction` drops from 0.50 to **0.25** — 265 cells, 99.115% coverage, the
+   least overhang of any option that clears the bar.
+2. **Every indicator is computed over the clipped geometry** (cell ∩ boundary), never
+   the whole hexagon. The 1.935 km² of hexagon lying outside Landhi is therefore
+   excluded from every measurement, so no cell can report a neighbouring town's heat or
+   population. `clipped_area_km2` is stored per cell and `pipeline.grid.clip()` is the
+   shared helper.
+
+**Why 0.25 and not a smaller threshold that would cover more.** It is not only the
+minimum that clears the criterion; it also has an independent justification. A quarter
+of a res-9 hexagon is about 0.026 km², which at Landhi's density is on the order of 700
+people and about 28 Meta population pixels (30 m). At a 3% threshold an edge cell would
+hold roughly 3 pixels, and its indicator values would be noise dressed as a measurement.
+The threshold is a floor on how much real evidence a cell must contain.
+
+**Cost, stated honestly:** 0.885% of Landhi — thin slivers along the edge — is not
+covered by any cell. This belongs in the model report's limitations.
+
+**Status: PROVISIONAL.** Claude changed its own Phase 0 config default to satisfy a
+PROMPT.md criterion, and the choice of 0.25 is a modelling judgement that belongs to
+Samraj (§2.4). Raised as QUESTIONS.md Q5. Nothing downstream is blocked meanwhile.
+**Date:** 2026-09-26
