@@ -295,8 +295,8 @@
     "P1-02"
    ],
    "passes": false,
-   "blocked_on": "QUESTIONS.md Q9: the feasibility study is written (docs/load-shedding-feasibility.md) and recommends dropping the indicator for v1, because the published schedule has no geography and any per-cell value would require inventing a service boundary. The acceptance criterion requires Samraj's decision either way.",
-   "dropped": null,
+   "blocked_on": null,
+   "dropped": "Dropped for v1 by D20 (2026-09-26), approved by Samraj after reading docs/load-shedding-feasibility.md. The feasibility study itself was completed: K-Electric's schedule was fetched, cached, manifested and parsed, giving 620 feeder rows across 58 grid stations, 26 on the LANDHI grid, with daily outage from 4.0 to 10.0 hours. The indicator cannot be built because the schedule publishes no geography and any per-cell value would require inventing a service boundary (2.1). The model report must state that the mechanism Faisal Edhi named in June 2024 is the one this model cannot see.",
    "evidence": null
   },
   {

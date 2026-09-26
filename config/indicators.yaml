@@ -100,9 +100,14 @@ dropped:
       so the indicator would be near-constant and would cost an AHP comparison for
       no information.
 
-# Built only if Samraj approves after reading docs/load-shedding-feasibility.md (P1-10).
-gated:
   - id: load_shedding
-    name_en: Load-shedding exposure
-    dimension: vulnerability
-    source: K-Electric published load-shed schedules by area or feeder
+    reason: >
+      Dropped by D20 (2026-09-26), approved by Samraj after the P1-10 feasibility study.
+      K-Electric's published schedule has 620 feeder rows across 58 grid stations, 26 on the
+      LANDHI grid, with daily outage from 4.0 to 10.0 hours -- so the quantity exists and
+      varies substantially. But the schedule gives only a feeder name and a grid station: no
+      coordinates, no boundaries, no street lists. Their own place-to-feeder route is a
+      13-digit account number in an app. Spreading 26 feeders across 265 cells would require
+      inventing a service boundary K-Electric has not published, which section 2.1 forbids.
+      The study (docs/load-shedding-feasibility.md) records the v2 fieldwork route: feeder
+      names printed on K-Electric bills tie feeders to real addresses.

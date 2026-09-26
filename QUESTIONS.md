@@ -210,7 +210,7 @@ pairwise questions. `built_fraction` is still computed and stored as panel conte
 
 ---
 
-## Q9 — Load-shedding indicator: approve dropping it? (OPEN, blocks P1-10)
+## Q9 — Load-shedding indicator: approve dropping it? — ANSWERED 2026-09-26
 
 `docs/load-shedding-feasibility.md` is written. Summary of what was found:
 
@@ -238,4 +238,7 @@ precisely where power goes longest, because it structures their day.
 **Asked of Samraj:** approve dropping P1-10's indicator for v1 (Claude's recommendation),
 or ask for one of the alternatives in the study to be attempted anyway.
 
-**Answer:**
+**Samraj's answer:** "agreed, drop load-shedding for v1." Recorded as **D20**. P1-10 is
+marked `dropped` in features.json with the study as its evidence, so it counts as
+resolved. The feasibility study stays in `docs/` as the record of why, and as the method
+for the v2 fieldwork route.

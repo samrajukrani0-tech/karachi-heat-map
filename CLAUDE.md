@@ -49,7 +49,9 @@ owns every modelling decision.
   the two age **shares** (correlate at exactly −1.0 — one administrative zone variable);
   `built_fraction` (≈ +0.93 with `lack_green`, and double-counts Hazard). Age **counts**
   and `built_fraction` are still computed as panel context, like the LST p90.
-  Load-shedding is gated behind the P1-10 feasibility study.
+- **D20** load-shedding dropped for v1: K-Electric publishes feeder names, not geography,
+  so a per-cell value would mean inventing a service boundary. The report must say the
+  mechanism Edhi named is the one the model cannot see.
 - **D5** robust min–max, clipped at the 5th/95th percentile.
 - **D6** Priority = weighted geometric mean of H, E, V; H and V floored at 0.01,
   **E deliberately not floored** (E = 0 means nobody lives there).

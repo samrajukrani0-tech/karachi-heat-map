@@ -732,3 +732,43 @@ exactly the way the LST 90th percentile is computed and shown but not indexed (D
 
 **Status:** approved
 **Date:** 2026-09-26
+
+---
+
+## D20 — Drop the load-shedding indicator for v1 (2026-09-26)
+
+**Question:** P1-10's feasibility study is written. Build the indicator or drop it?
+
+**What the study found.** K-Electric's published schedule was fetched, cached, manifested
+and parsed directly rather than described second-hand: **620 feeder rows** across **58
+grid stations**, **26 on the LANDHI grid**, with daily outage from **4.0 to 10.0 hours**
+(median 7.5). The quantity exists and varies by six hours between feeders — plausibly
+more consequential than some indicators that *are* in the model.
+
+**Why it cannot be built anyway.**
+1. The schedule publishes a feeder name and a grid station. No coordinates, no boundaries,
+   no street lists.
+2. K-Electric's own route from place to feeder is a 13-digit account number in their app —
+   a lookup from *account* to feeder, not from *place* to feeder, and unusable for 265 cells.
+3. Many feeder names are businesses or bare codes: `ZAFAR ICE`, `ROTI PLANT`, `NOOR BHAI`,
+   `36 B RMU`. Geocoding them would be guesswork, and OSM covers ~11% of Landhi (D18).
+4. Even with every feeder located as a point, spreading 26 feeders across 265 cells means
+   **inventing a service boundary K-Electric has not published** — forbidden by §2.1.
+5. The document found is the **Ramadan 2026** schedule, not April–June.
+6. `ke.com.pk` presents a **self-signed certificate**; TLS verification fails and plain
+   HTTP times out. Disabling certificate verification to scrape a utility's site is not
+   something this project will do, so there is no reproducible automated source.
+
+**Samraj's decision:** "agreed, drop load-shedding for v1."
+
+**Required in the model report:** state plainly that **the mechanism Faisal Edhi named in
+June 2024 — long power cuts in poorer workers' neighbourhoods — is the one this model
+cannot see.** That absence is a limitation of the data, not evidence that power cuts do
+not matter.
+
+**The v2 route, recorded in the study:** feeder names are printed on K-Electric bills.
+Ten to fifteen bills from different parts of Landhi would tie feeder names to real
+addresses, which is exactly the link the published schedule omits. Fieldwork, not scraping.
+
+**Status:** approved
+**Date:** 2026-09-26
