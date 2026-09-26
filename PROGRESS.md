@@ -561,3 +561,61 @@ consistency is not validity; weights are not influence, since realised influence
 on each indicator's spread after scaling; and group judgements must be aggregated by
 **geometric** mean, which matters for D7b's planned re-run with a field coordinator.
 **Next:** P2-03 Scores.
+
+## 2026-09-26 — P2-03 Scores
+**What changed:** `pipeline/score.py`, `tests/test_score.py` (24 tests),
+`data/processed/scores.csv` and `scores_weights_used.json`.
+**Evidence:** hazard min 0.0100 (floored) / exposure min 0.0000 (unfloored, D6b) /
+vulnerability min 0.1344; Priority min 0, median 0.6157, max 0.8529; Intensity median
+0.5345 with 21 undefined. 21 cells score Priority exactly 0, matching the 21 with no
+residents — D6b behaving exactly as designed. `uv run pytest` -> 239 passed;
+`check.py --quick` -> `CHECK: PASS (3 checks)`.
+**The missing indicator is handled out loud.** `dist_centre` has no data, so an
+`IncompleteDimensionWarning` fires, the surviving vulnerability weights are renormalised
+to 0.5/0.5, the weights actually used are published in `scores_weights_used.json`, and
+every row carries `model_incomplete` and `weights_provisional`. Nothing can present these
+scores as final.
+**A real bug caught by testing the output rather than the code.** Six populated cells sit
+below the pilot median on *every* indicator, so "the indicators that push this cell above
+the median" was an empty list and the site would have rendered a blank "why" panel. They
+now say "Below the Landhi average on every measure we track" — a correct answer, properly
+presented.
+
+### Checker subagent verdict (PROMPT.md §3.1) — AGREES on the arithmetic, disagrees on the formulation
+Given the spec and the raw table but neither the implementation nor the output, it
+re-derived three cells end to end and **all three matched to six decimal places**. It then
+made five empirical claims, and **all five were independently verified here**:
+
+| claim | verified |
+|---|---|
+| The vulnerability floor never binds | min V = 0.1344 vs a floor of 0.01 — **dead code** |
+| 31% of cells are tied at a clipped extreme | 81 of 265 |
+| Intensity scores empty cells highly | up to 0.7402, best rank **24 of 265** |
+| LST is rank-uncorrelated with everything | Spearman +0.048 green, +0.004 built, −0.005 population |
+| Zero-imputation would be rank-identical | it is a constant factor, so ranking is unchanged |
+
+**One fix applied: Intensity is now undefined where nobody lives.** "How bad is it for a
+person here" has no answer when there is no person here.
+
+**Two things recorded for Samraj rather than decided here:**
+- **Q11.** PROMPT.md calls Intensity "the per-person view". It contains no population
+  term — it is *exposure-blind*, which is not the same thing. Recommended: keep the
+  formula, correct the description to something like "Severity".
+- **Q12 — a correction to something Claude told Samraj.** D19's second reason for dropping
+  `built_fraction` was that built-up surface causes the LST that Hazard already measures.
+  Measured, `lst_mean_c` vs `built_fraction` is Spearman **+0.004**. There was no
+  double-counting to prevent. D19 still stands on its first reason (0.93 redundancy with
+  `lack_green`), but he decided partly on a claim the data does not support, and he has
+  been told.
+
+**A finding for the model report.** Vegetation buys Landhi very little: cells ≥90% green
+average **42.48 °C** against **43.31 °C** for cells under 10% green — a gap of **0.83 °C**.
+The relationship flips sign between the green minority (−0.275) and the built majority
+(+0.382), which is why the overall correlation is ≈ 0. The hazard layer's 7 °C spread is
+real and spatially coherent, but it is **not** explained by land cover, so the report must
+not imply the textbook urban-heat-island story.
+**A silver lining in the same finding:** the three dimensions are near-independent, so
+each contributes information rather than repeating the others. That is good index design —
+and it also means no dimension dominates, so the ranking is sensitive to the weights,
+which P2-04 must quantify.
+**Next:** P2-04 Sensitivity.

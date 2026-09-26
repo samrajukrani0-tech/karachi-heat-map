@@ -389,10 +389,10 @@
    "depends_on": [
     "P2-01"
    ],
-   "passes": false,
+   "passes": true,
    "blocked_on": null,
    "dropped": null,
-   "evidence": null
+   "evidence": "uv run python -m pipeline.score -> hazard from [lst_day_mean] min 0.0100 (floored) median 0.5341 max 1.0000; exposure from [population] min 0.0000 (UNFLOORED per D6b) median 0.7879 max 1.0000; vulnerability from [lack_green, dist_health] min 0.1344 median 0.5500 max 0.9827. Priority min 0 median 0.6157 max 0.8529; Intensity median 0.5345, 21 undefined (no residents). 21 cells have Priority exactly 0, matching the 21 with no population -- D6b working as designed. An IncompleteDimensionWarning fires for the missing dist_centre and the surviving weights are renormalised to 0.5/0.5 and published in scores_weights_used.json; every row carries model_incomplete and weights_provisional. 24 tests including all four required property tests. A REAL BUG CAUGHT BY TESTING THE OUTPUT: 6 populated cells sat below the pilot median on every indicator, so top_reasons returned empty and the site would have shown a blank 'why' panel; they now say 'Below the Landhi average on every measure we track'. CHECKER SUBAGENT (section 3.1): given the spec and the raw table but not the implementation or the output, it re-derived three cells end to end -- normalisation, renormalised weights, floors, geometric mean, Intensity -- and ALL THREE AGREED to six decimal places. Five of its empirical claims were independently verified and all five held. One fix applied: Intensity is now undefined where nobody lives (unmasked, an empty cell scored 0.740 and ranked 24th on a measure called 'per-person'). Raised Q11 (the 'per-person' label) and Q12 (D19's second reason does not survive measurement). uv run pytest -> 239 passed; check.py --quick -> 'CHECK: PASS (3 checks)'."
   },
   {
    "id": "P2-04",

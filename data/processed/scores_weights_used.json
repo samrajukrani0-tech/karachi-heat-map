@@ -1,0 +1,23 @@
+{
+ "dimension_exponents": {
+  "hazard": 0.3333333333333333,
+  "exposure": 0.3333333333333333,
+  "vulnerability": 0.3333333333333333
+ },
+ "within_dimension": {
+  "hazard": {
+   "lst_day_mean": 1.0
+  },
+  "exposure": {
+   "population": 1.0
+  },
+  "vulnerability": {
+   "lack_green": 0.5,
+   "dist_health": 0.5
+  }
+ },
+ "missing_indicators": [
+  "dist_centre"
+ ],
+ "weights_provisional": true
+}

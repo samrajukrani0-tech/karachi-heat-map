@@ -267,3 +267,65 @@ number, κ = a₀₁·a₁₂/a₀₂, where 1 means your answers multiply throu
 **Asked of Samraj:** confirm the graduated threshold, or revert to PROMPT.md's flat 0.10.
 
 **Answer:**
+
+---
+
+## Q11 — "Intensity" is not a per-person view (OPEN, decide before P2-06)
+
+PROMPT.md §7 says: *"Also compute **Intensity** = √(H × V), the per-person view."* The
+checker subagent objected to that wording, and measurement backs it up.
+
+The formula contains **no population term**. It is Priority with the Exposure dimension
+deleted — *exposure-blind*, which is not the same as per-person. A genuinely per-person
+figure would be a rate: risk divided by people. The evidence: before it was masked,
+**21 cells with nobody living in them scored up to 0.740 on Intensity, one ranking 24th
+of 265** — on a measure labelled "per-person".
+
+**Already fixed:** Intensity is now undefined (blank) where a cell has no residents.
+"How bad is it for a person here" has no answer when there is no person here.
+
+**Still open — the name and the description.** Claude recommends keeping the formula, which
+is specified and genuinely useful, but describing it accurately: something like
+**"Severity — how bad conditions are in this area, regardless of how many people live
+there"**. It does real work: on populated cells it correlates with Priority at Spearman
+0.93 but moves some cells by more than 50 ranks, which is exactly the equity function
+§7 wants — surfacing small-population hotspots that Priority buries.
+
+**Asked of Samraj:** keep the name "Intensity" with a corrected description, rename it to
+"Severity", or defend "per-person" as intended. This changes wording in the model report
+and on the site, not the maths.
+
+**Answer:**
+
+---
+
+## Q12 — D19's reasoning does not survive measurement (OPEN, not blocking)
+
+When you approved dropping `built_fraction` (D19), Claude gave two reasons:
+1. it correlates ~0.93 with `lack_green`, so the two are near-duplicates; **and**
+2. built-up surface is *a cause of* the high land surface temperature that Hazard already
+   measures, so indexing it would count the same physical fact twice.
+
+**Reason 2 does not hold.** Measured on the real data, `lst_mean_c` versus
+`built_fraction` is Spearman **+0.004** — no relationship at all. There was no
+double-counting to prevent. Reason 1 is solid and independently justifies the decision,
+so **D19 stands**, but it was argued partly on a claim the data does not support, and you
+should know that.
+
+**What this implies for `lack_green`.** The checker argued `lack_green` belongs in Hazard
+rather than Vulnerability, since absence of vegetation drives surface heat. But by the
+same measurement it correlates with `lst_mean_c` at Spearman **+0.048** — so in Landhi it
+is *not* a proxy for the measured hazard, and keeping it in Vulnerability adds information
+rather than duplicating heat. Claude therefore recommends **no change**.
+
+**The finding worth carrying into the report either way.** Vegetation buys Landhi very
+little: cells ≥90% green average **42.48 °C**, cells <10% green average **43.31 °C** — a
+difference of just **0.83 °C**. The relationship even flips sign between the green minority
+(Spearman −0.275) and the built majority (+0.382), which is why the overall correlation is
+near zero. The hazard layer's 7 °C spread is real and spatially coherent, but it is **not**
+explained by land cover, and the report should not imply the usual urban-heat-island story.
+
+**Asked of Samraj:** confirm no change to `lack_green`'s dimension (Claude's
+recommendation), or move it to Hazard.
+
+**Answer:**
