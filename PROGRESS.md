@@ -682,3 +682,50 @@ different weighting; the checker's sweep showed the count of stable cells fallin
 at α = 500 to 11 at α ≈ 3. And the weights are still `provisional: true`, so the
 uncertainty from "these are not yet Samraj's judgement" exceeds anything sampled here.
 **Next:** P2-05 Validation pack.
+
+## 2026-09-27 — P2-05 Validation pack
+**What changed:** `pipeline/validate.py`, `tests/test_validate.py` (23 tests),
+`docs/expert-ranking-form.md`, `data/processed/validation.json`.
+**Evidence:** `uv run pytest` -> 275 passed; `check.py --quick` -> `CHECK: PASS`.
+
+### The honest result
+**(a)** The equal-weights baseline is *currently a tautology*: the configured weights ARE
+equal weights while P2-02b is blocked, so ρ = 1.0 by construction. Reporting that as a
+validation result would read as agreement between two methods. The JSON now declares it
+**not applicable yet** and points at P2-04 as what answers the question meanwhile.
+Informative substitutes are reported instead: hazard-led ρ 0.9570, exposure-led 0.9651,
+vulnerability-led 0.9660.
+**(b)** The one June 2024 incident reported inside Landhi resolves to four plausible
+locations, ranking **106, 112, 156 and 160 of 245** — all mid-distribution, which is
+exactly what a randomly drawn cell would give. Downgraded from D14's "weak evidence" to
+**illustrative context only**: a single incident has no denominator, so it is neither
+support nor refutation.
+**(c)** The expert-ranking form is built from **12 real OpenStreetMap place nodes** inside
+Landhi — not invented — plus 13 blank rows, because OSM maps only a small part of Landhi
+(D18) and the list is certainly incomplete.
+
+### Checker subagent verdict (§3.1) — AGREES, and improved six things
+It re-derived the three spot ranks independently: **106, 156, 160 — exact match**. Its
+bootstrap gave ρ 0.965035, τ 0.848485, percentile CI [0.8175, 1.0000] — all matching.
+
+Applied:
+1. **Ranks are quoted against 245 distinguishable positions, not 265 cells.** 21 empty
+   cells tie at the bottom, so "of 265" implied resolution the model does not have.
+2. **Quintile labels dropped** in favour of rank plus priority. Rank 106 was *exactly* the
+   last cell of Q2 and 160 *exactly* the first of Q4, so "Q2 to Q4" implied a three-fifths
+   spread when all three sit mid-table.
+3. **Face validity downgraded to no evidentiary weight**, with the denominator argument
+   written into the data.
+4. **The equal-weights tautology is declared in the output**, not just mentioned in print.
+5. **A permutation test was added.** "Better than chance" is a test, not an interval; at
+   n = 12 the one-sided 5% critical value sits near ρ = 0.50.
+6. **The Fisher SE corrected to Bonett–Wright** (√(1.06/(n−3)) rather than the Pearson
+   1/√(n−3)), giving [0.8721, 0.9908] against the checker's [0.8720, 0.9908]. The Pearson
+   SE was slightly too narrow — the wrong direction to be wrong in for a small-n exercise.
+
+**A power limitation now stated on the form itself:** with 12 localities only very strong
+agreement is detectable; about 25 are needed to tell a genuinely useful model from
+guesswork. Field staff are asked to add places we have missed.
+**Performance:** vectorising the bootstrap and permutation took the suite from 53 s to
+2.5 s.
+**Next:** P2-06 Model report.

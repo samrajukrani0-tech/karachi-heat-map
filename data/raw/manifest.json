@@ -55,6 +55,14 @@
   "licence": "ODbL 1.0 - (c) OpenStreetMap contributors",
   "note": "Overpass query response; rebuildable from the query in the caller"
  },
+ "osm/landhi_places.json": {
+  "url": "https://overpass-api.de/api/interpreter",
+  "sha256": "2c4e0a4c89e7616ce47a095bb950699100cc4a5e2510f51f635f18fc4c57ea35",
+  "bytes": 3915,
+  "downloaded": "2026-09-27",
+  "licence": "ODbL 1.0 - (c) OpenStreetMap contributors",
+  "note": "Overpass query response; rebuildable from the query in the caller"
+ },
  "osm/relation_16350631.json": {
   "url": "https://overpass-api.de/api/interpreter",
   "sha256": "0a9b249905a9e5ff039f4239e548b90ac247bf9e9d749cad4697ff8af96181e8",

@@ -1,0 +1,102 @@
+{
+ "equal_weights_baseline_status": "not applicable yet: the configured weights ARE equal weights and are provisional pending P2-02b, so this comparison correlates a vector with itself and is 1.0 by construction. The question it was meant to answer -- does the weighting choice matter? -- is answered meanwhile by the P2-04 sensitivity analysis.",
+ "equal_weights_and_alternatives": {
+  "equal weights (the configured baseline)": {
+   "spearman": 1.0,
+   "kendall": 1.0
+  },
+  "hazard-led": {
+   "spearman": 0.957,
+   "kendall": 0.8455
+  },
+  "exposure-led": {
+   "spearman": 0.9651,
+   "kendall": 0.8552
+  },
+  "vulnerability-led": {
+   "spearman": 0.966,
+   "kendall": 0.859
+  }
+ },
+ "weights_provisional": true,
+ "face_validity": {
+  "incident": "one body recovered near Landhi Hospital's Chowrangi, 24 June 2024",
+  "source": "Express Tribune story 2473712, text supplied by Samraj (QUESTIONS.md Q1)",
+  "candidates": [
+   {
+    "location": "Karachi Homoeopathic Medical College & Hospital",
+    "cell": "8942e44e353ffff",
+    "inside_pilot": true,
+    "rank": 106,
+    "of_cells": 265,
+    "of_distinguishable_positions": 245,
+    "priority": 0.6385,
+    "percentile": 57.0
+   },
+   {
+    "location": "Bismillah Chowrangi, Landhi Town",
+    "cell": "8942e44e2cbffff",
+    "inside_pilot": true,
+    "rank": 160,
+    "of_cells": 265,
+    "of_distinguishable_positions": 245,
+    "priority": 0.5891,
+    "percentile": 34.8
+   },
+   {
+    "location": "MALC Landhi Leprosy Centre",
+    "cell": "8942e44e203ffff",
+    "inside_pilot": true,
+    "rank": 156,
+    "of_cells": 265,
+    "of_distinguishable_positions": 245,
+    "priority": 0.5934,
+    "percentile": 36.5
+   },
+   {
+    "location": "Landhi No 6 (town centroid of the named area)",
+    "cell": "8942e44e21bffff",
+    "inside_pilot": true,
+    "rank": 112,
+    "of_cells": 265,
+    "of_distinguishable_positions": 245,
+    "priority": 0.6338,
+    "percentile": 54.5
+   }
+  ],
+  "ranks": [
+   106,
+   112,
+   156,
+   160
+  ],
+  "verdict_strength": "none -- illustrative context only",
+  "why_weak": [
+   "It is a single incident. There is no denominator: we observe one place where an event happened and no sample of places where it did not, so nothing distinguishes the model from chance in either direction.",
+   "The location is a phrase, not a coordinate. 'Landhi Hospital's Chowrangi' resolves to several plausible points, and they rank differently.",
+   "Street-death reports depend on where ambulances patrol and where bodies are found in public, so they sample reporting infrastructure, not heat harm. A body located by reference to a landmark is selected for landmark density.",
+   "The observed ranks sit mid-distribution -- which is exactly what a randomly drawn cell would give. This is neither support nor refutation."
+  ]
+ },
+ "expert_ranking": {
+  "form": "docs/expert-ranking-form.md",
+  "localities": [
+   "Allah Buksh Goth",
+   "Bagh-e-Korangi",
+   "Future Colony",
+   "Ilyas Goth",
+   "Korangi Sector 29",
+   "Landhi 89 Chowk",
+   "Landhi Sector 21",
+   "Mansehra Colony",
+   "Muhammad Nagar",
+   "Sharafi Goth Landhi",
+   "Sherpao Colony",
+   "Labour Colony"
+  ],
+  "localities_source": "OpenStreetMap place nodes inside the Landhi Town boundary",
+  "n_localities": 12,
+  "power_note": "At n = 12 the one-sided 5% permutation critical value is near rho = 0.50, so only very strong agreement is detectable. n = 25 is needed for 80% power at a true rho of 0.5.",
+  "real_rankings_collected": false
+ }
+}

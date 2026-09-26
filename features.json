@@ -427,10 +427,10 @@
    "depends_on": [
     "P2-03"
    ],
-   "passes": false,
+   "passes": true,
    "blocked_on": null,
    "dropped": null,
-   "evidence": null
+   "evidence": "uv run python -m pipeline.validate -> (a) alternative weightings: hazard-led rho 0.9570, exposure-led 0.9651, vulnerability-led 0.9660. The equal-weights baseline is marked not-applicable-yet, because the configured weights ARE equal weights pending P2-02b, so it correlates a vector with itself; the JSON says so and points at P2-04 as what answers the question meanwhile. (b) face validity: the one reported Landhi incident resolves to four plausible locations ranking 106, 112, 156 and 160 of 245 distinguishable positions -- all mid-distribution. Recorded as illustrative context only, NOT weak support: a single incident has no denominator. (c) docs/expert-ranking-form.md built from 12 real OpenStreetMap place nodes inside Landhi plus 13 blank rows, with the power limitation stated on the form. Analysis script reports Spearman, Kendall, a percentile bootstrap CI, a Bonett-Wright Fisher-z CI and a permutation p, on SYNTHETIC rankings only. CHECKER SUBAGENT (section 3.1): re-derived the three spot ranks independently and got 106, 156, 160 -- EXACT MATCH -- and rho 0.965035 / tau 0.848485 / percentile CI [0.8175, 1.0000], all matching. Six of its findings applied: ranks now quoted against 245 distinguishable positions not 265 cells; quintile labels dropped as knife-edge artefacts in favour of rank plus priority; the face-validity verdict downgraded from 'weak' to 'illustrative context only'; the equal-weights tautology declared in the data; a permutation test added because 'better than chance' is a test not an interval; and the Fisher SE corrected to Bonett-Wright, giving [0.8721, 0.9908] against the checker's [0.8720, 0.9908]. Bootstrap and permutation vectorised: the suite went from 53 s to 2.5 s. uv run pytest -> 275 passed; check.py --quick -> 'CHECK: PASS (3 checks)'."
   },
   {
    "id": "P2-06",
