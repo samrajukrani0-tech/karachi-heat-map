@@ -26,28 +26,6 @@ indicators:
     reason_en: "More people live in this area"
     reason_ur: ""
 
-  - id: share_over60
-    name_en: Share aged 60 and over
-    name_ur: ""
-    dimension: vulnerability
-    unit: "fraction"
-    direction: 1
-    transform: none
-    source: Meta demographic layers (HDX)
-    reason_en: "More older residents, who are at greater risk in heat"
-    reason_ur: ""
-
-  - id: share_under5
-    name_en: Share aged under 5
-    name_ur: ""
-    dimension: vulnerability
-    unit: "fraction"
-    direction: 1
-    transform: none
-    source: Meta demographic layers (HDX)
-    reason_en: "More young children, who are at greater risk in heat"
-    reason_ur: ""
-
   - id: built_fraction
     name_en: Built-up surface
     name_ur: ""
@@ -97,6 +75,21 @@ indicators:
 
 # Recorded so the reasons are not lost. See DECISIONS.md D4.
 dropped:
+  - id: share_over60
+    reason: >
+      Dropped by D17 (2026-09-26), approved by Samraj. Measured over Landhi, share_over60
+      and share_under5 correlate at exactly -1.0000, 86% of cells sit on just two values,
+      and their sum spans only 0.15291-0.15441 (CV 0.0045, against 0.028 for LST and 0.994
+      for population). Meta applies an administrative-unit age profile rather than modelling
+      age spatially, and Landhi spans two such zones, so the pair is one binary variable with
+      opposite signs. Both carry direction +1 in the same weighted mean, so they would largely
+      cancel while consuming two of six weights. The COUNTS (people_over60, people_under5) do
+      vary and are retained in data/processed/age_cells.csv for D8's need definition.
+  - id: share_under5
+    reason: >
+      Dropped by D17 alongside share_over60; see that entry. The two are the same variable
+      with opposite signs, so dropping one without the other would leave a binary
+      administrative-zone split masquerading as demography.
   - id: lst_night
     reason: >
       MODIS night LST is 1 km. About 25 pixels cover the whole 25.37 km2 pilot area

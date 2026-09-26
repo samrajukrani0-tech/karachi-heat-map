@@ -647,7 +647,11 @@ mortality, and this project cannot map it within Landhi. That is a real limitati
 tidy simplification. Partial compensation: the expert-ranking protocol (§7c) lets field
 staff bring knowledge the data lacks.
 
-**Status: PROVISIONAL** — dropping an approved D4 indicator is Samraj's decision.
-Raised as QUESTIONS.md Q7. P1-07 itself passes: it produced the shares, in [0, 1], with
-the zero-population rule implemented and tested, exactly as specified.
+**Samraj's decision (2026-09-26):** "drop both age shares". Applied: both removed from
+`config/indicators.yaml` (moved to `dropped` with the reason), Vulnerability's weights in
+`config/weights.yaml` rebalanced to four indicators at 0.25 each, and the D4 indicator-count
+test updated from 8 to 6 with this decision cited.
+
+**Status: approved.** P1-07 itself passes: it produced the shares, in [0, 1], with the
+zero-population rule implemented and tested, exactly as specified.
 **Date:** 2026-09-26

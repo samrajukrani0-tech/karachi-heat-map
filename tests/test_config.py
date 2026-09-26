@@ -18,8 +18,9 @@ def test_indicator_ids_unique(indicators):
 
 
 def test_d4_indicator_count(indicators):
-    """D4 approved exactly eight indicators; adding one is a decision, not a tweak."""
-    assert len(indicators["indicators"]) == 8
+    """D4 approved eight indicators; D17 dropped the two age shares with Samraj's
+    approval, leaving six. Changing this number is a decision, not a tweak."""
+    assert len(indicators["indicators"]) == 6
 
 
 def test_dropped_indicators_state_a_reason(indicators):

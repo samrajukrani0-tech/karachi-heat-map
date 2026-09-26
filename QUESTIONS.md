@@ -143,7 +143,7 @@ matches what they see on the ground in Landhi.
 
 ---
 
-## Q7 — Drop the two age-share indicators? (OPEN, decide before Phase 2)
+## Q7 — Drop the two age-share indicators? — ANSWERED 2026-09-26
 
 P1-07 built `share_over60` and `share_under5` as D4 specified. Measured, they turn out to
 be **the same binary variable with opposite signs**: correlation exactly −1.0000, 86% of
@@ -170,4 +170,6 @@ across cells and are what D8's need definition uses. Phase 4 does not depend on 
 **Worth telling a centre manager:** the tool cannot see where older residents are
 concentrated. They may know.
 
-**Answer:**
+**Samraj's answer:** "drop both age shares". Applied across config, weights, tests and
+CLAUDE.md; D17 is now approved. Vulnerability has four indicators, and AHP will ask 6
+pairwise questions instead of 15.
