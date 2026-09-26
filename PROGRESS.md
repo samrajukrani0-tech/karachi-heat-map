@@ -194,3 +194,30 @@ silently used — tested both ways.
 exactly one problem; tampering correctly reports two (hash *and* size). The assertion
 was tightened to require both rather than relaxed to accept either.
 **Next:** P1-04 Daytime heat per cell.
+
+## 2026-09-26 — P1-04 split into P1-04a and P1-04b; P1-04a Hot-season LST composite
+**Why split:** P1-04 covered scene search, windowed reads, cloud masking, scaling,
+compositing, zonal statistics and a map. That is two features, so it was split per the
+loop protocol: P1-04a builds the composite, P1-04b turns it into per-cell values.
+**What changed:** `config/heat.yaml` (season, cloud limit, QA bits, USGS scaling,
+plausible range, minimum clear looks — every parameter auditable), `pipeline/lst.py`,
+`tests/test_lst.py` (20 tests). `scripts/check.py` now validates the sixth config file.
+**Evidence:** `uv run python -m pipeline.lst` -> 48 scenes, April–June 2022–2026, all
+WRS 152/043. Composite 278x244 px at 30 m. Clear looks per pixel: min 33, median 42,
+max 47; 0 of 67,832 pixels dropped. "LST degC: min 31.25, median 43.16, max 48.11",
+inside the documented 20–65 range. `uv run pytest` -> 88 passed;
+`CI=true pytest -m "not raw"` -> 84 passed, 4 deselected. `check.py --quick` ->
+`CHECK: PASS (3 checks)`.
+**The `raw` split is now real, and defined once (§10):** the composite GeoTIFF is
+gitignored and rebuildable, so the 4 tests that open it are marked `raw` and run locally
+only. The 84 tests CI runs include every unit test of the masking and scaling logic, so
+the split hides no failure — it only defers tests whose input CI does not have.
+**Tests check the bit order against Landsat's documentation, not against our code:** each
+of bits 0–4 is asserted to carry the name config claims (fill, dilated cloud, cirrus,
+cloud, cloud shadow), and bits 6+ (confidence levels, not defects) are asserted *not* to
+mask, since masking them would throw away good data.
+**Licence discrepancy recorded rather than glossed:** the Planetary Computer STAC
+collection reports `license: proprietary`, which is the catalogue's generic placeholder.
+USGS Landsat Collection 2 data is US public domain with no restrictions. Both facts are
+in data/SOURCES.md so nobody has to rediscover the contradiction.
+**Next:** P1-04b Daytime heat per cell.

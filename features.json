@@ -137,18 +137,39 @@
    "evidence": "pipeline/fetch.py streams to a .part file while hashing, renames atomically, retries only the transient statuses {408,425,429,500,502,503,504} with exponential backoff capped at 120 s and honours Retry-After, and records url, sha256, bytes, date and licence in data/raw/manifest.json. Cache reuse verified live: a second 'uv run python -m pipeline.boundary' printed the same 'Area: 25.370 km2' with no download line; 'uv run python -m pipeline.fetch --verify' -> 'Verified 1 cached file(s): all match the manifest'. tests/test_fetch.py adds 17 tests on a mocked transport with SYNTHETIC payloads, covering: manifest contents, zero network calls on the second run, refresh, tampered cache re-downloaded, an unmanifested file not trusted, checksum mismatch raising IntegrityError and removing the file, retry-then-succeed with growing backoff, Retry-After honoured, backoff capped, 404 never retried, give-up after the try limit, and .part cleanup. uv run pytest -> 68 passed in 1.49s; check.py --quick -> 'CHECK: PASS (3 checks)'."
   },
   {
-   "id": "P1-04",
+   "id": "P1-04a",
    "phase": 1,
-   "title": "Daytime heat per cell",
+   "title": "Hot-season LST composite",
    "acceptance": [
-    "per-cell mean and 90th-percentile hot-season LST in degC",
-    "scene list and cloud statistics recorded",
-    "values inside a documented plausible range",
-    "map PNG in artifacts/"
+    "Landsat 8/9 C2 L2 April-June scenes found via STAC and read as windows, not whole scenes",
+    "cloud, shadow, cirrus, dilated cloud and fill masked with qa_pixel",
+    "USGS scaling applied: kelvin = 0.00341802 * DN + 149.0, then to degrees Celsius",
+    "per-pixel median composite, with a documented minimum number of clear looks",
+    "scene list and per-scene cloud statistics recorded in data/processed/lst_scenes.csv",
+    "composite values inside the documented plausible range in config/heat.yaml"
    ],
    "depends_on": [
     "P1-02",
     "P1-03"
+   ],
+   "passes": true,
+   "blocked_on": null,
+   "dropped": null,
+   "evidence": "uv run python -m pipeline.lst -> 48 Landsat 8/9 C2 L2 scenes, April-June 2022-2026, scene cloud cover <= 50%, all WRS path 152 row 043. Each scene read as a window over Landhi only, never the whole scene. Composite 278 x 244 px at 30 m; clear looks per pixel min 33, median 42, max 47; 0 of 67832 pixels dropped for fewer than 5 clear looks. 'LST degC: min 31.25, median 43.16, max 48.11' -- inside the documented plausible range 20-65 in config/heat.yaml. Wrote data/raw/derived/lst_hot_season.tif (195 kB, 2 bands: median LST and clear-look count) and data/processed/lst_scenes.csv (48 rows with per-scene cloud cover and usable-pixel fraction over Landhi). tests/test_lst.py adds 20 tests: each QA bit verified against Landsat's documented bit order, unlisted confidence bits proven not to mask, the USGS scaling checked against a hand-computed DN, and every recorded scene checked for season, year, platform and cloud limit. 4 tests that open the gitignored raster are marked raw. uv run pytest -> 88 passed; CI=true pytest -m 'not raw' -> 84 passed, 4 deselected; check.py --quick -> 'CHECK: PASS (3 checks)'."
+  },
+  {
+   "id": "P1-04b",
+   "phase": 1,
+   "title": "Daytime heat per cell",
+   "acceptance": [
+    "per-cell mean and 90th-percentile hot-season LST in degC",
+    "statistics computed over the CLIPPED cell geometry (D15), never the whole hexagon",
+    "cells with too little clear coverage are flagged, not silently averaged",
+    "values inside the documented plausible range",
+    "map PNG in artifacts/"
+   ],
+   "depends_on": [
+    "P1-04a"
    ],
    "passes": false,
    "blocked_on": null,
@@ -272,7 +293,7 @@
     "schema tests"
    ],
    "depends_on": [
-    "P1-04",
+    "P1-04b",
     "P1-06",
     "P1-07",
     "P1-08",

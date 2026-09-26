@@ -134,6 +134,34 @@ Storage CRS: EPSG:4326. All distances and areas: EPSG:32642 (UTM zone 42N).
 
 ---
 
+### Landsat 8/9 Collection 2 Level-2 surface temperature (P1-04a, 2026-09-26)
+- **Access:** Microsoft Planetary Computer STAC API,
+  `https://planetarycomputer.microsoft.com/api/stac/v1`, collection `landsat-c2-l2`,
+  assets `lwir11` (Surface Temperature Band) and `qa_pixel`. Assets signed with the
+  `planetary-computer` package; **no account or login is required**.
+- **Selection:** April–June, 2022–2026 (Landsat 9 joined in 2022, doubling the cadence),
+  platforms landsat-8 and landsat-9, scene cloud cover ≤ 50%. 48 scenes, all WRS path
+  152 row 043. Full list with per-scene cloud cover in `data/processed/lst_scenes.csv`.
+- **Resolution:** delivered at 30 m. **The thermal sensor's true resolution is about
+  100 m**; the 30 m grid is resampled. This is the reason D3 chose H3 resolution 9.
+- **Processing:** windowed reads over the pilot area only (never whole scenes);
+  `qa_pixel` bits 0–4 masked (fill, dilated cloud, cirrus, cloud, cloud shadow);
+  USGS scaling `kelvin = 0.00341802 × DN + 149.0`, then −273.15 to °C; per-pixel median
+  across scenes; pixels with fewer than 5 clear looks discarded (none were).
+- **Result:** 31.25 to 48.11 °C, median 43.16 °C; 33–47 clear looks per pixel.
+- **Licence:** USGS Landsat Collection 2 data carries **no restrictions on use** (US
+  public domain). Note: the Planetary Computer STAC collection's own `license` field
+  reads `proprietary`, which is the catalogue's generic placeholder rather than a claim
+  about Landsat; the USGS terms govern.
+- **Caveats that must travel with this indicator:**
+  - Land surface temperature is **not air temperature** and not a heat index. Surface
+    readings of 43–48 °C are normal when air temperature is nearer 35–40 °C, and
+    humidity — which matters enormously in Karachi — is not captured at all.
+  - It is a **daytime** measurement, at roughly 05:56 UTC (about 10:56 local). Nights
+    that fail to cool are a large part of heat harm and are not represented (D4).
+  - The median is taken across five hot seasons, so it describes a typical hot-season
+    day, not any particular heatwave.
+
 ## Planned (Phase 1) — verify at fetch time; IDs, band names and licences change
 
 | Dataset | Indicator | Access | Licence | Notes |

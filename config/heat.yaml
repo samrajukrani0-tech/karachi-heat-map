@@ -1,0 +1,44 @@
+# Hot-season daytime land surface temperature composite (P1-04).
+# Every parameter here is auditable: change it and the composite changes.
+
+source:
+  stac_api: https://planetarycomputer.microsoft.com/api/stac/v1
+  collection: landsat-c2-l2
+  platforms: [landsat-8, landsat-9]
+  temperature_asset: lwir11     # Surface Temperature Band
+  qa_asset: qa_pixel
+  fallback_stac_api: https://earth-search.aws.element84.com/v1   # Element 84, if PC fails
+
+season:
+  months: [4, 5, 6]             # April-June, Karachi's hot season before the monsoon
+  first_year: 2022              # Landsat 9 joined in 2022, doubling the cadence
+  last_year: 2026
+
+# Scene-level filter. Per-pixel QA masking does the real work, so this only skips
+# scenes too cloudy to contribute much, rather than trying to pick "clear" days.
+max_scene_cloud_cover: 50
+
+# USGS Collection 2 Level-2 surface temperature scaling, documented by USGS:
+# kelvin = 0.00341802 * DN + 149.0
+scale:
+  gain: 0.00341802
+  offset: 149.0
+  kelvin_to_celsius: -273.15
+
+# QA_PIXEL bits to treat as unusable (Landsat Collection 2 definition).
+qa_mask_bits:
+  0: fill
+  1: dilated_cloud
+  2: cirrus
+  3: cloud
+  4: cloud_shadow
+
+composite:
+  method: median                # robust to a cloud edge the QA band missed
+  min_valid_scenes_per_pixel: 5 # a pixel needs this many clear looks to be trusted
+
+# Documented plausible range for daytime summer LST in Karachi. Outside this, the
+# build fails rather than publishing a number nobody has sanity-checked.
+plausible_range_celsius:
+  min: 20.0
+  max: 65.0

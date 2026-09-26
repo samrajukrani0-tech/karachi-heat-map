@@ -74,7 +74,7 @@ def check_data() -> tuple[str, str]:
             if dep not in known:
                 problems.append(f"features.json: {feature['id']} depends on unknown {dep}")
 
-    for name in ("area", "indicators", "weights", "model", "allocation"):
+    for name in ("area", "indicators", "weights", "model", "allocation", "heat"):
         path = ROOT / "config" / f"{name}.yaml"
         if not path.exists():
             problems.append(f"config/{name}.yaml is missing")
@@ -97,7 +97,7 @@ def check_data() -> tuple[str, str]:
 
     if problems:
         return FAIL, "\n".join(problems)
-    return PASS, f"features.json + 5 configs valid; data/processed {size / 1e6:.2f} MB"
+    return PASS, f"features.json + 6 configs valid; data/processed {size / 1e6:.2f} MB"
 
 
 def check_site_data() -> tuple[str, str]:
