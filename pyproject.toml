@@ -36,6 +36,9 @@ select = ["E", "F", "I", "UP", "B", "W"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+# The project is not built as a wheel, so put the repo root on sys.path
+# to make `pipeline` importable from tests.
+pythonpath = ["."]
 markers = [
   "raw: needs the data/raw download cache; runs locally, skipped in CI",
 ]

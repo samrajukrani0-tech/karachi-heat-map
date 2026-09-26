@@ -73,3 +73,61 @@ cell. Flooring it gives empty industrial land and creek a small positive Priorit
 the map shows supplies being needed where there is nobody to receive them, and the
 allocation planner would send stock there.
 </details>
+
+---
+
+## P1-01 — The pilot boundary, and why area is measured in a different coordinate system
+
+**What and why.** The whole project needs one authoritative outline of Landhi Town. We
+take it from OpenStreetMap relation 16350631, which is a *relation*: not a shape itself,
+but a list of member ways that have to be joined end to end into closed rings. The code
+merges those ways, closes them into a polygon, subtracts any inner rings (holes), and
+writes the result as GeoJSON with its provenance attached. It measured 25.370 km²,
+matching the figure computed independently during Phase 0.
+
+**The key idea in A Level terms.** The boundary is *stored* in EPSG:4326 — plain
+longitude and latitude in degrees — but its area is *measured* in EPSG:32642, a
+projected system in metres. This is not bureaucracy; it is the reason the number means
+anything.
+
+Latitude and longitude are angles on a sphere, so a "square degree" is not a fixed
+amount of ground. One degree of latitude is about 111 km everywhere, but one degree of
+longitude is 111 km × cos(latitude). At Karachi's 24.84° N that factor is cos(24.84°) ≈
+0.908, so a degree of longitude covers about 101 km, not 111. Computing an area directly
+from degrees would multiply two quantities measured in different real units and give a
+number in "square degrees", which corresponds to no fixed patch of ground at all.
+
+A projection such as UTM zone 42N solves this by flattening a narrow north–south strip
+of the Earth onto a plane in metres, accepting small distortions in exchange for being
+able to do ordinary flat geometry. Every distance and area in this project is computed
+after that transformation, which is why `config/area.yaml` records both systems
+separately.
+
+**Questions.**
+
+1. Landhi's boundary spans about 0.071° of longitude and 0.055° of latitude. Roughly
+   what ground distances are those, and why isn't the ratio the same as 0.071 : 0.055?
+<details><summary>Answer</summary>
+Latitude: 0.055° × 111 km ≈ 6.1 km. Longitude: 0.071° × 111 km × cos(24.84°) ≈ 0.071 ×
+101 ≈ 7.2 km. The ratio in degrees is about 1.29 : 1, but on the ground it is about
+1.18 : 1, because the degrees of longitude are "shorter" at this latitude. A map drawn
+straight from degrees is stretched east–west.
+</details>
+
+2. Why does the build deliberately fail instead of overwriting the file when the
+   measured area falls outside 25.37 ± 0.75 km²?
+<details><summary>Answer</summary>
+Because OpenStreetMap is edited by anyone. If someone redraws the relation, a build that
+silently overwrites would quietly change what "the pilot area" means, and every figure
+downstream — cell count, population, every indicator — would shift with no record of
+why. Failing forces a human decision and a DECISIONS.md entry.
+</details>
+
+3. The inner-ring subtraction code never runs on Landhi's data. Why test it at all, and
+   why must those fixtures be labelled SYNTHETIC?
+<details><summary>Answer</summary>
+Untested code is code you do not know works; if the project is ever pointed at a town
+with an enclave, that branch runs for the first time in production. The fixtures are
+hand-made squares, not measurements of anywhere, so they are labelled SYNTHETIC to
+ensure nobody can mistake them for data or let them reach the live site (§2.1).
+</details>

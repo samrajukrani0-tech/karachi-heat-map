@@ -17,8 +17,16 @@ Storage CRS: EPSG:4326. All distances and areas: EPSG:32642 (UTM zone 42N).
 - **Accessed:** 2026-09-26
 - **Resolution:** vector
 - **Caveats:** town boundaries in OSM follow the post-2022 local-government
-  reorganisation and are community-maintained; P1-01 must re-verify the geometry and
-  record its own provenance rather than relying on this Phase 0 query.
+  reorganisation and are community-maintained.
+- **Used by P1-01 (2026-09-26):** `pipeline/boundary.py` re-fetched relation 16350631
+  independently of the Phase 0 query and measured **25.370 km²** in EPSG:32642, matching
+  the Phase 0 figure. Output `data/processed/pilot_area.geojson` (EPSG:4326) carries its
+  own provenance: relation id, admin level, licence, access date and the sha256 of the
+  raw Overpass response. The build **refuses to write** if the measured area falls
+  outside `config/area.yaml`'s 25.37 ± 0.75 km², so a silent upstream boundary change
+  fails the build instead of quietly redefining the pilot area.
+- **Raw cache:** `data/raw/osm/relation_16350631.json` (gitignored). P1-03 will bring it
+  under the full manifest-and-checksum scheme.
 
 ### OpenStreetMap health facilities (count only, for the D2 comparison)
 - **Query:** `amenity=hospital|clinic|doctors` inside each candidate town

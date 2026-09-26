@@ -112,3 +112,28 @@ tests/test_centres.py.
 **Acceptance criteria were added, never removed or loosened** (§2.2): P1-09 gains the
 role-schema requirements, P2-05 the D14 wording, P4-01 the stock-filter test.
 **Next:** Phase 1, P1-01 Pilot boundary — nothing now blocks it.
+
+## 2026-09-26 — P1-01 Pilot boundary
+**What changed:** `pipeline/config.py` (repo-relative paths, YAML loading),
+`pipeline/overpass.py` (polite client with retries, two endpoints and an on-disk raw
+cache), `pipeline/boundary.py` (assemble relation 16350631 into a polygon, measure it,
+write GeoJSON plus a preview PNG). Added `tests/test_boundary.py`, 11 tests.
+**Evidence:** `uv run python -m pipeline.boundary` -> "Area: 25.370 km2 (config expects
+25.37 +/- 0.75)", 1 ring, 0 interior holes. Wrote `data/processed/pilot_area.geojson`
+(4.4 kB, EPSG:4326) and `artifacts/pilot_area_preview.png` (56 kB). The PNG was viewed:
+one closed polygon spanning 67.148–67.219 E, 24.815–24.870 N, centroid 24.84449,
+67.18136 — the same centroid computed independently in Phase 0. `uv run pytest` -> 39
+passed. `check.py --quick` -> `CHECK: PASS (3 checks)`.
+**Design choice worth noting:** the build **refuses to write** the boundary if the
+measured area falls outside the documented tolerance, rather than overwriting it and
+letting the change pass silently. A future upstream edit to the OSM relation will fail
+the build and demand a DECISIONS.md entry, which is the behaviour D2 deserves.
+**Two things fixed at the cause, not the symptom:**
+1. `ruff` rejected `lru_cache(maxsize=None)`; switched to `functools.cache`.
+2. `pytest` could not import `pipeline` because the project has no build backend. Added
+   `pythonpath = ["."]` to `[tool.pytest.ini_options]` rather than hacking `sys.path`
+   inside the tests.
+**Untested branch covered deliberately:** Landhi has no interior holes, so the
+inner-ring subtraction never runs on real data. Four unit tests exercise it with
+hand-made SYNTHETIC squares, which never reach the site (§2.1).
+**Next:** P1-02 Grid.

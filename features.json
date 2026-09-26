@@ -96,10 +96,10 @@
    "depends_on": [
     "P0-05"
    ],
-   "passes": false,
+   "passes": true,
    "blocked_on": null,
    "dropped": null,
-   "evidence": null
+   "evidence": "uv run python -m pipeline.boundary -> 'Area: 25.370 km2 (config expects 25.37 +/- 0.75)', 1 ring, 0 interior holes; wrote data/processed/pilot_area.geojson (4.4 kB, EPSG:4326) and artifacts/pilot_area_preview.png (56 kB), which was viewed and shows a single closed polygon, centroid 24.84449, 67.18136. Provenance in the file: OSM relation 16350631, admin_level 7, ODbL 1.0, accessed 2026-09-26, raw response sha256 f0509baf17a429c28200f5ba1bd8366159c611d5146e23c971c6470410acfdd7. uv run pytest -> 39 passed in 0.76s; uv run python scripts/check.py --quick -> 'CHECK: PASS (3 checks)'."
   },
   {
    "id": "P1-02",
