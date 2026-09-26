@@ -58,7 +58,7 @@ cold storage named in the Tribune report.
 
 ---
 
-## Q3 — Should Chhipa Welfare Association be in scope? (OPEN)
+## Q3 — Should Chhipa Welfare Association be in scope? — ANSWERED 2026-09-26
 
 PROMPT.md §1 names Edhi and Saylani. The Tribune report shows **Chhipa moved 12 of the
 15 bodies on 24 June 2024, against Edhi's 3** — so in this specific event Chhipa was
@@ -71,13 +71,13 @@ valid hosts. It costs nothing in the model — `centres.csv` already carries an 
 column — and it roughly triples the chance of getting one door opened. The alternative
 is to stay narrow so the pitch stays focused on two well-known names.
 
-**This is a judgement call (D-series), so it is Samraj's to make.**
-
-**Answer:**
+**Samraj's answer:** "Any relief org, plus a role column." Recorded as **D13**.
+`centres.csv` now carries `role` and `can_hold_stock`; the index counts every verified
+facility, the allocation planner only those holding stock. Guarded by tests/test_centres.py.
 
 ---
 
-## Q4 — How should weak face validity for Landhi be handled? (OPEN, Phase 2)
+## Q4 — How should weak face validity for Landhi be handled? — ANSWERED 2026-09-26
 
 Following Q1: only one of ~13 localities named in the June 2024 street-death reporting
 falls inside Landhi. Options for P2-05, to decide before Phase 2 builds it:
@@ -86,4 +86,7 @@ falls inside Landhi. Options for P2-05, to decide before Phase 2 builds it:
 across several towns, which needs the model extended beyond the pilot area;
 (c) rely on the expert-ranking protocol (§7c) instead, which needs field staff.
 
-**Answer:**
+**Samraj's answer:** "Honest weak check; expert ranking is the real test." Recorded as
+**D14**, with the three reasons the city-scale alternative was rejected (near-circular,
+sample too small, sample biased by the response itself) written out so the argument is
+not re-made later. P2-05 geocodes the single Landhi incident and reports its cell's rank.

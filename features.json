@@ -232,13 +232,16 @@
     "distance per cell to the nearest health facility",
     "distance per cell to the nearest verified relief centre",
     "centres.csv schema enforced",
-    "unverified centres excluded and listed for Samraj"
+    "unverified centres excluded and listed for Samraj",
+    "centres.csv schema enforces name, org, role, can_hold_stock, lat, lon, source, verified_by, verified_on (D13)",
+    "role is one of ambulance_standby, distribution_point, clinic, morgue, office, other; invalid values fail the schema test",
+    "the vulnerability indicator counts every verified facility regardless of organisation (D13)"
    ],
    "depends_on": [
     "P1-02"
    ],
    "passes": false,
-   "blocked_on": "QUESTIONS.md Q2: no verified relief centre yet. OSM contains zero Edhi or Saylani facilities inside Landhi Town, so there is no open-data fallback.",
+   "blocked_on": "QUESTIONS.md Q2: no relief centre verified in person yet. 11 unverified candidates are listed in data/manual/centre_candidates.csv; none may enter the model. Split into P1-09a (health-facility distance, unblocked) and P1-09b (relief-centre distance, blocked) when Phase 1 runs.",
    "dropped": null,
    "evidence": null
   },
@@ -377,7 +380,9 @@
     "equal-weights comparison with Spearman rho",
     "face-validity check against cited June 2024 reporting, no invented locations",
     "expert-ranking form plus an analysis script tested on SYNTHETIC data only",
-    "checker subagent verdict recorded"
+    "checker subagent verdict recorded",
+    "the June 2024 face-validity check geocodes the one reported Landhi incident (near Landhi Hospital's Chowrangi) to a cell and reports that cell's priority rank (D14)",
+    "the model report states plainly that face validity could not be meaningfully tested at 25 km2, gives the three reasons from D14, and does not present the single mention as confirmation"
    ],
    "depends_on": [
     "P2-03"
@@ -579,7 +584,9 @@
     "LP and greedy baseline in pipeline/allocate.py",
     "docs/allocation.md with the formulation and a hand-solvable example",
     "tests: stock never exceeded; nothing sent beyond D; LP objective >= greedy objective; unlimited stock meets all reachable need; zero stock sends nothing; results deterministic",
-    "checker subagent verdict recorded"
+    "checker subagent verdict recorded",
+    "the LP draws stock only from centres where can_hold_stock is yes (D13)",
+    "a test proves a centre with role ambulance_standby is never assigned stock"
    ],
    "depends_on": [
     "P2-06"

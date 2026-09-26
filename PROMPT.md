@@ -21,7 +21,7 @@ This file drives a loop-based build in Claude Code. Section 0 is for Samraj. Eve
 
 ## 1. Mission and context
 
-You are the engineering partner of **Samraj**. He is a first-year A Level student at Nixor College, Karachi, taking Maths, Further Maths, Physics, and Computer Science, and he plans to study applied mathematics. Together you are building a free, public, mobile-first website. It helps a Karachi relief team decide where heat-relief support should go first during a heatwave, and why: drinking water, ORS, heat kits, cooling points, and ambulance standby. It is designed first for a local Edhi Foundation centre or for Saylani Welfare.
+You are the engineering partner of **Samraj**. He is a first-year A Level student at Nixor College, Karachi, taking Maths, Further Maths, Physics, and Computer Science, and he plans to study applied mathematics. Together you are building a free, public, mobile-first website. It helps a Karachi relief team decide where heat-relief support should go first during a heatwave, and why: drinking water, ORS, heat kits, cooling points, and ambulance standby. It is designed first for a relief organisation operating in the pilot area — Edhi Foundation, Saylani Welfare, Chhipa Welfare Association, Al-Khidmat or another verified body (D13).
 
 Why it matters:
 - June 2015: about 1,200 people died in southern Pakistan during a heatwave. Source: AFP, reported by Newsweek Pakistan, https://www.newsweekpakistan.com/?p=867013
@@ -207,6 +207,8 @@ Record each decision in `DECISIONS.md` with:
 - **D10 Licences.** Three licences, not two: MIT for code; CC BY 4.0 for docs and site text; **ODbL 1.0** for `data/processed/`, because OSM-derived indicator values make it a derivative database under ODbL's share-alike clause. `LICENSE-data` sits alongside `LICENSE` and `LICENSE-docs` in the repo root (§4). Each raw dataset keeps its own upstream licence, recorded in `data/SOURCES.md`.
 - **D11 Public identity.** Decide the repo name, whether it's public (recommended), how his name appears, and which contact the site shows, if any. A project-only email is safer than a personal one. Resolved (D11c): the site shows no contact at all for v1, so P5-03's one-pager leaves a blank line for a handwritten contact, and the About page must not imply a channel that doesn't exist.
 - **D12 AI-assistance disclosure.** Recommend a short, honest line in the README and on the About page, for example: "Built with Claude Code as a coding assistant. Research question, modelling decisions, weights, and fieldwork by Samraj." Research programmes and competitions increasingly ask for this, and being upfront protects him.
+- **D13 Relief-organisation scope.** Resolved: any verified relief facility counts, whatever the organisation — Edhi, Saylani, Chhipa, Al-Khidmat, Aman or another. Reason: `dist_centre` is meant to measure how far an area is from organised help, and restricting it by organisation would instead measure distance to two particular charities, which is not a property of the neighbourhood. `data/manual/centres.csv` therefore carries `role` (`ambulance_standby`, `distribution_point`, `clinic`, `morgue`, `office`, `other`) and `can_hold_stock` (`yes`/`no`/`unknown`): the index counts every verified facility, while the allocation planner (§8) draws stock only where `can_hold_stock: yes`, since an ambulance standby point holds none. This makes the double use flagged in §6 explicit and testable.
+- **D14 Face validity for Landhi.** Resolved: of roughly 13 localities named across the Dawn and Express Tribune June 2024 reports, exactly one falls inside Landhi. P2-05 geocodes that single incident, reports its cell's priority rank — bottom quintile would be a genuine warning — and the model report labels the check weak evidence. The city-scale alternative is rejected and must not be rebuilt: Priority already contains population, so correlating it with raw death counts is near-circular; ~20 located incidents across 25 towns cannot carry a rank statistic; and street-death reports are biased by where ambulances operate. A defensible version needs Samraj to compile a geolocated incident list from the full 20–26 June 2024 reporting, which belongs after v1. The expert-ranking protocol (§7c) is the real validation.
 
 ---
 
@@ -228,7 +230,7 @@ Store and export data in EPSG:4326. Measure distances and areas in UTM zone 42N 
 | Building footprint fraction | Vulnerability | Google Open Buildings or Microsoft Global ML Building Footprints (check Karachi coverage) | OSM buildings, with a completeness caveat. |
 | Lack of green cover | Vulnerability | ESA WorldCover 10 m via Planetary Computer, and/or hot-season Sentinel-2 L2A NDVI | |
 | Distance to nearest health facility | Vulnerability | OpenStreetMap hospitals, clinics, and doctors via Overpass or osmnx | Use road-network distance if a routable graph works. Otherwise use straight-line distance × a documented circuity factor (e.g. 1.3). Measure and report gaps in OSM coverage. |
-| Distance to nearest verified relief centre | Vulnerability and allocation | `data/manual/centres.csv` (name, org, lat, lon, source, verified_by, verified_on), confirmed by Samraj | OSM can suggest candidates, but exclude them until he verifies them. This indicator is used in both the index and the allocation; note that double use in the model report. |
+| Distance to nearest verified relief centre | Vulnerability and allocation | `data/manual/centres.csv` (name, org, role, can_hold_stock, lat, lon, source, verified_by, verified_on), confirmed by Samraj. Per D13 the index counts every verified facility, while the allocation planner draws stock only from `can_hold_stock: yes` — an ambulance standby point is help, but it is not a warehouse | OSM can suggest candidates, but exclude them until he verifies them. This indicator is used in both the index and the allocation; note that double use in the model report. |
 | Load-shedding exposure (optional, Karachi-specific) | Vulnerability | K-Electric's published load-shed schedules by area or feeder | Do a feasibility study first (P1-10). It's worth a real attempt because it comes from Edhi's own 2024 field observation. It never blocks other work, and it is built only if Samraj approves. |
 
 **v2 candidates (dropped for v1 by D4):**
@@ -272,7 +274,7 @@ Housekeeping:
   - Confidence classes: high (≥ 0.8), medium (0.5–0.8), low (< 0.5), unless Samraj decides otherwise.
 - **Validation**, honest and clearly labelled:
   - (a) Agreement with an equal-weights baseline (Spearman ρ).
-  - (b) Face validity at locality level against credible, cited reporting on the June 2024 heatwave. No invented locations.
+  - (b) Face validity at locality level against credible, cited reporting on the June 2024 heatwave. No invented locations. Per D14: only one reported locality falls inside Landhi, so this check geocodes that single incident, reports its cell's priority rank, and is labelled weak evidence in the report. Do not substitute a city-scale correlation — D14 records why it would be near-circular, underpowered and biased by the response.
   - (c) An expert-ranking protocol: a one-page English-language form (per D9) on which field staff rank 10–15 named localities, plus an analysis script (Spearman ρ, Kendall τ, bootstrap confidence intervals). Test the script only on SYNTHETIC data until Samraj brings real rankings.
 - **Limitations the report must state:**
   - Land surface temperature isn't air temperature or heat index, and humidity matters a lot in Karachi.
@@ -561,7 +563,7 @@ Feature schema:
 - **P5-03 NGO one-pager.**
   - `docs/pitch/one-pager.md` and a PDF, in English (D9).
   - Covers: what it is, what it isn't, how to read the map in two minutes, and what feedback is wanted.
-  - Written for a local Edhi centre manager and for Saylani, including its SMIT IT-training team.
+  - Written for whichever organisation has agreed to host the pilot (D13) — an Edhi or Chhipa centre manager, Saylani including its SMIT IT-training team, or Al-Khidmat. Decide the audience once one has said yes; do not write it generically.
   - Leaves a blank line for a handwritten contact (D11c); the site itself shows none.
   - A draft for Samraj to edit. Claude never sends it.
 - **P5-04 README.** Overview, screenshots, reproduce steps, credits, licences, AI disclosure, and `CITATION.cff`.

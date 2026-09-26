@@ -56,6 +56,11 @@ owns every modelling decision.
 - **D10** MIT code, CC BY 4.0 docs, **ODbL 1.0 for `data/processed`** (OSM-derived).
 - **D11** public repo `karachi-heat-map`; full name, no school named; no contact.
 - **D12** AI assistance disclosed in the README and on the About page.
+- **D13** any verified relief org counts (Edhi, Saylani, Chhipa, Al-Khidmat…).
+  `centres.csv` carries `role` + `can_hold_stock`: the index counts every facility,
+  the allocation LP draws stock only from `can_hold_stock: yes`.
+- **D14** face validity for Landhi rests on one reported incident and is labelled weak;
+  the expert ranking (§7c) is the real validation. Don't rebuild the city-scale check.
 
 ## Loop protocol: every turn
 

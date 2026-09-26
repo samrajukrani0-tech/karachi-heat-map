@@ -401,3 +401,86 @@ re-running it. D2 itself does not change; Landhi remains the pilot area.
 
 Candidates found near Landhi are in `data/manual/centre_candidates.csv`, all
 `UNVERIFIED`. None enters the model (PROMPT.md §6).
+
+---
+
+## D13 — Which organisations count as a relief centre (2026-09-26)
+
+**Question:** PROMPT.md §1 scopes the tool to "a local Edhi Foundation centre or Saylani
+Welfare". Should `centres.csv` accept other relief organisations?
+
+**Evidence:** on 24 June 2024, Chhipa volunteers moved 12 of the 15 bodies recovered
+from Karachi streets; Edhi moved 3 (Express Tribune, text supplied by Samraj — see
+QUESTIONS.md Q1). OSM places a Chhipa ambulance point about 100 m from an Edhi one on
+Landhi's eastern edge; nothing from Edhi or Saylani lies inside the Landhi boundary.
+
+**Recommendation (Claude):** widen the list, and record what each facility can do.
+- The decisive argument is measurement validity, not convenience. `dist_centre` is meant
+  to measure *how far this area is from organised help*. Restricting it by organisation
+  makes it measure "distance to a facility run by one of two particular charities",
+  which is not a property of the neighbourhood. A household 200 m from a Chhipa
+  ambulance is not vulnerable because of the logo on the door.
+- But the index and the allocation planner want **different lists**, which is the real
+  content of PROMPT.md §6's note about `dist_centre` being used twice:
+  - the **index** asks "how far is help?" — an ambulance standby point counts fully;
+  - the **allocation LP** treats each centre as holding stock s_j — an ambulance standby
+    point holds none, and feeding it in would allocate litres of water to a kerbside.
+
+**Decision:** `centres.csv` accepts any verified relief facility regardless of
+organisation, and gains two columns:
+- `role`: one of `ambulance_standby`, `distribution_point`, `clinic`, `morgue`,
+  `office`, `other`
+- `can_hold_stock`: `yes` / `no` / `unknown`
+
+The vulnerability indicator (P1-09) uses every verified facility. The allocation planner
+(P4-01) draws stock only from `can_hold_stock = yes`, proved by a test.
+
+**Objection considered and resolved:** a one-pager written for Edhi's specific workflow
+lands harder than a generic one. But P5-03 is a Phase 5 feature — by then Samraj will
+know who said yes, and it gets written for them. Widening the data model now does not
+commit him to a generic pitch later.
+
+**Samraj's decision:** "Any relief org, plus a role column."
+
+**Status:** approved
+**Date:** 2026-09-26
+
+---
+
+## D14 — Face validity for Landhi (2026-09-26)
+
+**Question:** §7 validation (b) checks the model against cited June 2024 reporting. Of
+roughly 13 localities named across the Dawn and Express Tribune reports, exactly **one**
+is inside Landhi (near Landhi Hospital's Chowrangi). How should P2-05 handle that?
+
+**Recommendation (Claude):** report the single mention honestly, label the check weak,
+and let the expert-ranking protocol (§7c) carry the validation weight.
+
+**Why not the city-scale alternative** (extend the model over Karachi's towns and
+correlate rank against reported deaths) — three reasons, recorded so the argument is not
+re-made from scratch later:
+1. **Near-circular.** Priority already contains Exposure. More people means more deaths,
+   so a correlation with raw counts would largely re-discover population on both sides.
+   The non-circular form compares incidents **per capita** against **Intensity** =
+   √(H·V), which is why Intensity is computed at all.
+2. **The sample cannot carry a statistic.** About 20 located incidents across 25 towns
+   leaves most towns at zero or one. Bootstrap CIs on Spearman ρ would almost certainly
+   span zero. Reporting a ρ from that would be noise presented as evidence (§2.1).
+3. **The sample is biased by the response itself.** Street-death reports depend on where
+   ambulances operate and where bodies are found in public, so Orangi's prominence may
+   partly reflect Chhipa and Edhi coverage rather than heat. Validating against a sample
+   shaped by the organisations being helped is a confound that does not go away.
+
+A workable city-scale version would need Samraj to compile a geolocated incident list
+from the full 20–26 June 2024 reporting (perhaps 50–100 incidents). That is his reading
+to do, not Claude's — several of those sites block automated fetching — and it belongs
+after v1.
+
+**What P2-05 does instead:** geocode the one reported Landhi incident to a cell and
+report that cell's priority rank. Top quintile is mild support; **bottom quintile is a
+genuine warning sign**. A check that can only confirm is not a check.
+
+**Samraj's decision:** "Honest weak check; expert ranking is the real test."
+
+**Status:** approved
+**Date:** 2026-09-26

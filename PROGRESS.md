@@ -92,3 +92,23 @@ the method did not. Logged in DECISIONS.md and data/SOURCES.md.
    face-validity check for Landhi rests on a single incident. Raised as QUESTIONS.md Q4
    before Phase 2 builds it.
 **Next:** Phase 1, P1-01 Pilot boundary.
+
+## 2026-09-26 — D13 and D14 decided (pre-Phase-1)
+**What changed:** the two questions raised by the centre-candidate research were put to
+Samraj in full and decided.
+- **D13:** any verified relief organisation counts. `centres.csv` gains `role` and
+  `can_hold_stock`; the vulnerability indicator counts every verified facility, the
+  allocation LP draws stock only from `can_hold_stock: yes`. Prevents Phase 4 allocating
+  litres of water to an ambulance standby kerb.
+- **D14:** face validity for Landhi rests on the one reported incident, is geocoded to a
+  cell and reported as a rank, and is labelled weak. The city-scale correlation is
+  rejected, with the reasons recorded so the argument is not re-made.
+**Files touched:** DECISIONS.md (D13, D14), QUESTIONS.md (Q3, Q4 closed), CLAUDE.md,
+PROMPT.md (§1, §5, §6, §7, §12 P5-03), centres.csv schema, centre_candidates.csv role
+guesses, features.json acceptance criteria for P1-09, P2-05 and P4-01, and a new
+tests/test_centres.py.
+**Evidence:** `uv run pytest` -> 28 passed (was 22); `uv run python scripts/check.py
+--quick` -> `CHECK: PASS (3 checks)`; `wc -l CLAUDE.md` -> 140 (limit 150).
+**Acceptance criteria were added, never removed or loosened** (§2.2): P1-09 gains the
+role-schema requirements, P2-05 the D14 wording, P4-01 the stock-filter test.
+**Next:** Phase 1, P1-01 Pilot boundary — nothing now blocks it.
