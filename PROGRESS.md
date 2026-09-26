@@ -729,3 +729,21 @@ guesswork. Field staff are asked to add places we have missed.
 **Performance:** vectorising the bootstrap and permutation took the suite from 53 s to
 2.5 s.
 **Next:** P2-06 Model report.
+
+## 2026-09-27 — P2-06 Model report
+**What changed:** `docs/model-report.md` (175 lines), `tests/test_model_report.py` (12).
+**Evidence:** `uv run pytest` -> 287 passed; `check.py --quick` -> `CHECK: PASS`.
+**Generated from the committed outputs**, not retyped, so every figure traces to
+`data/processed/`. Twelve tests re-read those outputs and assert the report still matches
+— a report that goes stale fails the suite rather than quietly misreporting.
+**It leads with the uncomfortable result**, not with the map: only 28 of the 53 top-20%
+cells survive in 80% of draws, and 12 are on the wrong side of a coin flip. The
+limitations sit in §3, *before* the results, and include the population undercount, the
+load-shedding mechanism the model cannot see, the fact that surface temperature is
+rank-uncorrelated with every other layer, the age-share collapse, and OSM's 6% coverage.
+**One test corrected rather than loosened:** it first banned the word "dangerous"
+outright, but PROMPT.md §1 itself says "circumstances that make heat more dangerous". It
+now enforces the actual §2.5 rule — never call an *area* dangerous — by requiring the word
+to reference heat.
+**Phase 2 is now complete except P2-02b, which is blocked on Samraj running the AHP tool.**
+**Next:** Phase 3, starting with P3-01 DESIGN.md.

@@ -444,10 +444,10 @@
     "P2-04",
     "P2-05"
    ],
-   "passes": false,
+   "passes": true,
    "blocked_on": null,
    "dropped": null,
-   "evidence": null
+   "evidence": "docs/model-report.md, 175 lines, generated from the committed outputs so no number is retyped: plain summary, headline result including the uncomfortable part (only 28 of 53 top-20% cells stay there in 80% of draws, 12 on the wrong side of a coin flip), six limitation sections, validation with each check labelled for what it is worth, a maths appendix with the normalisation, geometric-mean, asymmetric-floor, Intensity, AHP and sensitivity formulae, a figure list, and the checker subagents' verdicts for P2-01 to P2-05 in a table. 12 tests re-read data/processed/ and assert the report still matches it, so a stale report fails loudly: headline counts, the stability split, the never-fires floor claim (min V 0.1344), eleven named limitations, the face-validity ranks, the equal-weights tautology, the provisional banner, the LaTeX formulae, the checker table, the D12 AI disclosure, and the section 2.5 language rule. One test was corrected rather than loosened: it originally banned the word 'dangerous' outright, but PROMPT.md section 1 itself says 'circumstances that make heat more dangerous', so it now enforces the actual rule -- never call an AREA dangerous -- by requiring the word to reference heat. uv run pytest -> 287 passed; check.py --quick -> 'CHECK: PASS (3 checks)'."
   },
   {
    "id": "P3-01",
