@@ -328,3 +328,36 @@ and tested, exactly as specified.
 and the combined ratio's CV below 0.02, so if a future Meta release fixes this, the suite
 fails and D17 gets revisited rather than silently outliving its evidence.
 **Next:** P1-08 Built environment.
+
+## 2026-09-26 — P1-08 Built environment
+**What changed:** `config/landcover.yaml`, `pipeline/landcover.py`,
+`tests/test_landcover.py` (9 tests). `check.py` validates an eighth config file.
+**Evidence:** ESA WorldCover 10 m 2021 v200, median 1,314 px/cell. built_fraction median
+0.692 (0.000–0.991); green_fraction median 0.131 (0.000–1.000). `uv run pytest` -> 131 passed (127 in CI); `check.py --quick` -> `CHECK: PASS (3 checks)`. Map viewed: the built
+and green panels are near-complements, matching the measured r = −0.929.
+**Source substitution, recorded as D18 (provisional).** Microsoft Building Footprints is
+on the Planetary Computer and covers Pakistan, but its asset is an `abfs://` Azure path
+needing `adlfs` -> `azure-storage-blob` -> `cryptography`, and cryptography ships no
+x86_64 macOS wheel — it tries to build from source with Rust. That is the third time this
+Intel Mac has been abandoned by current wheels (after h3 4.4). Installing Rust is a
+system-wide install (§2.7), and pinning a security library backwards to read a building
+dataset is a poor trade, so ESA WorldCover is used for both indicators. The quantity is
+*built-up surface* (includes roads and paving), not building footprints, and is named
+that way so the report cannot overclaim.
+**Cross-validation that was not planned.** P1-04b flagged five unexplained cool cells for
+P1-08 to check. They are **93–100% green** against a pilot median of 13.1%. Landsat
+thermal infrared and ESA land classification are independent datasets measured in
+different years, and they agree on where Landhi's vegetation is. The open question from
+P1-04b is closed with evidence rather than assertion.
+**A number that reframes the Phase 0 relief-centre finding.** OSM building polygons cover
+6.01% of Landhi against WorldCover's 54.7% built-up — about 11% as much, from 711 mapped
+buildings. So OSM listing no Edhi or Saylani facility in Landhi is **not evidence they do
+not exist**; it is evidence that OSM barely describes Landhi at all. Recorded prominently
+in data/SOURCES.md, and P1-09 must carry the same caveat.
+**New question Q8.** With Vulnerability down to four indicators after D17, two of them —
+`built_fraction` and `lack_green` — correlate at about +0.93, because WorldCover gives
+each pixel one class so built and green are near-complements. Recommendation: drop
+`built_fraction`, keep `lack_green`, because built-up surface is a *cause* of the high
+land surface temperature that Hazard already measures directly, so keeping it would count
+the same physical fact twice.
+**Next:** P1-09 Access, which will split into P1-09a and P1-09b.

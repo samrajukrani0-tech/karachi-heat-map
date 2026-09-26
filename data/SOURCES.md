@@ -212,6 +212,33 @@ Storage CRS: EPSG:4326. All distances and areas: EPSG:32642 (UTM zone 42N).
     district average, hinting the densest areas are undercounted most.
   - Absolute supply quantities derived from this layer are underestimates. See D16, Q6.
 
+### ESA WorldCover 10 m (P1-08, 2026-09-26)
+- **Access:** Microsoft Planetary Computer STAC, collection `esa-worldcover`, asset `map`.
+  Tile `ESA_WorldCover_10m_2021_v200_N24E066` (2021, v200). No account required.
+- **Licence:** CC BY 4.0 — ESA WorldCover project; contains modified Copernicus data.
+- **Resolution:** 10 m (~9 m at this latitude); median 1,314 pixels per cell.
+- **Used for:** green cover (classes 10 tree, 20 shrub, 30 grass, 40 cropland, 95
+  mangrove) and built-up surface (class 50). Cropland counts as green: in Karachi it is
+  irrigated land that transpires and shades.
+- **Result:** built fraction median 0.692 (max 0.991); green fraction median 0.131.
+- **⚠ Naming caveat (D18):** class 50 is *built-up surface* — roads, yards and paving as
+  well as roofs — **not** a building footprint fraction. The model report must not
+  describe it as footprints.
+- **Why not Microsoft Building Footprints, the §6 primary:** its Planetary Computer asset
+  is an `abfs://` Azure path requiring `adlfs` → `azure-storage-blob` → `cryptography`,
+  and `cryptography` ships no x86_64 macOS wheel, falling back to a Rust source build.
+  Recorded as a provisional substitution in D18.
+
+### ⚠ OpenStreetMap completeness in Landhi, measured (P1-08)
+- **Finding:** OSM building polygons cover **6.01%** of Landhi's area against ESA
+  WorldCover's **54.7%** built-up — roughly **11%** as much built area as exists, from
+  just **711** mapped building polygons in a town of several hundred thousand people.
+- **Why this is recorded prominently:** it changes how every OSM-derived result here must
+  be read. The Phase 0 finding that OSM lists no Edhi or Saylani facility inside Landhi is
+  **not evidence that none exist** — it is evidence that OSM barely describes Landhi. The
+  same caveat governs P1-09's distance-to-health-facility indicator, which must report the
+  gap rather than assume coverage.
+
 ## Planned (Phase 1) — verify at fetch time; IDs, band names and licences change
 
 | Dataset | Indicator | Access | Licence | Notes |

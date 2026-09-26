@@ -1,0 +1,37 @@
+# Built environment (P1-08): built-up surface and green cover.
+# Source substitution recorded in DECISIONS.md D18.
+
+source:
+  stac_api: https://planetarycomputer.microsoft.com/api/stac/v1
+  collection: esa-worldcover
+  asset: map
+  prefer_version: "v200"      # 2021 release; v100 is 2020
+  licence: CC BY 4.0 - ESA WorldCover project / ESA, contains modified Copernicus data
+
+# ESA WorldCover 10 m class codes.
+classes:
+  10: tree_cover
+  20: shrubland
+  30: grassland
+  40: cropland
+  50: built_up
+  60: bare_sparse
+  70: snow_ice
+  80: water
+  90: herbaceous_wetland
+  95: mangroves
+  100: moss_lichen
+
+# Which classes count as green cover. Cropland is included: in Karachi it is irrigated
+# land that transpires and shades, which is what matters for heat.
+green_classes: [10, 20, 30, 40, 95]
+built_classes: [50]
+
+# Cross-check only, never the indicator itself: OpenStreetMap building polygons, used to
+# quantify how incomplete OSM is in Landhi (P1-09 needs that number too).
+osm_crosscheck:
+  enabled: true
+
+plausibility:
+  built_fraction_min_median: 0.30   # a dense Karachi town should be mostly built up
+  green_fraction_max_median: 0.40

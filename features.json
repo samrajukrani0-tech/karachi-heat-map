@@ -240,10 +240,10 @@
     "P1-02",
     "P1-03"
    ],
-   "passes": false,
+   "passes": true,
    "blocked_on": null,
    "dropped": null,
-   "evidence": null
+   "evidence": "uv run python -m pipeline.landcover -> ESA WorldCover 10 m tile ESA_WorldCover_10m_2021_v200_N24E066, median 1,314 pixels per cell. built_fraction min 0.000, median 0.692, max 0.991; green_fraction min 0.000, median 0.131, max 1.000; lack_green stored as 1 - green. Wrote data/processed/landcover_cells.csv (13 kB) and artifacts/landcover_cells_map.png, viewed: the two maps are near-complements, matching the measured r = -0.929. SOURCE SUBSTITUTION (D18): Microsoft Building Footprints needs adlfs -> azure-storage-blob -> cryptography, which ships no x86_64 macOS wheel and wants a Rust toolchain (a system-wide install, 2.7), so WorldCover class 50 is used and named 'built-up surface' rather than building footprints. CROSS-VALIDATION: the five unexplained cool cells flagged by P1-04b are 93-100% green against a pilot median of 13.1% -- two independent datasets agreeing. COVERAGE CAVEAT recorded in data/SOURCES.md: OSM building polygons cover 6.01% of Landhi against WorldCover's 54.7% built-up, about 11% as much, from just 711 mapped buildings. 9 new tests. uv run pytest -> 131 passed in 1.67s; CI -> 127 passed, 4 deselected in 1.70s; check.py --quick -> 'CHECK: PASS (3 checks)'."
   },
   {
    "id": "P1-09",

@@ -173,3 +173,35 @@ concentrated. They may know.
 **Samraj's answer:** "drop both age shares". Applied across config, weights, tests and
 CLAUDE.md; D17 is now approved. Vulnerability has four indicators, and AHP will ask 6
 pairwise questions instead of 15.
+
+---
+
+## Q8 — `built_fraction` and `lack_green` are 0.93 correlated (OPEN, decide before Phase 2)
+
+P1-08 measured both from ESA WorldCover, where each 10 m pixel gets exactly one class.
+In a dense town that makes them near-complements: **r = −0.929** between built and green,
+so `built_fraction` and `lack_green` (= 1 − green) correlate at about **+0.93**.
+
+With Vulnerability down to four indicators after D17, two of them being near-duplicates
+means V is effectively three things, and "how built up is it" silently carries half the
+weight.
+
+**Claude's recommendation: drop `built_fraction`, keep `lack_green`.** Three reasons:
+1. They are redundant by construction, not by coincidence.
+2. "Little greenery or shade" is the more actionable and legible phrase for a field
+   coordinator than "densely built".
+3. **Built-up surface is a cause of high land surface temperature, which the Hazard
+   dimension already measures directly.** Keeping it in Vulnerability partly double-counts
+   Hazard — the model would count the same physical fact twice, once as a cause and once
+   as an effect.
+
+**Alternatives:** (a) keep both and let the AHP weights absorb it — but AHP asks about
+*importance*, and people do not naturally discount for redundancy when answering;
+(b) keep `built_fraction` and drop `lack_green` — defensible, but loses the more
+interpretable of the two and keeps the one that double-counts Hazard; (c) combine them
+into a single "hard surface, little shade" indicator.
+
+If both are dropped in favour of one, Vulnerability has three indicators and AHP asks
+just 3 pairwise questions.
+
+**Answer:**

@@ -655,3 +655,48 @@ test updated from 8 to 6 with this decision cited.
 **Status: approved.** P1-07 itself passes: it produced the shares, in [0, 1], with the
 zero-population rule implemented and tested, exactly as specified.
 **Date:** 2026-09-26
+
+---
+
+## D18 — Built-up surface from WorldCover, not building footprints (2026-09-26, PROVISIONAL)
+
+**Question:** PROMPT.md §6 names Google Open Buildings or Microsoft Global ML Building
+Footprints for the built indicator, with OSM as the fallback. Which is used?
+
+**What was tried.** Microsoft Building Footprints is on the Planetary Computer
+(`ms-buildings`, ODbL 1.0) and covers Pakistan. Its asset is an `abfs://` Azure path,
+which needs `adlfs` → `azure-storage-blob` → `cryptography`. `cryptography` 50.0.1 ships
+**no x86_64 macOS wheel** and falls back to building from source with a Rust toolchain —
+the same abandonment of Intel Macs that forced the `h3 < 4.4` pin. Installing Rust is a
+system-wide install, which §2.7 says to ask about, and pinning a security library
+backwards to read a building dataset is a poor trade.
+
+**Decision:** use **ESA WorldCover 10 m (2021, v200)** for both indicators — green cover
+and built-up surface — read directly from the Planetary Computer with no extra
+dependency. Median 1,314 pixels per cell, so the fractions are well resolved.
+
+**An honest naming point.** WorldCover class 50 is *built-up surface*, which includes
+roads, yards and paving, not only building roofs. This is a different quantity from a
+building footprint fraction. For heat vulnerability it is arguably the better one —
+impervious surface drives heat retention — but it is not what §6 asked for, so the
+indicator is named "Built-up surface" in `config/indicators.yaml` and the model report
+must not describe it as building footprints.
+
+**Result:** built fraction min 0.000, median 0.692, max 0.991; green fraction min 0.000,
+median 0.131, max 1.000.
+
+**Cross-validation, unplanned and reassuring.** P1-04b flagged five unexplained cool
+cells for P1-08 to explain. They turn out to be **93–100% green** against a pilot median
+of 13.1%. Landsat thermal infrared (2022–2026) and ESA land classification (2021) are
+entirely independent datasets, and they agree on where Landhi's vegetation is.
+
+**A number that reframes an earlier finding.** OSM building polygons cover **6.01%** of
+Landhi against WorldCover's 54.7% built-up — OSM captures roughly **11%** as much built
+area as exists. Only 711 building polygons are mapped in a town of several hundred
+thousand people. This is recorded because it changes how the Phase 0 relief-centre result
+should be read: OSM listing no Edhi or Saylani facility in Landhi is **not evidence they
+are absent**, it is evidence that OSM barely describes Landhi at all. P1-09 must carry
+the same caveat for health facilities.
+
+**Status: PROVISIONAL** — a source substitution, which §6 says to log as provisional.
+**Date:** 2026-09-26
