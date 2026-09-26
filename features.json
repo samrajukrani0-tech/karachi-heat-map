@@ -13,10 +13,10 @@
     "`gh auth status` shows Samraj is logged in"
    ],
    "depends_on": [],
-   "passes": false,
+   "passes": true,
    "blocked_on": null,
    "dropped": null,
-   "evidence": null
+   "evidence": "macOS 15.7.3 x86_64; git 2.39.5; Node v24.19.0 + npm 11.17.0; 140 GB free; Python 3.12.14 via `uv python install 3.12`; gh 2.101.0 installed from the official cli/cli release, SHA-256 verified against the published checksums file; `gh auth status` -> logged in as samrajukrani0-tech, scopes gist, read:org, repo, workflow."
   },
   {
    "id": "P0-02",
@@ -28,10 +28,10 @@
     "each records Samraj's decision in his own words"
    ],
    "depends_on": [],
-   "passes": false,
+   "passes": true,
    "blocked_on": null,
    "dropped": null,
-   "evidence": null
+   "evidence": "DECISIONS.md holds D1-D12, each with the question, options, recommendation and reasons, Samraj's decision in his words, a status and the date; `grep -c '^## D' DECISIONS.md` -> 12."
   },
   {
    "id": "P0-03",
@@ -46,10 +46,10 @@
    "depends_on": [
     "P0-02"
    ],
-   "passes": false,
+   "passes": true,
    "blocked_on": null,
    "dropped": null,
-   "evidence": null
+   "evidence": "PROMPT.md section 4 layout present (DESIGN.md deferred to P3-01 by design); `wc -l CLAUDE.md` -> 135 (limit 150); features.json holds 42 features and validates against tests/features.schema.json; `uv run python scripts/features.py` prints per-phase counts plus an overall line."
   },
   {
    "id": "P0-04",
@@ -62,10 +62,10 @@
    "depends_on": [
     "P0-03"
    ],
-   "passes": false,
+   "passes": true,
    "blocked_on": null,
    "dropped": null,
-   "evidence": null
+   "evidence": "`uv run python scripts/check.py --quick` -> 'CHECK: PASS (3 checks)'; `uv run pytest` -> 22 passed; GitHub Actions run 36238295986 completed success with jobs check: success and deploy: success."
   },
   {
    "id": "P0-05",
@@ -79,10 +79,10 @@
    "depends_on": [
     "P0-04"
    ],
-   "passes": false,
+   "passes": true,
    "blocked_on": null,
    "dropped": null,
-   "evidence": null
+   "evidence": "Public repo pushed to github.com/samrajukrani0-tech/karachi-heat-map; Pages configured with build_type=workflow; `curl -o /dev/null -w '%{http_code}' -L https://samrajukrani0-tech.github.io/karachi-heat-map/` -> 200, serving the placeholder page."
   },
   {
    "id": "P1-01",
