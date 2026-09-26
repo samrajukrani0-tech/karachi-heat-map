@@ -384,3 +384,67 @@ since it uses the official district outline. If the models matched the census th
 error would have to lie in how we defined Landhi. They do not match, so the error lives
 in the models — the boundary is exonerated by evidence rather than by assumption.
 </details>
+
+---
+
+## P1-11 — What a table of numbers has to admit about itself
+
+**What and why.** Every layer built in Phase 1 is now one table: 265 rows, one per cell,
+14 columns. Alongside it sits a generated data dictionary that says what each column is,
+where it came from, and — the part that matters — what it is not. Four of the five
+configured indicators are complete. The fifth, distance to a verified relief centre, is an
+empty column, because no centre has been verified in person and OpenStreetMap covers only
+about 11% of Landhi.
+
+**The key idea in A Level terms.** The interesting part of this feature was reading the
+distributions rather than producing them, because the shape of a distribution decides what
+statistics are allowed to mean.
+
+*Skew and why `log1p`.* The population column is heavily right-skewed: most cells hold a
+few hundred people, a few hold thousands, and some hold none. For such data the mean sits
+well above the median and is dragged around by the largest cells. Taking log(1+x)
+compresses the long right tail, so differences become multiplicative rather than additive
+— the gap between 100 and 1,000 people becomes the same as between 1,000 and 10,000. That
+matches how the quantity behaves: a cell with ten times more people is meaningfully
+different, whereas a hundred extra people in a crowded cell is not. `log1p` rather than
+`log` because log(0) is undefined and empty cells are real.
+
+*Bimodality, and why it is a warning.* The `lack_green` column is not skewed; it is
+**bimodal** — one mass near 0 and another near 1, with little in between. That is a
+different problem. Robust min–max normalisation clips at the 5th and 95th percentile and
+stretches what remains onto 0–1, which assumes the values in between are informative. When
+a variable is really two clusters, that stretch mostly separates the two groups and says
+little about differences within them. It is not wrong, but it means the indicator is
+closer to a yes/no than a gradient, and the model report should say so rather than imply a
+smooth measure of greenness.
+
+**Questions.**
+
+1. Why does a right-skewed variable pull the mean away from the median, and why does a
+   logarithm help?
+<details><summary>Answer</summary>
+The mean weights every value by its size, so a handful of very large values shift it
+upwards; the median only counts positions, so it stays near the bulk of the data. A
+logarithm converts ratios into differences, so the long multiplicative tail becomes a
+short additive one and the transformed distribution is far closer to symmetric.
+</details>
+
+2. Both `population` and `lack_green` have awkward distributions. Why does one get a
+   transform and the other only a warning?
+<details><summary>Answer</summary>
+Skew is a property of the scale, and changing scale fixes it — log turns a multiplicative
+quantity into an additive one. Bimodality is a property of the underlying reality: Landhi
+genuinely has green areas and built areas with little in between. No transform removes
+that, and one that appeared to would be hiding the structure rather than modelling it. The
+honest response is to describe it.
+</details>
+
+3. Why keep an entirely empty column in the table at all, rather than leaving it out until
+   the data exists?
+<details><summary>Answer</summary>
+An absent column is invisible; an empty one is a question. Keeping `dist_centre_m` present
+and reported as 100% missing means the gap appears in the missing-value summary, in the
+data dictionary, and in a test that fails if it is ever quietly filled without the
+documentation being updated. Omitting it would let the model be read as complete when it
+is not.
+</details>

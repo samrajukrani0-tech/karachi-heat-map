@@ -307,20 +307,21 @@
     "data/processed/indicators.parquet and .csv",
     "docs/data-dictionary.md",
     "QA report with histograms and a missing-value summary",
-    "schema tests"
+    "schema tests",
+    "the dist_centre column is present but empty while P1-09b is blocked, and that gap is named explicitly in the missing-value summary rather than hidden",
+    "the table is rebuilt once P1-09b unblocks"
    ],
    "depends_on": [
     "P1-04b",
     "P1-06",
     "P1-07",
     "P1-08",
-    "P1-09a",
-    "P1-09b"
+    "P1-09a"
    ],
-   "passes": false,
+   "passes": true,
    "blocked_on": null,
    "dropped": null,
-   "evidence": null
+   "evidence": "uv run python -m pipeline.indicators -> 265 cells, 14 columns, 4 of 5 configured indicators present. Wrote data/processed/indicators.parquet (29 kB) and indicators.csv (26 kB); data/processed totals 304 kB against a 5 MB budget. Missing-value summary printed and written into docs/data-dictionary.md (55 lines): every column 0 missing except dist_centre_m at 265 of 265 (100%), flagged BLOCKED, because P1-09b awaits a relief centre verified in person (Q2) and OSM offers no fallback (D18). QA histograms written to artifacts/indicators_qa.png and viewed: lst_mean_c roughly normal around 43.2; population heavily right-skewed with a spike at zero, which is why D4 specified log1p; lack_green strongly BIMODAL (masses near 0 and near 1), so it behaves closer to 'green or not' than a gradient -- flagged for P2-01 normalisation. 10 new tests, including one that the join did not reorder rows (values compared back against each source layer) and one that the data dictionary states the known biases rather than burying them in DECISIONS.md. uv run pytest -> 149 passed; CI -> 145 passed, 4 deselected; check.py --quick -> 'CHECK: PASS (3 checks)'."
   },
   {
    "id": "P2-01",

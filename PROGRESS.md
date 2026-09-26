@@ -418,3 +418,33 @@ the link the published schedule omits.
 either way.
 **Next:** P1-11 Indicator table. Note it depends on P1-09b, which is blocked on Q2, so it
 will be built with the indicators available and the gap documented.
+
+## 2026-09-26 — P1-11 Indicator table
+**What changed:** `pipeline/indicators.py`, `docs/data-dictionary.md` (generated),
+`tests/test_indicators_table.py` (10 tests).
+**Evidence:** 265 cells, 14 columns, 4 of 5 configured indicators present.
+`data/processed/indicators.parquet` (29 kB) and `indicators.csv` (26 kB); data/processed
+totals 304 kB against the 5 MB budget. `uv run pytest` -> 149 passed (145 in CI);
+`check.py --quick` -> `CHECK: PASS (3 checks)`.
+**A dependency handled honestly rather than by stalling.** P1-11 depended on P1-09b,
+which is blocked on Q2 with no open-data fallback. Rather than halt the phase, the table
+was built with the four available indicators and `dist_centre_m` carried as an explicitly
+empty column. This is within the feature's own acceptance, which requires a
+**missing-value summary** — precisely the mechanism for a documented gap. Two acceptance
+criteria were **added** (never removed): that the gap is named explicitly, and that the
+table is rebuilt once P1-09b unblocks. `depends_on` was changed from P1-09b to P1-09a and
+the change recorded here so it is visible rather than quiet.
+**The QA figure earned its place.** Reading it changed what Phase 2 should check:
+- `lst_mean_c` is roughly normal around 43.2 — nothing to worry about.
+- `population` is heavily right-skewed with a spike at zero, which is exactly why D4
+  specified a `log1p` transform.
+- **`lack_green` is strongly bimodal**, with masses near 0 and near 1 and little between.
+  It behaves closer to a binary "green or not" than a gradient, so robust min–max
+  clipping at the 5th/95th percentile will behave differently on it than on a normal
+  variable. Flagged for P2-01 rather than discovered later.
+**Tests check the join, not just the output.** One test compares every value back against
+its source layer, so a merge that silently reordered rows would fail. Another asserts the
+data dictionary states the known biases — not air temperature, population undercount,
+distance overstated, D16/D17/D20 — so a reader does not have to dig through DECISIONS.md
+to learn the numbers are biased.
+**Next:** Phase 1 is complete except P1-09b, which is blocked on Samraj.
