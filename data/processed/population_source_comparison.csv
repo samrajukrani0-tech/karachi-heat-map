@@ -1,0 +1,3 @@
+source,resolution_m,reference_year,pilot_total,median_pixels_per_cell,cells_with_zero_people,census_2023_landhi,ratio_to_census
+"Meta (Data for Good) High Resolution Population Density, v1.5",31,2020,295132,119,21,681293,0.433
+"WorldPop constrained 100 m, Pakistan, 2020 (BSGM)",93,2020,308105,13,47,681293,0.452

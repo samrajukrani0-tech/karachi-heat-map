@@ -537,3 +537,66 @@ covered by any cell. This belongs in the model report's limitations.
 PROMPT.md criterion, and the choice of 0.25 is a modelling judgement that belongs to
 Samraj (§2.4). Raised as QUESTIONS.md Q5. Nothing downstream is blocked meanwhile.
 **Date:** 2026-09-26
+
+---
+
+## D16 — Population source, and a serious undercount (2026-09-26, PROVISIONAL)
+
+**Question:** Meta or WorldPop for the Exposure indicator, and does either agree with an
+independent figure?
+
+**Comparison, measured:**
+
+| Source | Resolution | Pixels/cell | Landhi total | vs census |
+|---|---|---|---|---|
+| Meta HRSL v1.5 (2020) | ~31 m | median 119 | 295,132 | **0.43×** |
+| WorldPop constrained (2020) | ~93 m | median 13 | 308,105 | **0.45×** |
+| **2023 census, Landhi Town** | — | — | **681,293** | 1.00 |
+
+Per-cell agreement between the two sources: **Spearman ρ = 0.834**, Pearson r = 0.866.
+
+**Source chosen: Meta.** At H3 resolution 9 a cell is 0.105 km². Meta gives a median of
+119 pixels per cell; WorldPop gives 13, and reports 47 cells as empty against Meta's 21.
+WorldPop's 93 m pixels are simply too coarse to describe a cell this size. The two totals
+differ by only 4.4%, so resolution is the deciding factor, not level.
+
+**The undercount, and what it does and does not mean.**
+
+Both sources fall far outside the documented 25% tolerance, so P1-06 takes the "or the
+gap explained" branch of its acceptance criterion. The gap was diagnosed rather than
+assumed:
+
+| Region | Meta | WorldPop | 2023 census | ratio |
+|---|---|---|---|---|
+| Landhi Town (25.37 km²) | 297,527 | 310,338 | 681,293 | 0.44 / 0.46 |
+| Korangi District (114.5 km²) | 1,806,408 | 1,928,437 | 3,128,971 | 0.58 / 0.62 |
+
+The shortfall is **systematic across the whole district**, so it is not an artefact of
+our boundary — the pilot area is the right shape, and both models undercount. Likely
+causes: both are anchored to pre-2023 census baselines, and both infer population from
+building footprint *area*, which understates multi-storey and dense informal housing.
+
+**Why this does not invalidate the index.** Priority ranks cells *within* Landhi, and
+normalisation (D5) is relative. A uniform scale factor cancels exactly: multiply every
+cell by 2.3 and the ranking is unchanged.
+
+**Why it still matters, in two specific ways.**
+1. **The bias is not uniform.** Landhi is undercounted worse (0.44) than the district
+   average (0.58), which suggests denser and more informal areas are undercounted more.
+   If that pattern also holds *within* Landhi, the densest cells are under-ranked —
+   precisely the wrong direction for a tool meant to find where support is needed first.
+   The ρ = 0.834 agreement between two models sharing the same methodology is **not**
+   evidence against this: they would agree while both being wrong the same way.
+2. **Absolute supply quantities are underestimates.** D8 defines need from
+   age-vulnerable population, which inherits this undercount. A centre planning water for
+   300,000 people in a town of 681,000 under-supplies by more than half. The allocation
+   planner must therefore present **shares and priorities**, and state the undercount
+   wherever an absolute quantity appears.
+
+**What is explicitly not done:** the data is not rescaled to match the census (§2.1
+forbids adjusting data to hit a figure), and a uniform rescale would not fix a
+non-uniform bias anyway.
+
+**Status: PROVISIONAL** — the source choice is a judgement call belonging to Samraj, and
+the undercount has consequences he should decide on. Raised as QUESTIONS.md Q6.
+**Date:** 2026-09-26

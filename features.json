@@ -206,10 +206,10 @@
     "P1-02",
     "P1-03"
    ],
-   "passes": false,
+   "passes": true,
    "blocked_on": null,
    "dropped": null,
-   "evidence": null
+   "evidence": "uv run python -m pipeline.population -> Meta HRSL 295,132 people (median 119 px/cell); WorldPop 308,105 (median 13 px/cell); per-cell agreement Spearman rho 0.834, Pearson r 0.866. Source chosen: Meta, on resolution (D16). Comparison table written to data/processed/population_source_comparison.csv; per-cell counts to population_cells.csv; density min 0, median 6,366, max 48,332 per km2. Map viewed: dense core through the centre-south, sparser east, 21 empty cells. INDEPENDENT CHECK FAILED THE TOLERANCE AND THE GAP IS EXPLAINED: 2023 census Landhi Town is 681,293, so both sources are ~0.44x. Diagnosed by summing both rasters over the whole of Korangi District: models 1.81M and 1.93M against a census 3.13M (0.58x, 0.62x), so the shortfall is systematic across the district and not an artefact of the pilot boundary. Recorded in D16 with the consequences (relative ranking survives a uniform factor; a non-uniform undercount would under-rank the densest areas; absolute supply quantities are underestimates) and raised as Q6. Data was NOT rescaled to match the census, and a test asserts it was not. 9 new tests. uv run pytest -> 113 passed in 2.04s; CI -> 109 passed, 4 deselected in 1.49s; check.py --quick -> 'CHECK: PASS (3 checks)'."
   },
   {
    "id": "P1-07",

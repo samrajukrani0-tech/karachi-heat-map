@@ -111,3 +111,32 @@ very little real evidence — at 3% inside, a cell contains about three populati
 0.885% of Landhi is currently uncovered and is recorded as a limitation.
 
 **Answer:**
+
+---
+
+## Q6 — Population undercount: how should the model handle it? (OPEN, not blocking)
+
+Both modelled population sources put Landhi at about **300,000 people**. The 2023 census
+says **681,293**. The same shortfall appears across all of Korangi District (models 1.81–1.93M
+against a census 3.13M), so it is the models, not our boundary. Recorded as **D16**.
+
+The ranking inside Landhi is probably safe, because normalisation is relative and a
+uniform factor cancels. The worry is that the undercount is **not** uniform: Landhi is
+undercounted worse than the district average, which hints that the densest, most informal
+areas are undercounted most — under-ranking exactly the places that need support first.
+
+**Asked of Samraj, two decisions:**
+1. **Keep Meta as the source?** It is 31 m against WorldPop's 93 m, giving 119 pixels per
+   cell against 13, which matters at this cell size. Claude recommends Meta.
+2. **How should absolute numbers be presented?** Options: (a) report shares and priorities
+   only, never absolute people or litres, and state the undercount wherever a total
+   appears — Claude's recommendation; (b) publish absolute numbers with a prominent
+   "these are modelled and known to be roughly half the census figure" caveat; (c) apply
+   a documented uniform correction factor to totals only — which Claude advises against,
+   because it would dress a non-uniform bias as a fixed one and §2.1 forbids adjusting
+   data to match a figure.
+
+This is worth asking a centre manager too: they will know whether 300,000 or 681,000
+matches what they see on the ground in Landhi.
+
+**Answer:**

@@ -313,3 +313,74 @@ cell read 43 °C the hazard layer would be constant and would contribute nothing
 absolute values still matter for plausibility checks and for saying honestly that this is
 surface, not air, temperature.
 </details>
+
+---
+
+## P1-06 — Two models agreeing is not the same as two models being right
+
+**What and why.** Every cell now carries a modelled population. Two independent sources
+were computed and compared: Meta's 31 m layer gives Landhi 295,132 people, WorldPop's
+93 m layer gives 308,105 — a 4.4% difference, and they agree on the spatial pattern with
+a Spearman rank correlation of 0.834. Meta was chosen because at 0.105 km² per cell it
+supplies about 119 pixels per cell against WorldPop's 13.
+
+Then the independent check: the **2023 census records 681,293** people in Landhi Town.
+Both models are at roughly **44%** of that.
+
+**The key idea in A Level terms.** The instinct on seeing two independent sources agree
+is to trust them. That instinct is wrong here, and understanding why is the lesson.
+
+Two measurements agreeing tells you they have small *random* error relative to each
+other. It says nothing about *systematic* error — bias shared by both. Meta and WorldPop
+are built the same way: detect buildings from satellite imagery, then distribute census
+population across them in proportion to built area. Both inherit the same two problems:
+a pre-2023 census baseline, and the assumption that people scale with building
+*footprint*. In Landhi, where housing is dense and often multi-storey, footprint area
+understates how many people live on it. Both models are wrong in the same direction for
+the same reason, so their agreement is close to meaningless as a check on accuracy.
+
+This is why the project insisted on an *independent* figure rather than a second model.
+The census counts people directly; it does not share the building-footprint assumption.
+
+**Why the diagnosis mattered more than the discrepancy.** A gap could mean the models are
+wrong, or that our boundary is wrong. These have opposite fixes. Summing both rasters
+over the whole of Korangi District settled it: models 1.81M and 1.93M against a census
+3.13M. The same shortfall appears at a scale where our boundary plays no part, so the
+boundary is fine and the models undercount.
+
+**What follows, mathematically.** Priority ranks cells *within* Landhi and normalisation
+is relative, so multiplying every cell by the same factor k leaves the ranking
+completely unchanged — a uniform bias is invisible to a relative index. But the bias is
+*not* uniform: Landhi is at 0.44 of census while the district is at 0.58, which suggests
+denser areas are undercounted more. A bias that varies with the very quantity being
+measured does change the ranking, and in the worst possible direction: under-ranking the
+most crowded places.
+
+**Questions.**
+
+1. Two independent sources agree to within 4.4% and correlate at ρ = 0.834. Why is that
+   weak evidence that either is accurate?
+<details><summary>Answer</summary>
+Agreement bounds their *relative* random error, not their shared *systematic* error. Both
+use building footprints and a pre-2023 census baseline, so both understate dense
+multi-storey housing in the same way. Two thermometers with the same manufacturing fault
+agree beautifully and are both wrong.
+</details>
+
+2. If every cell's population were multiplied by 2.3, which outputs of the model would
+   change and which would not?
+<details><summary>Answer</summary>
+Nothing that depends only on ranking changes: normalised Exposure, Priority order,
+quintile classes and the map all stay identical, because robust min–max rescales to the
+observed range. What changes is anything absolute — the need calculation in the
+allocation planner, and therefore litres of water and numbers of ORS sachets.
+</details>
+
+3. Why is summing over Korangi District the right test to separate "our boundary is
+   wrong" from "the models are wrong"?
+<details><summary>Answer</summary>
+It is a controlled comparison: the district total does not depend on our boundary at all,
+since it uses the official district outline. If the models matched the census there, the
+error would have to lie in how we defined Landhi. They do not match, so the error lives
+in the models — the boundary is exonerated by evidence rather than by assumption.
+</details>

@@ -1,0 +1,41 @@
+# People per cell (P1-06). Decision D4 approved the indicator; this file records the
+# source comparison and the choice between them.
+
+sources:
+  meta:
+    name: Meta (Data for Good) High Resolution Population Density, v1.5
+    hdx_dataset: pakistan-india_all-files-high-resolution-population-density-maps
+    hdx_resource: population_ind_pak_general.zip
+    zip_member: population_20_lon_60_general
+    cache_path: meta/population_20_lon_60_general-v1.5.tif
+    resolution_m: 31
+    reference_year: 2020
+    licence: CC BY 4.0 - Meta (Data for Good) / Columbia University CIESIN
+  worldpop:
+    name: WorldPop constrained 100 m, Pakistan, 2020 (BSGM)
+    url: https://data.worldpop.org/GIS/Population/Global_2000_2020_Constrained/2020/BSGM/PAK/pak_ppp_2020_constrained.tif
+    cache_path: worldpop/pak_ppp_2020_constrained.tif
+    resolution_m: 93
+    reference_year: 2020
+    licence: CC BY 4.0 - WorldPop, University of Southampton
+
+# Chosen source for the Exposure indicator. See DECISIONS.md D16.
+chosen: meta
+
+# Independent figure for the sanity check required by P1-06. NOT a target: data is
+# never adjusted to hit it (PROMPT.md 2.1).
+independent_check:
+  pilot:
+    figure: 681293
+    unit: Landhi Town
+    source: 2023 Pakistan census, via Wikipedia's Landhi Town article
+    date: 2023-03-01
+  district:
+    figure: 3128971
+    unit: Korangi District
+    source: 2023 Pakistan census, via citypopulation.de citing the Pakistan Bureau of Statistics
+    date: 2023-03-01
+  # Documented tolerance. Both modelled sources fall FAR outside it; P1-06 therefore
+  # takes the "or the gap explained" branch of its acceptance criterion, and the gap is
+  # written up in DECISIONS.md D16 and data/SOURCES.md.
+  tolerance_fraction: 0.25

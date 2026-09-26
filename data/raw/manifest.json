@@ -1,4 +1,20 @@
 {
+ "hdx/pakistan-india_all-files-high-resolution-population-density-maps.json": {
+  "url": "https://data.humdata.org/api/3/action/package_show?id=pakistan-india_all-files-high-resolution-population-density-maps",
+  "sha256": "5369cb45aeb8450f1453b8c66f22aee555ab5604c248887ea94095bc60cb2866",
+  "bytes": 14443,
+  "downloaded": "2026-09-26",
+  "licence": "HDX metadata; the dataset carries its own licence",
+  "note": "package_show for pakistan-india_all-files-high-resolution-population-density-maps"
+ },
+ "meta/population_20_lon_60_general-v1.5.tif": {
+  "url": "https://data.humdata.org/dataset/2c8cfe67-448f-4a27-94b3-aaa944598cba/resource/e3dbe673-4117-4243-93a8-3366c6e6396b/download/population_ind_pak_general.zip",
+  "sha256": "d08c2987e0c5b64c2d9477183a7ce14d936bc3b9da9226bc965350d28dd18156",
+  "bytes": 33429308,
+  "downloaded": "2026-09-26",
+  "licence": "CC BY 4.0 - Meta (Data for Good) / Columbia University CIESIN",
+  "note": "Meta High Resolution Population Density, Pakistan+India v1.5, 10-degree tile containing Karachi"
+ },
  "osm/relation_16350631.json": {
   "url": "https://overpass-api.de/api/interpreter",
   "sha256": "0a9b249905a9e5ff039f4239e548b90ac247bf9e9d749cad4697ff8af96181e8",
@@ -6,5 +22,21 @@
   "downloaded": "2026-09-26",
   "licence": "ODbL 1.0 - (c) OpenStreetMap contributors",
   "note": "Overpass query response; rebuildable from the query in the caller"
+ },
+ "osm/relation_16350632_korangi_district.json": {
+  "url": "https://overpass-api.de/api/interpreter",
+  "sha256": "b48a45cb4a389452d338dfef44be625cf66bd5e123898bb2ed893708eb71f4df",
+  "bytes": 8837,
+  "downloaded": "2026-09-26",
+  "licence": "ODbL 1.0 - (c) OpenStreetMap contributors",
+  "note": "Overpass query response; rebuildable from the query in the caller"
+ },
+ "worldpop/pak_ppp_2020_constrained.tif": {
+  "url": "https://data.worldpop.org/GIS/Population/Global_2000_2020_Constrained/2020/BSGM/PAK/pak_ppp_2020_constrained.tif",
+  "sha256": "706547258b124a707d532606819b6a3dc994bf262a83f1aeadc7b4035415ae57",
+  "bytes": 33593223,
+  "downloaded": "2026-09-26",
+  "licence": "CC BY 4.0 - WorldPop, University of Southampton",
+  "note": "WorldPop constrained 100 m, Pakistan, 2020, BSGM method"
  }
 }

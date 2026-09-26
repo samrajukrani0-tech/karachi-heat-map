@@ -173,6 +173,45 @@ Storage CRS: EPSG:4326. All distances and areas: EPSG:32642 (UTM zone 42N).
 - **Licence:** derived from USGS Landsat (public domain) and the OSM-derived grid, so the
   file falls under `LICENSE-data` (ODbL 1.0) along with the rest of `data/processed`.
 
+### Meta High Resolution Population Density v1.5 (P1-06, 2026-09-26)
+- **Access:** HDX dataset
+  `pakistan-india_all-files-high-resolution-population-density-maps`, resource
+  `population_ind_pak_general.zip`. **No account or login required.**
+- **Downloaded efficiently:** the zip is ~549 MB covering India and Pakistan, but holds
+  13 separate 10° tiles. `pipeline/hdx.py` reads the central directory from the tail of
+  the remote file over HTTP ranges and fetches only `population_20_lon_60_general`
+  (18.4 MB compressed, 33.4 MB raster) — the tile containing Karachi.
+- **Resolution:** ~31 m, EPSG:4326, persons per pixel. **Reference year 2020.**
+- **Licence:** CC BY 4.0 — Meta (Data for Good) / Columbia University CIESIN.
+- **Rate limits:** HDX answers bursts with `202 Accepted` and an empty body. The client
+  backs off up to 90 s and caches dataset metadata so a rebuild asks once.
+
+### WorldPop constrained 100 m, Pakistan 2020 (P1-06, comparison source)
+- **URL:** `https://data.worldpop.org/GIS/Population/Global_2000_2020_Constrained/2020/BSGM/PAK/pak_ppp_2020_constrained.tif`
+  (34 MB). The `maxar_v1` and `UNadj` variants return 404 for 2020; BSGM is what exists.
+- **Resolution:** ~93 m, EPSG:4326, persons per pixel. Reference year 2020.
+- **Licence:** CC BY 4.0 — WorldPop, University of Southampton.
+
+### Derived: people per cell, and a documented undercount (P1-06)
+- **Outputs:** `data/processed/population_cells.csv`,
+  `data/processed/population_source_comparison.csv`.
+- **Method:** counts summed with each pixel assigned to exactly one cell
+  (`zonal.sum_by_cell`), over the clipped cell geometry (D15), so totals conserve.
+- **Result (Meta, chosen):** 295,132 people; density median 6,366/km², max 48,332/km².
+  WorldPop gives 308,105. Per-cell agreement Spearman ρ = 0.834.
+- **⚠ Undercount that must travel with this indicator.** The 2023 census records
+  **681,293** for Landhi Town. Both modelled sources are about **0.44×** that. Summed
+  over all of Korangi District the models give 1.81M and 1.93M against a census
+  3,128,971 (0.58×, 0.62×), so the shortfall is **systematic across the district**, not
+  an artefact of the pilot boundary. Likely causes: both sources predate the 2023 census,
+  and both infer population from building footprint area, which understates multi-storey
+  and dense informal housing.
+  - The data is **not** rescaled to match the census (§2.1), and a test asserts it was not.
+  - Relative ranking within Landhi survives a uniform factor, because normalisation is
+    relative. A *non-uniform* undercount would not: Landhi is undercounted worse than the
+    district average, hinting the densest areas are undercounted most.
+  - Absolute supply quantities derived from this layer are underestimates. See D16, Q6.
+
 ## Planned (Phase 1) — verify at fetch time; IDs, band names and licences change
 
 | Dataset | Indicator | Access | Licence | Notes |

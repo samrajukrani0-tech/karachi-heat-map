@@ -251,3 +251,43 @@ same turn (§2.3).
 67.159–67.178 E with normal clear-look counts (41–43), so the cool band is signal, not a
 masking failure. Green cover should explain it; if it does not, that is worth chasing.
 **Next:** P1-06 People per cell.
+
+## 2026-09-26 — P1-06 People per cell
+**What changed:** `pipeline/hdx.py` (fetch one member from a remote zip by HTTP range),
+`pipeline/population.py`, `config/population.yaml`, `zonal.sum_by_cell`,
+`tests/test_population.py` (9 tests). `check.py` validates a seventh config file.
+**Evidence:** Meta 295,132 people (median 119 px/cell); WorldPop 308,105 (median 13
+px/cell); per-cell Spearman rho 0.834. Source chosen: Meta, on resolution (D16). Density
+min 0, median 6,366, max 48,332 per km2. Map viewed: dense core through the centre-south,
+21 empty cells, and the dense band coincides with the hot patches from P1-04b.
+`uv run pytest` -> 113 passed (109 in CI, 4 raw deselected); `check.py --quick` ->
+`CHECK: PASS (3 checks)`.
+**548 MB avoided.** The Meta layer ships as a ~549 MB zip of India and Pakistan, but it
+holds 13 separate 10-degree tiles and Karachi is in one of them. `pipeline/hdx.py` reads
+the zip's central directory from the tail of the remote file, then range-fetches just
+that member: **18.4 MB instead of 549 MB**, a 30x saving, and the same principle as
+reading a raster in windows (§2.8).
+**HDX rate limiting handled properly.** HDX answers a burst of API calls with `202
+Accepted` and an empty body rather than an error, which a naive client sees as a JSON
+parse failure. `hdx.dataset()` now treats that as "slow down": backs off up to 90 s, and
+caches the metadata so a rebuild asks once rather than once per layer.
+**Counts are summed so that totals conserve.** Masking each cell separately would
+double-count any pixel straddling a shared edge. `zonal.sum_by_cell` rasterises the cells
+instead, giving every pixel exactly one owner.
+**THE FINDING OF THIS TURN — a 2.3x population undercount.** The 2023 census puts Landhi
+Town at 681,293. Both models say about 300,000. Rather than assume the cause, both
+rasters were summed over the whole of Korangi District: 1.81M and 1.93M against a census
+3.13M. The shortfall is systematic across the district, so the pilot boundary is fine and
+the models undercount — probably because both predate the 2023 census and both infer
+population from building footprint area, which understates multi-storey and dense
+informal housing. Recorded as **D16** with the consequences spelt out, and raised as
+**Q6**. The data was **not** rescaled to match the census (§2.1), and a test asserts that
+it was not.
+**Why the index probably survives it, and where it does not.** Priority ranks cells
+within Landhi and normalisation is relative, so a uniform factor cancels exactly. But the
+undercount is *not* uniform — Landhi (0.44) is worse than the district (0.58) — which
+hints the densest informal areas are undercounted most, under-ranking exactly the places
+that most need support. And D8's need definition inherits the undercount, so absolute
+supply quantities are underestimates: a centre planning water for 300,000 in a town of
+681,000 under-supplies by more than half.
+**Next:** P1-07 Age groups.
