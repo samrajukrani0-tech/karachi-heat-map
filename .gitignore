@@ -18,3 +18,7 @@ node_modules/
 
 # os
 .DS_Store
+
+# /brag skill scratch output (launch video + stills script), kept on disk, not project code
+brag-output/
+stills-tmp.mjs

@@ -631,10 +631,10 @@
       "depends_on": [
         "P2-06"
       ],
-      "passes": false,
+      "passes": true,
       "blocked_on": null,
       "dropped": null,
-      "evidence": null
+      "evidence": "pytest 842 passed; check.py --quick CHECK: PASS (7 checks); D13 gate stock_holding_centres() with 13 new tests, role check confirmed by mutation (emptying _NEVER_STOCK fails test_an_ambulance_standby_marked_as_holding_stock_is_refused); fresh checker subagent verdict PASS: re-derived example A objective 119.964, example B LP 16.994 vs greedy 8.998, own 3x3 problem LP 9.1958 vs greedy 6.4977, all matching solve_lp/solve_greedy exactly; checker caveat: D13 holds only at the gate, carried into P4-02"
     },
     {
       "id": "P4-02",
@@ -642,7 +642,8 @@
       "title": "Scenarios",
       "acceptance": [
         "precomputed scenarios per D8, exported for the site with plain-language summaries",
-        "the Sphere litres-per-person figure verified against the Sphere Handbook and cited"
+        "the Sphere litres-per-person figure verified against the Sphere Handbook and cited",
+        "centres reach the solver only through stock_holding_centres(), and a test proves a scenario built from a table containing an ambulance_standby row dispatches nothing from it (P4-01 checker caveat)"
       ],
       "depends_on": [
         "P4-01"

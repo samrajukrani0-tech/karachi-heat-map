@@ -784,3 +784,52 @@ argument fails the moment one term can take a fractional value: the left-hand si
 then not necessarily an integer, and flooring the right-hand side could cut off feasible
 points. The reasoning has to be checked per row, not applied as a habit.
 </details>
+
+## P4-01 (final part) — the gate between the centres table and the solver
+
+**What and why.** D13 says only centres that can hold stock may be given any. Until now
+that rule lived in one line inside `main()` that no test touched, and it read the
+`can_hold_stock` flag alone. So a mistyped `y` would quietly have become "no", deleting a
+centre's supply from the plan, and an ambulance standby point typed in as `yes` would
+have been handed stock. There is now one function, `stock_holding_centres()`, that every
+route to the solver goes through. It excludes standby points by *role*, treats "unknown"
+as "no", and refuses any row it cannot read, naming the row.
+
+**The key idea — a test that cannot fail proves nothing.** The end-to-end test for
+"an ambulance point is never given stock" sets the standby row's flag to `no`, so it
+would still pass with the role check deleted: the flag alone keeps the row out. It tests
+the flag, not the role. That is why there is a second test, where the standby point is
+marked `yes` and must be refused. Deleting the role rule on purpose made exactly that
+second test go red and left the first one green. Breaking a rule deliberately to see
+which tests notice is called **mutation testing**, and it is the check that a test
+really tests what its name says. In A Level CS terms: a test is only evidence if some wrong
+program would fail it.
+
+**Questions to check you have it.**
+
+1. Why is "unknown" treated as "no" rather than "yes"?
+<details><summary>Answer</summary>
+Because the two mistakes do not cost the same. Treating an unchecked centre as a stock
+holder sends people to collect supply from somewhere that may have none, and the plan
+looks complete when it is not. Treating it as not holding stock gives a plan that uses
+less than might be available, and the shortfall appears in the report where someone can
+see it and go and check.
+</details>
+
+2. The code could silently ignore a standby point marked `yes`. Why stop the whole run
+   instead?
+<details><summary>Answer</summary>
+Because one of the row's two fields must be wrong, and there is no way to tell which from
+inside the program. Believing the flag adds supply that probably is not there; believing
+the role removes supply that might be. An error that names the row takes a minute to fix
+in a short, hand-made file. A silent guess gives a wrong plan that looks right. (The
+choice is recorded as D29 for you to confirm.)
+</details>
+
+3. How would you check that a test really tests the rule it is named after?
+<details><summary>Answer</summary>
+Break the rule on purpose — delete or change the line that enforces it — and run the
+test. If it still passes, it was never testing that rule. Here, emptying the set of roles
+that can never hold stock made `test_an_ambulance_standby_marked_as_holding_stock_is_refused`
+fail, which is the evidence that the test depends on the role check.
+</details>

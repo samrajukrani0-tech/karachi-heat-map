@@ -911,3 +911,34 @@ not a regression, but it has no headroom left and the next thing added to the pa
 break it. Raised as Q14.
 
 **Phase 3 is complete: 9 of 9.** Next: P4-01 Solver.
+
+## 2026-09-27 — P4-01 Solver: PASS
+**Evidence:** pytest 842 passed; `check.py --quick` → **`CHECK: PASS (7 checks)`**, twice in
+a row; fresh checker subagent verdict **PASS**.
+**Health check first.** The turn opened on `CHECK: FAIL` — ruff was linting the untracked
+`/brag` video scratch (`brag-output/`, `stills-tmp.mjs`), not project code. Those files are
+now gitignored and kept on disk. The ruff gate itself is unchanged.
+**What was missing.** The solvers, docs and the six §8 property tests were already built
+across the earlier P4-01 commits (D26–D28). Two acceptance criteria were not met: D13
+was enforced by one untested line in `main()` that read the flag alone, and nothing
+proved an ambulance standby point is never given stock. `stock_holding_centres()` is now
+the only route from `centres.csv` to a solver. It excludes standby points by role, treats
+"unknown" as "no", and refuses unreadable or contradictory rows, naming the row (**D29,
+proposed** — Samraj to confirm). There are 13 new tests. A mutation run confirmed the
+role test goes red when the role rule is deleted.
+**The checker re-derived three values independently:**
+- example A: 119.964
+- example B: LP 16.994 against greedy 8.998
+- its own problem: LP 9.1958 against greedy 6.4977
+
+All three match the repo exactly. It also found two real weaknesses:
+- One test's solver-loop assertions passed by construction. They are now replaced with
+  stronger ones.
+- D13 holds only at the gate, and nothing wires centres into a solver yet. This is added
+  to P4-02's acceptance, not left as a note.
+
+**Transient:** one run of the external-tile test `basemap tiles actually load` failed
+under full-suite load. It passed alone and in the next three full runs. It was not
+caused by this change (no site code touched), but it depends on live Esri tiles and may
+flake again.
+**Next:** P4-02 Scenarios.

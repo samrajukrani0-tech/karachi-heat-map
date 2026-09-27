@@ -1090,3 +1090,32 @@ to discover from the code.
 It would only start to bite if the protected set were defined *independently* of
 priority — by age, say, or by a ward boundary, or by cells a field team names. That is a
 different rule, and Samraj's to choose: QUESTIONS.md Q15.
+
+## D29 — A contradictory centre row is refused, not guessed (2026-09-27, PROPOSED)
+
+**Context.** D13 says the allocation draws stock only from centres marked
+`can_hold_stock: yes`, and P4-01 requires a test proving an `ambulance_standby` centre is
+never given stock. Until this turn the only thing enforcing D13 was one line inside
+`main()`, which no test touched, and it read the flag alone: a standby point typed in as
+`yes` would have been handed stock, and a typo such as `y` would silently have become
+`no`, removing that centre's supply with nothing on screen to say so.
+
+**What is implemented.** `stock_holding_centres()` in `pipeline/allocate.py` is now the
+only route from `centres.csv` to either solver.
+- `yes` → can be given stock. `no` and `unknown` → cannot; "unknown" means nobody checked.
+- An `ambulance_standby` row is never a stock holder, whatever its flag says.
+- **An `ambulance_standby` row marked `yes` is refused with the row named**, as is any
+  role or flag outside the vocabulary that `tests/test_centres.py` checks.
+
+**Recommendation: refuse.** One of that row's two fields is wrong, and either guess
+changes the plan: trusting the flag adds supply that is probably not there; trusting the
+role removes supply that might be. `centres.csv` is short and filled in by hand after a
+visit, so an error that stops the run and names the row costs a minute to fix. A silent
+guess costs a wrong plan.
+
+**Main alternative: trust the role and exclude silently.** The run never stops, and the
+test that an ambulance point gets no stock still passes. Rejected because it hides a data
+error in the one file the project says must be verified in person.
+
+**Samraj to decide.** Nothing downstream depends on which you pick yet — `centres.csv`
+has no rows (Q2). Changing it is one `raise` in `stock_holding_centres()` and one test.

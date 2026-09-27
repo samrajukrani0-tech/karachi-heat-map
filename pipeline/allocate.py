@@ -551,6 +551,47 @@ def _why_short(capacity_top, raw_need_top, reachable_top, floor_units,
     return "there is not enough stock within reach of them"
 
 
+# --- D13: which centres may be given stock -------------------------------------------
+
+# The vocabulary centres.csv is checked against (tests/test_centres.py uses the same
+# sets, and a test asserts they agree).
+CENTRE_ROLES = {"ambulance_standby", "distribution_point", "clinic", "morgue", "office", "other"}
+STOCK_FLAGS = {"yes", "no", "unknown"}
+
+# Roles that never hold stock whatever the flag says. An ambulance standby point is
+# where a vehicle waits, not a store; D13 counts it in the index and keeps it out of
+# the allocation.
+_NEVER_STOCK = {"ambulance_standby"}
+
+
+def stock_holding_centres(rows: list[dict]) -> list[dict]:
+    """The centres the solvers may draw stock from: ``can_hold_stock`` is ``yes`` (D13).
+
+    This is the only route from centres.csv to a solver, so it is strict. "unknown"
+    means nobody has checked, and is treated as not holding stock. Anything it cannot
+    read is refused with the row named, rather than quietly counted as "no": a typo
+    that silently deletes a centre's supply is worse than an error. A standby point
+    marked as holding stock is refused too -- one of its two fields is wrong, and
+    guessing which would add or remove supply from the plan (D29).
+    """
+    holders = []
+    for row in rows:
+        name = row.get("name", "?")
+        role = str(row.get("role", "")).strip().lower()
+        flag = str(row.get("can_hold_stock", "")).strip().lower()
+        if role not in CENTRE_ROLES:
+            raise ValueError(f"centre {name!r}: unknown role {row.get('role')!r}")
+        if flag not in STOCK_FLAGS:
+            raise ValueError(f"centre {name!r}: can_hold_stock must be one of "
+                             f"{sorted(STOCK_FLAGS)}, got {row.get('can_hold_stock')!r}")
+        if flag == "yes" and role in _NEVER_STOCK:
+            raise ValueError(f"centre {name!r}: role {role} cannot hold stock, but "
+                             "can_hold_stock is 'yes'. Correct one of the two fields.")
+        if flag == "yes":
+            holders.append(row)
+    return holders
+
+
 def lp_kwargs() -> dict:
     """Exactly the keyword arguments ``solve_lp`` takes, read from the config file.
 
@@ -603,7 +644,7 @@ def main() -> int:
 
     path = MANUAL / "centres.csv"
     rows = list(csv.DictReader(path.open(encoding="utf-8"))) if path.exists() else []
-    holders = [r for r in rows if str(r.get("can_hold_stock", "")).strip().lower() == "yes"]
+    holders = stock_holding_centres(rows)
     if not holders:
         print("No verified relief centre can hold stock, so there is nothing to allocate "
               "from (QUESTIONS.md Q2). The solver itself is tested on synthetic problems; "

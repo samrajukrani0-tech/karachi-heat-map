@@ -24,6 +24,7 @@ from pipeline.allocate import (
     objective_value,
     solve_greedy,
     solve_lp,
+    stock_holding_centres,
     top_quintile,
 )
 
@@ -924,3 +925,87 @@ def test_the_note_never_claims_more_is_short_than_is_owed():
                            re.findall(r"(\d[\d,]*) unit[s]? short of the (\d[\d,]*)",
                                       note)[0])
             assert short <= owed, note
+
+
+# --- D13: only centres that can hold stock are ever given any ------------------------
+
+
+def _centre(name, role, can_hold_stock):
+    """One SYNTHETIC centres.csv row. Coordinates are irrelevant to the gate."""
+    return {"name": name, "org": "SYNTHETIC", "role": role,
+            "can_hold_stock": can_hold_stock, "lat": "24.85", "lon": "67.20"}
+
+
+def test_only_centres_marked_yes_can_hold_stock():
+    rows = [_centre("A", "distribution_point", "yes"),
+            _centre("B", "distribution_point", "no"),
+            _centre("C", "clinic", "unknown"),
+            _centre("D", "office", "yes")]
+    assert [r["name"] for r in stock_holding_centres(rows)] == ["A", "D"]
+
+
+def test_unknown_is_not_treated_as_yes():
+    """'unknown' means nobody has checked. Stock cannot be sent from a guess."""
+    assert stock_holding_centres([_centre("A", "clinic", "unknown")]) == []
+
+
+def test_an_ambulance_standby_is_never_assigned_stock():
+    """D13, P4-01 acceptance. The standby point is the nearest centre to every cell,
+    and in the raw table it is listed with the most stock -- the strongest possible
+    pull towards using it. It must still dispatch nothing, because it never reaches
+    the solver at all."""
+    rows = [_centre("Standby", "ambulance_standby", "no"),
+            _centre("Store", "distribution_point", "yes")]
+    raw_stock = {"Standby": 500.0, "Store": 40.0}
+    raw_dist = {"Standby": [300.0, 400.0], "Store": [3000.0, 4000.0]}
+
+    holders = stock_holding_centres(rows)
+    names = [r["name"] for r in holders]
+    assert "Standby" not in names
+
+    stock = np.array([raw_stock[n] for n in names])
+    dist = np.array([raw_dist[n] for n in names]).T
+    for solver in (solve_lp, solve_greedy):
+        plan = solver(np.array([0.9, 0.5]), np.array([30.0, 30.0]), stock, dist,
+                      max_distance_m=D)
+        # Every unit dispatched comes from the one real store, and all of it goes out.
+        assert names == ["Store"]
+        assert plan.dispatched.tolist() == pytest.approx([40.0])
+        assert plan.total == pytest.approx(40.0)
+
+
+def test_an_ambulance_standby_marked_as_holding_stock_is_refused():
+    """A standby point is somewhere an ambulance waits, not a store. If the table says
+    it holds stock, one of the two fields is wrong, and guessing which would quietly
+    add or remove supply. Refuse, and name the row."""
+    rows = [_centre("Store", "distribution_point", "yes"),
+            _centre("Korangi Standby", "ambulance_standby", "yes")]
+    with pytest.raises(ValueError, match="Korangi Standby"):
+        stock_holding_centres(rows)
+
+
+@pytest.mark.parametrize("flag", ["Yes", " yes ", "YES"])
+def test_the_stock_flag_is_read_case_and_space_insensitively(flag):
+    assert len(stock_holding_centres([_centre("A", "clinic", flag)])) == 1
+
+
+@pytest.mark.parametrize("flag", ["y", "true", "", "maybe"])
+def test_an_unrecognised_stock_flag_is_refused(flag):
+    """A typo must not silently become 'no' -- that would remove a centre's supply
+    from the plan with nothing on screen to say so."""
+    with pytest.raises(ValueError, match="can_hold_stock"):
+        stock_holding_centres([_centre("A", "clinic", flag)])
+
+
+def test_an_unrecognised_role_is_refused():
+    with pytest.raises(ValueError, match="role"):
+        stock_holding_centres([_centre("A", "warehouse", "yes")])
+
+
+def test_the_gate_uses_the_same_vocabulary_as_the_centres_schema_test():
+    """tests/test_centres.py and the gate must agree, or a row could pass the schema
+    check and still be refused by the solver (or the reverse)."""
+    from pipeline.allocate import CENTRE_ROLES, STOCK_FLAGS
+    from tests.test_centres import ROLES, STOCK
+    assert CENTRE_ROLES == ROLES
+    assert STOCK_FLAGS == STOCK
