@@ -713,3 +713,74 @@ service limit, so "filling it in" would ship supply further than the model allow
 nothing would catch it. The function is right to be conservative; the design was wrong to
 put the decision there.
 </details>
+
+## P4-01 (third round) — A solver saying "success" is not proof of a right answer
+
+**What and why.** The fix in the last round declared every shipment to be a whole
+number and handed the problem to HiGHS in integer mode. That was the right idea and it
+was still not enough. The *upper bounds* on those integer variables were left as
+fractions — a cell needing 32.37 units got an upper bound of 32.37 — and given a
+fractional bound the solver can return an answer that is not the best one **while
+reporting `status = 0` and a MIP gap of 0.0**. Those two numbers are how a solver says
+"I have proved this is optimal". Both were present, and both were wrong.
+
+The symptom was tiny and would never have been noticed by eye: a two-cell,
+one-centre problem delivering 50 units when 51 was both feasible and optimal. But 51 was
+what the crude greedy baseline delivered, and what the older rounding code delivered, so
+the "exact" solver was losing to the two things it had just been rewritten to beat. It
+happened in about 0.7% of problems with fractional stocks and needs — which is to say,
+all the realistic ones.
+
+The fix is one line of reasoning: an integer that cannot exceed 32.37 cannot exceed 32,
+so floor the bound. That is an *exact reformulation* — it removes no valid answer,
+because no valid answer was fractional to begin with. The same argument applies to the
+two constraint rows whose variables are all integers, but not to the equity row, which
+carries the continuous slack variable and must be left alone.
+
+**The key idea in A Level terms.** Two things are going on, and both are worth keeping.
+
+The first is that **tightening a constraint without removing any feasible point is
+free** — and sometimes necessary. This is the same manoeuvre as rewriting an inequality
+into a sharper equivalent form before solving it: $2x < 9$ for integer $x$ means
+$x \le 4$, and saying so costs nothing but tells you more. Solvers, like people, work
+better when the constraints are stated in their sharpest true form.
+
+The second is about **what counts as evidence**. `status = 0` means the algorithm
+terminated as designed; `mip_gap = 0.0` means it believes the bound and the incumbent
+have met. Neither is an independent check, because both are produced by the thing being
+checked. The only tests that caught this were external: an entirely separate solver
+written from the specification, and, on small cases, brute-force enumeration of every
+possible integer allocation. That is the general shape of a real verification —
+something that could disagree.
+
+**Questions to check you have it.**
+
+1. Why is flooring the upper bound of an integer variable not an approximation?
+<details><summary>Answer</summary>
+Because no feasible value is removed. The variable can only take whole-number values, so
+the set of values satisfying $x \le 32.37$ and the set satisfying $x \le 32$ are the
+same set: $\{0, 1, \ldots, 32\}$. The two formulations have identical feasible regions
+and therefore identical optima. Only the solver's internal search changes — it is now
+being told something true that it was previously having to discover.
+</details>
+
+2. The solver reported a MIP gap of zero and the answer was still suboptimal. What would
+   you need in order to *know* an answer is optimal?
+<details><summary>Answer</summary>
+Something independent of the solver. Two things were used here: brute-force enumeration
+of every integer allocation on problems small enough to make that feasible, which is a
+proof rather than an argument; and a second solver written separately from the same
+written specification, which can disagree. A check that shares code, assumptions or
+authorship with the thing it is checking can only confirm internal consistency — which
+is exactly what the zero gap was doing.
+</details>
+
+3. The equity row was deliberately *not* floored. Why would flooring it have been wrong?
+<details><summary>Answer</summary>
+Because that row contains the slack variable $u$, which is continuous. The argument for
+flooring is "every variable in this row is an integer, so the left-hand side is an
+integer, so the bound can be rounded to an integer without losing anything". That
+argument fails the moment one term can take a fractional value: the left-hand side is
+then not necessarily an integer, and flooring the right-hand side could cut off feasible
+points. The reasoning has to be checked per row, not applied as a habit.
+</details>
