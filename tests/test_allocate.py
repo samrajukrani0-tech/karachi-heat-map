@@ -19,6 +19,7 @@ from pipeline.allocate import (
     objective_value,
     solve_greedy,
     solve_lp,
+    solver_settings,
     top_quintile,
 )
 
@@ -523,15 +524,82 @@ def test_a_negative_distance_is_refused(solver):
 
 @pytest.mark.parametrize("solver", [solve_lp, solve_greedy])
 @pytest.mark.parametrize("field", ["priority", "need", "stock"])
-def test_a_nan_input_is_refused_by_both_solvers(solver, field):
-    """Greedy accepted all of these and returned a nan objective."""
+@pytest.mark.parametrize("bad_value", [np.nan, np.inf])
+def test_a_nan_or_infinite_input_is_refused_by_both_solvers(solver, field, bad_value):
+    """Greedy accepted every one of these and returned a nan or -inf objective.
+
+    The nan guard was added after the second review and the infinity guard was not,
+    which left the exact failure objective_value's docstring says it exists to prevent:
+    a nan objective makes 'did the LP beat greedy?' quietly answer no.
+    """
     good = dict(priority=np.array([0.5, 0.5]), need=np.array([1.0, 1.0]),
                 stock=np.array([1.0]), dist=np.array([[100.0], [100.0]]))
-    bad = {**good, field: np.full_like(good[field], np.nan)}
-    with pytest.raises(ValueError, match="nan"):
+    bad = {**good, field: np.full_like(good[field], bad_value)}
+    with pytest.raises(ValueError, match="nan or infinity"):
         solver(**bad, max_distance_m=D)
-    with pytest.raises(ValueError, match="nan"):
-        solver(**good, max_distance_m=D, epsilon=float("nan"))
+
+
+@pytest.mark.parametrize("solver", [solve_lp, solve_greedy])
+@pytest.mark.parametrize("bad_value", [np.nan, np.inf, -np.inf])
+def test_a_nan_or_infinite_epsilon_is_refused(solver, bad_value):
+    good = dict(priority=np.array([0.5, 0.5]), need=np.array([1.0, 1.0]),
+                stock=np.array([1.0]), dist=np.array([[100.0], [100.0]]))
+    with pytest.raises(ValueError, match="finite|non-negative"):
+        solver(**good, max_distance_m=D, epsilon=bad_value)
+
+
+@pytest.mark.parametrize("solver", [solve_lp, solve_greedy])
+@pytest.mark.parametrize("bad_priority", [[-0.9, 0.8], [5.0, 0.8], [1.5, 0.2]])
+def test_a_priority_outside_zero_to_one_is_refused(solver, bad_priority):
+    """Both accepted these, and they disagreed on what a negative priority meant:
+    the LP refused to serve the cell and greedy served it."""
+    with pytest.raises(ValueError, match=r"\[0, 1\]"):
+        solver(np.array(bad_priority), np.array([10.0, 10.0]), np.array([10.0, 10.0]),
+               np.array([[100.0, 100.0], [100.0, 100.0]]), max_distance_m=D)
+
+
+def test_a_penalty_below_the_tiebreak_is_refused():
+    """A penalty under epsilon cannot influence the plan, yet the plan still reported
+    a shortfall and blamed it on distance. 1e-4 was legal under the previous check."""
+    with pytest.raises(ValueError, match="no larger than the distance tiebreak"):
+        solve_lp(np.full(5, 0.6), np.full(5, 200.0), np.array([500.0]),
+                 np.array([[4999.0]] + [[10.0]] * 4), max_distance_m=D, epsilon=EPS,
+                 min_share_top_quintile=0.25, equity_penalty=1e-4)
+
+
+def test_a_phantom_shortfall_is_not_reported():
+    """Float residue is not a finding. 3.55e-15 was printed as '1 units short of 28'."""
+    need = np.array([27.0, 10.54, 33.89, 31.84, 4.73])     # sums to 108.00000000000001
+    plan = solve_lp(np.array([0.9, 0.5, 0.4, 0.3, 0.2]), need, np.array([208.0]),
+                    np.full((5, 1), 1000.0), max_distance_m=D, epsilon=EPS,
+                    min_share_top_quintile=0.25)
+    assert plan.equity_shortfall == 0.0
+    assert not any("short of" in n for n in plan.notes), plan.notes
+
+
+@pytest.mark.parametrize("top_need", [10.4, 10.6])
+def test_the_cause_does_not_turn_on_half_a_unit_of_fractional_need(top_need):
+    """need 10.4 read as 'fully met' and 10.6 as 'not enough stock' -- an arbitrary
+    cliff, and on the wrong side of it the stated cause was untrue: 1,000 units sat
+    1,000 m away and had been shipped."""
+    need = np.array([top_need, 100.0, 100.0, 100.0, 100.0])
+    plan = solve_lp(np.array([0.9, 0.5, 0.4, 0.3, 0.2]), need, np.array([1000.0]),
+                    np.full((5, 1), 1000.0), max_distance_m=D, epsilon=EPS,
+                    min_share_top_quintile=0.25)
+    assert plan.notes, "a shortfall against an unreachable floor should be reported"
+    assert "already fully met" in plan.notes[0], plan.notes[0]
+
+
+def test_the_lp_reports_the_shortfall_when_nothing_is_reachable_at_all():
+    """The early-return branch said nothing, so the worst case was the quietest one.
+    Greedy reported it on the identical input; the LP did not."""
+    args = (np.array([0.9, 0.5]), np.array([10.0, 10.0]), np.array([10.0]),
+            np.array([[9000.0], [9000.0]]))
+    kw = dict(max_distance_m=D, epsilon=EPS, min_share_top_quintile=0.25)
+    lp, greedy = solve_lp(*args, **kw), solve_greedy(*args, **kw)
+    assert lp.equity_shortfall == pytest.approx(greedy.equity_shortfall)
+    assert lp.equity_shortfall == pytest.approx(2.5)
+    assert any("service distance" in n for n in lp.notes), lp.notes
 
 
 @pytest.mark.parametrize("bad_penalty", [0.0, -1.0, float("nan")])
@@ -574,3 +642,49 @@ def test_rounding_refuses_negative_or_missing_shipments():
                           np.array([10.0]))
     with pytest.raises(ValueError, match="nan"):
         largest_remainder(np.array([[np.nan]]), np.array([10.0]), np.array([10.0]))
+
+
+# --- the config and the code must not drift apart -------------------------------------
+
+
+def test_the_solver_settings_come_from_the_config_file(allocation):
+    """Nothing read config/allocation.yaml. Samraj's decisions lived in a file the
+    solver never opened, while solve_lp defaulted to no equity rule at all."""
+    settings = solver_settings("water")
+    assert settings["max_distance_m"] == allocation["service"]["max_distance_m"]
+    assert settings["min_share_top_quintile"] == \
+        allocation["equity"]["min_share_top_quintile"]
+    assert settings["equity_penalty"] == allocation["equity"]["equity_penalty"]
+    assert settings["epsilon"] == allocation["equity"]["epsilon_distance_tiebreak"]
+    assert settings["exact_integers"] == allocation["solver"]["exact_integers"]
+    assert settings["provisional"] is True
+
+
+def test_every_configured_setting_is_one_the_solver_accepts():
+    """A config key the solver does not take is a decision that silently does nothing."""
+    import inspect
+
+    settings = solver_settings("water")
+    accepted = set(inspect.signature(solve_lp).parameters)
+    solver_keys = set(settings) - {"units_per_person_per_day", "circuity_factor",
+                                   "provisional"}
+    assert solver_keys <= accepted, f"config sets what solve_lp ignores: "\
+                                    f"{solver_keys - accepted}"
+
+
+def test_the_configured_settings_actually_solve():
+    settings = solver_settings("water")
+    kw = {k: settings[k] for k in ("max_distance_m", "epsilon",
+                                   "min_share_top_quintile", "equity_penalty",
+                                   "exact_integers")}
+    plan = solve_lp(np.array([0.9, 0.6, 0.3]), np.array([80.0, 90.0, 50.0]),
+                    np.array([100.0, 60.0]),
+                    np.array([[1000.0, 4000.0], [2000.0, 1000.0], [6000.0, 2000.0]]),
+                    **kw)
+    assert plan.total == 160
+    assert np.all(plan.dispatched <= [100, 60])
+
+
+def test_an_unknown_commodity_is_refused():
+    with pytest.raises(KeyError, match="lemonade"):
+        solver_settings("lemonade")

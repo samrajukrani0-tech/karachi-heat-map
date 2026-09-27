@@ -1046,3 +1046,21 @@ same thing as the best feasible point.
 
 **Status:** adopted in P4-01, confirmed by an independent checker.
 **Date:** 2026-09-27
+
+**D28 addendum (third review).** Declaring the variables integer was not sufficient.
+An integer variable bounded above by 42.56 is bounded by 42, but HiGHS has to be *told*
+that: given a fractional bound it can return a suboptimal incumbent **while reporting a
+MIP gap of 0.0**, which is indistinguishable from a proven optimum. A two-cell,
+one-centre problem returned 50 units where 51 was feasible and optimal — losing both to
+greedy and to the rounding path the exact solve was written to replace. The variable
+bounds, and the two constraint rows whose variables are all integers, are now floored
+before the solve; that is an exact reformulation, not an approximation. The equity row
+is untouched because it carries the continuous slack. Verified against exhaustive
+integer enumeration on 120 small problems (0 suboptimal) and against an independent MILP
+on 3,000 targeted and 1,600 general problems (0 suboptimal, 0 losses to greedy).
+
+The wider lesson, which is the reason this is written down rather than just fixed: **a
+solver reporting success is not evidence that the answer is optimal.** `status=0` and
+`mip_gap=0.0` were both present and both misleading. The only check that caught it was
+comparing against an independently written solver and, on small cases, against brute
+force.

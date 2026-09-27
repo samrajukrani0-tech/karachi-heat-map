@@ -152,6 +152,15 @@ continuous. The full 265-cell instance solves in well under a tenth of a second,
 there is nothing to trade away. `exact_integers=False` selects the rounding path, kept
 because it documents what the browser can do without a solver.
 
+**One more trap sits inside that fix.** An integer variable whose upper bound is 42.56
+is really bounded by 42, but you have to *say* so: given a fractional bound, HiGHS can
+return a suboptimal answer while reporting a MIP gap of zero — which is indistinguishable
+from a proven optimum. A two-cell, one-centre problem delivered 50 units where 51 was
+both feasible and optimal, losing to the greedy baseline and to the very rounding path
+the exact solve replaced. So the bounds, and the two constraint rows whose variables are
+all integers, are floored before the solve. Flooring them is an exact reformulation, not
+an approximation. The equity row is left alone, because it carries the continuous $u$.
+
 The lesson generalises: *round the problem, not the answer.* Rounding an optimum gives
 you a feasible point near the optimum, which is not the same as the optimum among
 feasible points.
