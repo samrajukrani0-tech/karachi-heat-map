@@ -686,10 +686,10 @@
         "P4-02a",
         "P3-09"
       ],
-      "passes": false,
+      "passes": true,
       "blocked_on": null,
       "dropped": null,
-      "evidence": null
+      "evidence": "2026-09-27: planner.spec.js 20 passed (10 tests x 2 viewports); check.py --quick CHECK: PASS (7 checks), pytest 855 passed. Totals never exceed stock across stock mixes 0/1/250/1e6/37 at 3 km; zero stock sends nothing; the browser greedy matches pipeline solve_greedy exactly on 63 SYNTHETIC problems incl. 3 tie cases (mutation-checked: removing floor, shifting the distance limit and reversing tie order each fail it); browser distances within 0.05% of the UTM pipeline. Exact-scenario rendering tested with a SYNTHETIC fixture via route interception; live page states no verified centre exists. Approximate mode labelled in heading, note and result. Screenshots 375 and 1280 reviewed, console clean; axe clean."
     },
     {
       "id": "P5-01",

@@ -183,3 +183,31 @@ footer.site p { max-width: 38rem; }
   font-size: 1.05rem; font-variant-numeric: tabular-nums;
   border-left: 3px solid var(--rule); padding-left: 12px; margin: 0.8rem 0;
 }
+
+/* --- planner (P4-03) ------------------------------------------------------ */
+.field { display: flex; flex-direction: column; gap: 4px; margin: 0.6rem 0; max-width: 24rem; }
+.field label { font-size: 0.875rem; font-weight: 600; color: var(--muted); }
+.field select, .point input {
+  min-height: var(--tap); padding: 0 8px; font: 1rem var(--font); color: var(--ink);
+  background: var(--paper); border: 1px solid var(--rule);
+}
+.points { padding-left: 0; list-style: none; margin: 0.5rem 0; }
+.point { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px;
+         border-bottom: 1px solid var(--rule); padding: 4px 0; }
+.point-name { font-weight: 600; min-width: 7rem; }
+.point input { width: 7.5rem; }
+.point-stock { display: flex; align-items: center; gap: 6px; font-size: 0.9rem; }
+.actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 0.6rem 0 0.2rem; }
+.button, .linkish {
+  min-height: var(--tap); padding: 0 14px; font: 0.95rem var(--font); cursor: pointer;
+  border: 1px solid var(--signal); background: var(--paper); color: var(--signal);
+}
+.button.primary { background: var(--signal); color: #FFFFFF; }
+.button:disabled { border-color: var(--rule); color: var(--muted); background: var(--paper);
+                   cursor: not-allowed; }
+.linkish { border-color: transparent; padding: 0 6px; text-decoration: underline; }
+.tag { font-size: 0.75rem; font-weight: 600; border: 1px solid var(--deep);
+       padding: 1px 6px; margin-left: 6px; vertical-align: middle; }
+.table-scroll { overflow-x: auto; }
+caption { text-align: left; padding: 4px 0; }
+.point-label { font: 600 0.8rem var(--font); }

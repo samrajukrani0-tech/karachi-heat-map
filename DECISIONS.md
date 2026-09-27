@@ -1132,3 +1132,35 @@ it cannot be bypassed by a later feature.
 
 **Status:** approved
 **Date:** 2026-09-27
+
+---
+
+## D30 — The planner's quick estimate lets the user place their own stock points (2026-09-27, PROVISIONAL)
+
+**Context.** P4-03 asks for a planner where a coordinator can "pick centres and stock".
+No relief centre has been verified in person (Q2), so there is no list of real centres to
+pick from, and the unverified candidates may not be used (§6).
+
+**Implemented.** The quick estimate asks the *user* to place up to five stock points —
+by tapping the map, or with a keyboard-accessible "add at the map centre" button — and
+to enter how much each holds. The page labels them "your own what-ifs, not verified
+relief centres". Nothing about them is stored or published; they exist only in that
+browser tab. The exact precomputed scenarios still come only from `centres.csv`
+through `stock_holding_centres()` (D13, D29), and that section says honestly that there
+are none yet.
+
+**Why this is not inventing data.** §2.1 forbids the project asserting a location or
+figure it cannot support. A point the user places is their own input, like the stock
+figure they type, and the page says so. Nothing the project publishes changes.
+
+**The per-cell table shows units of the user's own stock** (as well as the share), because
+D21 permits "the split of whatever stock the user enters". It never shows the model's
+own estimate of need as a quantity; "need met" is a percentage, labelled as the model's
+estimate, with the 2.3× undercount stated beside it.
+
+**Main alternative:** disable the quick estimate until a centre is verified. Rejected as
+the default because it leaves the planner with nothing to try for months, and a
+coordinator who knows where their own stock sits gets no use from the page.
+
+**Samraj to confirm** (QUESTIONS.md Q16). Reversing it removes the map-click handler
+and the add-point button; the exact-scenario section is unaffected.

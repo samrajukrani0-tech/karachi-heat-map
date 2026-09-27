@@ -868,3 +868,36 @@ not.
 3. The candidates are unverified. Using one would present an invented source of stock
    as real, which §2.1 forbids; an honest empty list is the correct output.
 </details>
+
+## P4-03 — the planner page, and testing one program against another
+
+**What and why.** The planner has two halves. Exact plans come from the integer solver
+and are precomputed, because a phone cannot run HiGHS. The quick estimate is the greedy
+rule, re-written in JavaScript so it runs in the browser. Two versions of one algorithm
+can drift apart without anyone noticing, so the JavaScript is tested against the
+Python on 63 problems and must agree on every unit.
+
+**The key idea in A Level terms.** *Testing by mutation.* A test only counts as
+evidence if it can fail. Deliberately breaking the code ("a mutant") and checking the
+test goes red measures that. Here, reversing the tie-break survived all 60 random
+problems. Ties have near-zero probability when priorities are drawn from a continuous
+distribution, just as P(X = x) = 0 for a continuous random variable. Only hand-built
+tie cases could catch it.
+
+**Questions.**
+1. Why could reversing the tie-break pass 60 random tests?
+2. Why does the page show units of *your* stock, but never the model's need in litres?
+3. Why is greedy fine for the phone but not for the precomputed plans?
+
+<details><summary>Answers</summary>
+
+1. With priorities drawn from a continuous distribution, two cells almost never have
+   exactly equal priority. So the tie-break branch was never exercised, and a bug in it
+   was invisible.
+2. Splitting a number the user typed is just arithmetic on their figure. The model's
+   need carries the 2.3× population undercount, so a litre figure for it would be wrong
+   by more than half (D21).
+3. Greedy is simple enough to run anywhere and is usually close. But it can be beaten,
+   and the exact integer solver is guaranteed at least as good, so the plans a team
+   would act on are the exact ones.
+</details>

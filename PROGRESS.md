@@ -986,3 +986,31 @@ grid with a test-only SYNTHETIC depot, LP ≥ greedy in all 18 scenarios.
 full suite and passed alone and on the rerun. It depends on live Esri tiles; recorded,
 not loosened.
 **Next:** P4-03 Planner page.
+
+## 2026-09-27 — P4-03 Planner page: PASS
+**What changed:** `site/plan.html`, `site/plan.js`, `site/planner-core.js` (the arithmetic,
+kept apart so it can be tested against Python), planner styles, cell centroids added to
+`cells.geojson`, planner settings added to `scenarios.json`,
+`tests/e2e/planner.spec.js` (10 tests × 2 viewports), and
+`tests/fixtures/make_planner_fixtures.py` + `tests/test_planner_fixtures.py`.
+**Two sections, honestly separated.** *Exact plans* come only from the precomputed
+scenarios, which today says no centre has been verified. *Quick estimate — approximate*
+runs greedy in the browser from stock points the user places ("your own what-ifs, not
+verified relief centres"). That is a new design choice, recorded as **D30** and raised as
+**Q16** for Samraj.
+**The browser greedy is proved equal to the Python one, not assumed.** A fixture of 63
+SYNTHETIC problems solved by `solve_greedy` is replayed in the page and must match
+exactly. Mutation checks: dropping the whole-unit floor fails it; widening the distance
+limit fails it; **reversing the tie order passed all 60 random problems**, because random
+draws almost never tie. Three hand-written tie cases were added, and now that mutation
+fails too. A second pytest fails if the fixtures drift from the solver.
+**Evidence:** planner suite 20 passed; `check.py --quick` CHECK: PASS (7 checks);
+screenshots at 375 and 1280 reviewed with a clean console.
+**Screenshot critique, two fixes:** the supply label was cut off on a phone, so it is
+shorter now. "Estimated need met" now says "Model's estimated need met", because a column
+reading 100% next to a 2.3× undercount needs to say whose estimate it is.
+**Seen in the screenshot, worth knowing:** with 3,000 L at one central point, the
+top-ranked area alone takes 36% of the stock, and only 9 areas are served. That is
+priority-first working as designed, and it shows how quickly supply is used up.
+**Next:** P5-02 Offline and P5-04 README, which have no Phase 4 dependency; then P5-01
+Field briefs.

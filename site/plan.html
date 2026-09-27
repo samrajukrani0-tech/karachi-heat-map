@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Plan supplies — Karachi Heat Priority Map</title>
 <meta name="description" content="Work out how to split available supplies across Landhi.">
+<link rel="stylesheet" href="vendor/leaflet.css" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="vendor/leaflet.css"></noscript>
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="style.css">
 </head>
@@ -26,8 +28,65 @@
 <main id="main">
     <div class="wrap">
         <h2>Plan supplies</h2>
-        <p class="notice">This page is not built yet. It arrives in Phase 4.</p>
+        <p>Say where your stock is and how much you have. The page suggests how to split
+        it across Landhi, highest priority first, within a road distance your team can
+        reach.</p>
+        <p class="notice small" id="plan-provisional"><strong>Illustrative.</strong> The
+        allocation settings are provisional until they are checked with a relief centre,
+        and the model's estimate of need is too low (see below).</p>
+
+        <h3>Exact plans</h3>
+        <div id="scenario-host"><p class="small muted">Loading scenarios…</p></div>
+
+        <h3>Quick estimate <span class="tag">approximate</span></h3>
+        <p class="small" id="approx-note">This uses a simple rule: serve the
+        highest-priority area first, from the nearest stock point that still has
+        supply, then the next. It runs on your phone and is usually close, but the exact
+        planner can do better. The stock points you place are <strong>your own
+        what-ifs</strong>, not verified relief centres.</p>
+        <div class="field">
+            <label for="commodity">Supply</label>
+            <select id="commodity"></select>
+        </div>
+        <div class="field">
+            <label for="distance">Furthest you will deliver</label>
+            <select id="distance"></select>
+        </div>
+        <p class="small muted" id="points-empty">Tap the map where your stock is kept, or
+        pan the map and use the button. Up to five stock points.</p>
+        <ol id="point-list" class="points"></ol>
+        <div class="actions">
+            <button type="button" id="add-point" class="button">Add a stock point at the map centre</button>
+            <button type="button" id="run" class="button primary" disabled>Work out the split</button>
+        </div>
     </div>
+    <div class="map-frame">
+        <div id="map" aria-label="Map of Landhi. Tap to place a stock point." role="application"></div>
+        <p class="notice" id="map-error" hidden></p>
+    </div>
+    <div class="wrap">
+        <p class="small muted" id="result-kind">Darker areas receive a larger share of the
+        stock. White areas receive nothing.</p>
+        <div id="result-summary" aria-live="polite"></div>
+        <div id="result-table" class="table-scroll"></div>
+        <details class="cannot">
+            <summary>What this cannot tell you</summary>
+            <ul class="small">
+                <li>Need counts residents aged 60 and over plus children under 5, times
+                3 litres of drinking water a day (the Sphere Handbook survival figure) or
+                one ORS sachet. The population layer counts about half the people the
+                2023 census found in Landhi, so real need is roughly 2.3 times higher.
+                Read the shares, not the totals.</li>
+                <li>Distance is straight-line distance times 1.3, a stand-in for roads.
+                It knows nothing about traffic, closures or which lanes a van can use.</li>
+                <li>It does not know what any centre actually holds. No relief centre has
+                been verified in person yet.</li>
+                <li>Priority is a ranking within Landhi, not a verdict on any
+                neighbourhood.</li>
+            </ul>
+        </details>
+    </div>
+    <p id="live" class="visually-hidden" role="status" aria-live="polite"></p>
 
 </main>
 <footer class="site">
@@ -41,5 +100,8 @@
     OpenStreetMap, © OpenStreetMap contributors.</p>
   </div>
 </footer>
+<script src="vendor/leaflet.js"></script>
+<script src="planner-core.js"></script>
+<script src="plan.js"></script>
 </body>
 </html>

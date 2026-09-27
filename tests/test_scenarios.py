@@ -53,6 +53,7 @@ def test_the_scenario_grid_is_complete(built):
 
 def test_shares_never_exceed_the_stock(built):
     for s in built:
+        assert s["greedy"]["cells"] == [], "only the exact plan's rows are exported"
         for method in ("lp", "greedy"):
             total = sum(c["share_of_stock"] for c in s[method]["cells"])
             assert total <= 1 + 1e-3, (s["id"], method, total)

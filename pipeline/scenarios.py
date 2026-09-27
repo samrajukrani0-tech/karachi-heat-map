@@ -203,7 +203,10 @@ def build_scenarios(cells: Cells, centre_rows: list[dict]) -> list[dict]:
                         "equity_shortfall_share": round(
                             plan.equity_shortfall / stock_total, 4) if stock_total else 0.0,
                         "equity_cause": _cause(plan.notes),
-                        "cells": _cell_rows(cells, plan, stock_total) if stock_total else [],
+                        # Per-cell rows for the exact plan only: the site draws the exact
+                        # plan, and the greedy rows would double the file for no reader.
+                        "cells": (_cell_rows(cells, plan, stock_total)
+                                  if stock_total and name == "lp" else []),
                     }
                 scenario["summary"] = summarise(scenario)
                 out.append(scenario)
@@ -231,6 +234,17 @@ def document(scenarios: list[dict], n_rows: int) -> dict:
         "undercount_note": UNDERCOUNT_NOTE,
         "water_basis": water["basis"].strip(),
         "centre_rows_read": n_rows,
+        # What the browser-side quick estimate needs, so the page never hard-codes a
+        # decision that lives in config/allocation.yaml.
+        "planner": {
+            "commodities": [{"id": c["id"], "name_en": c["name_en"], "unit": c["unit"],
+                             "units_per_person_per_day": float(c["units_per_person_per_day"])}
+                            for c in cfg["commodities"]],
+            "max_distance_m": float(cfg["service"]["max_distance_m"]),
+            "distances_m": sorted({float(cfg["service"]["max_distance_m"]),
+                                   *map(float, cfg["service"]["sensitivity_distances_m"])}),
+            "circuity_factor": float(cfg["service"]["circuity_factor"]),
+        },
         "scenarios": scenarios,
     }
 

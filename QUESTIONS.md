@@ -438,3 +438,15 @@ protect a set the priority score does not already favour. That is a real modelli
 decision and squarely yours. Until you choose, the floor earns its place by producing
 the shortfall warning, which is a genuine finding about where stock is sitting relative
 to where it is needed.
+
+## Q16 — May the planner's quick estimate use stock points the user places? (P4-03, 2026-09-27)
+
+**Not blocking.** With no verified centre, the planner lets a coordinator tap the map
+where their own stock is kept and type how much they hold, then runs the greedy quick
+estimate. The points are labelled "your own what-ifs, not verified relief centres" and
+are never stored or published. See D30.
+
+**Recommendation:** keep it. **Alternative:** disable the quick estimate until a centre is
+verified. **What changes:** one handler and one button in `site/plan.js`.
+
+**Answer:**

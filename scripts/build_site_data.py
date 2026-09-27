@@ -11,11 +11,16 @@ Run:
 from __future__ import annotations
 
 import json
+import sys
 from pathlib import Path
 
 import pandas as pd
 
 ROOT = Path(__file__).resolve().parents[1]
+# Run as a script, so the repo root is not on the path; the pipeline package lives there.
+sys.path.insert(0, str(ROOT))
+from pipeline.scenarios import load_cells  # noqa: E402
+
 PROCESSED = ROOT / "data" / "processed"
 OUT = ROOT / "site" / "data"
 PRECISION = 5
@@ -33,6 +38,12 @@ def main() -> int:
     confidence = pd.read_csv(PROCESSED / "confidence.csv").set_index("h3")
     indicators = pd.read_parquet(PROCESSED / "indicators.parquet").set_index("h3")
     weights_used = json.loads((PROCESSED / "scores_weights_used.json").read_text("utf-8"))
+
+    # The clipped-cell centroid, the same point the allocation solvers measure from, so
+    # the planner's browser-side quick estimate uses identical geometry (P4-03).
+    cells = load_cells()
+    centroid = {h: (round(float(x), PRECISION), round(float(y), PRECISION))
+                for h, (x, y) in zip(cells.h3, cells.lonlat, strict=True)}
 
     features = []
     for feature in grid["features"]:
@@ -61,6 +72,7 @@ def main() -> int:
                 "dist_health": int(round(float(i["dist_health_m"]))),
                 "over60": int(round(float(i["people_over60"]))),
                 "under5": int(round(float(i["people_under5"]))),
+                "c": list(centroid[cell]),
             },
         })
 
