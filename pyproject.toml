@@ -1,6 +1,6 @@
 [project]
 name = "karachi-heat-map"
-version = "0.1.0"
+version = "1.0.0"
 description = "Heat priority mapping for relief planning in Landhi Town, Karachi"
 requires-python = ">=3.12,<3.13"
 dependencies = [

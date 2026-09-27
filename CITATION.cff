@@ -13,6 +13,8 @@ authors:
 repository-code: "https://github.com/samrajukrani0-tech/karachi-heat-map"
 url: "https://samrajukrani0-tech.github.io/karachi-heat-map/"
 license: MIT
+version: "1.0.0"
+date-released: "2026-09-27"
 keywords:
   - heatwave
   - Karachi

@@ -791,10 +791,10 @@
         "P5-03",
         "P5-04"
       ],
-      "passes": false,
-      "blocked_on": "Samraj: acceptance requires P2-02b resolved (his AHP weights), or per PROMPT.md section 14 a recorded decision by him to ship equal weights -- QUESTIONS.md Q17. Everything else is ready: CHANGELOG.md written (Unreleased, v1.0.0 candidate); check.py --lighthouse CHECK: PASS (8 checks) on 2026-09-27; live smoke and full suite pass. The tag is not created until then.",
+      "passes": true,
+      "blocked_on": null,
       "dropped": null,
-      "evidence": null
+      "evidence": "2026-09-27: check.py --lighthouse CHECK: PASS (8 checks), performance 88 / accessibility 100 / best practices 96 / SEO 100; pytest 900 passed. CHANGELOG.md [1.0.0]. Criterion 2 met by PROMPT.md section 14 alternative route: Samraj recorded a decision to ship v1.0.0 on provisional equal weights (D32); P2-02b itself stays open for v1.1. v1.0.0 annotated tag created and pushed; confirmed with git ls-remote --tags origin."
     },
     {
       "id": "P6-00",

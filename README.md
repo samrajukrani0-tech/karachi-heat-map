@@ -6,7 +6,7 @@ should go first during a heatwave, and why. Pilot area: **Landhi Town** (25.37 k
 
 **Live site:** <https://samrajukrani0-tech.github.io/karachi-heat-map/>
 
-> **Status: working, provisional.** The site, model, allocation planner, offline mode
+> **Status: v1.0.0, working, provisional.** The site, model, allocation planner, offline mode
 > and field briefs are built and tested. Two things are still Samraj's to supply, and
 > the site says so wherever they matter: the Vulnerability **weights** are placeholder
 > equal weights until he runs the AHP tool (P2-02b), and **no relief centre has been

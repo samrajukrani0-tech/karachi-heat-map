@@ -1204,3 +1204,13 @@ in place of real answers.
 average to a flat ranking, and the bootstrap crashed on it. That case is now reported as
 "undefined", which it is, rather than as ρ = 0.
 **Evidence:** tests 13 passed; pytest 900 passed; `check.py --quick` CHECK: PASS (7 checks).
+
+## 2026-09-27 — P5-05 Release: v1.0.0 tagged
+**Samraj's decision (D32):** ship v1.0.0 on provisional equal weights. §14 allows this as
+an alternative to his AHP weights. P2-02b stays open, and his weights will become v1.1.0.
+Nothing is relabelled as final: the site, briefs, one-pager and report still say
+"provisional".
+**Done:** version 1.0.0 in `pyproject.toml`, `package.json` and `CITATION.cff` (with the
+release date); CHANGELOG `[1.0.0]`; README status line; Q17 updated.
+`check.py --lighthouse` CHECK: PASS (8 checks). The annotated tag `v1.0.0` was pushed and
+confirmed with `git ls-remote --tags origin`.

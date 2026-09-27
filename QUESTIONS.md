@@ -472,5 +472,6 @@ the ranking in the middle band depends on them.
 "Ukrani". Tell Claude if "Lal" belongs with the family name.
 
 **Answer (2026-09-27, partial):** CITATION.cff name confirmed by Samraj: "Samraj Lal" +
-"Ukrani" is correct. The weights question stays open: he will decide after talking to
-his contacts.
+"Ukrani" is correct. Release: Samraj chose to ship v1.0.0 on provisional equal weights
+(D32), so the tag no longer waits. **The weights question itself stays open**: running
+the AHP tool after talking to his contacts makes v1.1.0.

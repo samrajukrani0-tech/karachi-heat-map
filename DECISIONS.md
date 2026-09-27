@@ -1216,3 +1216,30 @@ visible rather than buried.
 
 **Status:** provisional. Samraj to confirm before P6-01's results are read. Changing it
 is one key in `pipeline/expert.py`.
+
+---
+
+## D32 — Ship v1.0.0 on provisional equal weights (2026-09-27)
+
+**Question.** P5-05 (release) requires P2-02b resolved — Samraj's own AHP weights — or,
+per PROMPT.md §14, "a recorded decision to ship equal weights". Samraj wants v1.0.0
+tagged now for everything complete in Phases 0–5, and wants to decide the weights after
+talking to his contacts.
+
+**Options put to him:** (1) ship v1.0.0 on equal weights, recorded here; (2) tag
+v1.0.0-rc.1 and keep the criterion waiting; (3) do not tag yet.
+
+**Samraj's decision:** "Ship v1.0.0 on equal weights."
+
+**What this binds.**
+- v1.0.0 is tagged with `config/weights.yaml` still `provisional: true`, equal
+  Vulnerability weights. The site, briefs, one-pager and model report keep saying
+  "provisional". Nothing is relabelled as final.
+- P5-05's second criterion is met by §14's alternative route, not by P2-02b. **P2-02b
+  stays open** and Q17's weights question stays pending. When he runs the AHP tool, the
+  result is v1.1.0.
+- The criterion text in features.json is unchanged. This entry is the record of which
+  route was taken.
+
+**Status:** approved
+**Date:** 2026-09-27
