@@ -965,3 +965,33 @@ modelling.
 3. The page hid its overflow, so the footer was cut off while the PDF still had exactly
    one page. The renderer now checks where the last element ends.
 </details>
+
+## P5-03 and P5-04 — writing for someone who has two minutes
+
+**What and why.** The README is for a mentor who wants to check and reproduce the work.
+The one-pager is for a relief coordinator who will give it two minutes. Both lead with
+what the tool is **not** and what is unfinished, because the fastest way to lose a
+reader's trust is for them to find a limitation you did not mention. The one-pager asks
+for four kinds of feedback, and the most valuable is the ranking form filled in before
+looking at the map.
+
+**The key idea in A Level terms.** *Independence in an experiment.* If a coordinator
+ranks places after seeing the map, their answer is anchored on the map. The two
+rankings are then not independent, and their agreement would be inflated. It is the
+same reason a double-blind trial hides the treatment: the measurement must not see what
+it is measuring.
+
+**Questions.**
+1. Why does the form ask people to rank places *before* looking at the map?
+2. Why does the one-pager leave a blank line for a contact instead of printing one?
+3. Why is the one-pager a draft with a placeholder, rather than written for Edhi now?
+
+<details><summary>Answers</summary>
+
+1. So their ranking is independent of the model's. Otherwise agreement between them
+   would partly measure the map's influence on the person, not the map's accuracy.
+2. D11c: the site and documents show no contact, to avoid publishing a minor's details.
+   Samraj writes one by hand when he hands it over in person.
+3. No organisation has agreed yet. A page written for the organisation that says yes
+   lands better, and D13 means it may be Saylani or Chhipa rather than Edhi.
+</details>

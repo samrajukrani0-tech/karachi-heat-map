@@ -1092,3 +1092,26 @@ accident (`git add -A`). They are finished and recorded here.
 family name "Ukrani". If "Lal" belongs with the family name, it is a one-line change.
 **Evidence:** tests/test_readme.py 7 passed; `check.py --quick` CHECK: PASS (7 checks).
 **Next:** P5-03 NGO one-pager.
+
+## 2026-09-27 — P5-03 NGO one-pager: PASS (draft); P5-03b split out, blocked on Samraj
+**What changed:** `docs/pitch/one-pager.md` (the draft Samraj edits),
+`docs/pitch/one-pager.pdf` and `.html` rendered from it by `scripts/one_pager.py` and
+`scripts/render_pdf.mjs`, `tests/test_one_pager.py` (5). `markdown` added to the project's
+own environment with `uv add`. Nothing was installed system-wide.
+**Why split:** PROMPT.md §12 says the one-pager is written for whichever organisation
+agrees to host, and not generically. None has said yes yet (Q2). The draft carries a
+marked placeholder for the name. **P5-03b** (tailored to the host, edited into Samraj's
+own words) is blocked on him.
+**Two faults found by reading the render:**
+1. Markdown turned the underscores of the contact line into emphasis, so it printed as
+   a short stub. It is now a real 120 mm writing line.
+2. "Cannot see power cuts, which is exactly what your teams saw" assumed the host is
+   Edhi. It now says the Edhi Foundation named power cuts, which is true whoever hosts.
+**A process slip, caught and corrected:** P5-03 was marked passing one command before
+its own test went green. The test was failing on a line break inside the D12 sentence.
+The test was fixed to normalise whitespace (the wording is unchanged), and the feature
+was re-verified: 5 passed, CHECK: PASS. Only then was it committed. §2.3 exists for
+exactly this.
+**Not sent anywhere.** Samraj hands it over himself (§2.6).
+**Evidence:** PDF is 1 A4 page, 176 kB; tests 5 passed; `check.py --quick` CHECK: PASS (7).
+**Next:** P5-05 Release, which is blocked on P2-02b.

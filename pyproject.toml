@@ -20,6 +20,7 @@ dependencies = [
   "matplotlib>=3.9",
   "jsonschema>=4.23",
   "pypdf>=6.19.0",
+  "markdown>=3.11",
 ]
 
 [dependency-groups]

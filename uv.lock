@@ -238,6 +238,7 @@ dependencies = [
     { name = "geopandas" },
     { name = "h3" },
     { name = "jsonschema" },
+    { name = "markdown" },
     { name = "matplotlib" },
     { name = "numpy" },
     { name = "pandas" },
@@ -264,6 +265,7 @@ requires-dist = [
     { name = "geopandas", specifier = ">=1.0" },
     { name = "h3", specifier = ">=4.3,<4.4" },
     { name = "jsonschema", specifier = ">=4.23" },
+    { name = "markdown", specifier = ">=3.11" },
     { name = "matplotlib", specifier = ">=3.9" },
     { name = "numpy", specifier = ">=2.0" },
     { name = "pandas", specifier = ">=2.2" },
@@ -309,6 +311,15 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/a9/c4/1407df7512a5b36cc79840e01710dc575733c461b13ab866cae77eaf87f3/kiwisolver-1.5.1-graalpy312-graalpy250_312_native-macosx_11_0_arm64.whl", hash = "sha256:482676e5bd48d70ac99d9fc78863469845421e01184fa83f1f9366dc49f7e974", size = 134002, upload-time = "2026-08-28T10:28:08.881Z" },
     { url = "https://files.pythonhosted.org/packages/16/45/c37a21ad5c0ab581a93c55ad544721aaa1f0ae94edb29c6a678a23d013e6/kiwisolver-1.5.1-graalpy312-graalpy250_312_native-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:072bdb15a3c19a5b5dbc8f8fb1f4e1884bf4f3507eeb4cc6334401274d37a5c0", size = 194292, upload-time = "2026-08-28T10:28:11.06Z" },
     { url = "https://files.pythonhosted.org/packages/a6/c1/69f00d627949580e43d57af0aa465df46868d7c29801c137a55374101294/kiwisolver-1.5.1-graalpy312-graalpy250_312_native-win_amd64.whl", hash = "sha256:a5a00665d1a0e26763a7338d7e911d4598fbc1d50dd0d6b7919b7dc6c5d6569f", size = 73362, upload-time = "2026-08-28T10:28:12.449Z" },
+]
+
+[[package]]
+name = "markdown"
+version = "3.11"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/f8/4f/700155c8c20d9e655dd0732b5fc3c7614f291b9148da271d7388e50bf774/markdown-3.11.tar.gz", hash = "sha256:180224db6aed87ba9ce1f2781ebcd5826253de8ff637112090e24b84502bbf9f", size = 485623, upload-time = "2026-09-25T13:46:23.473Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/ec/1e/32971905a7ab47f8b66866ed949fa48b104ba1c4a6fa57794c4f2c4b2cb8/markdown-3.11-py3-none-any.whl", hash = "sha256:cd6c89e7eb308c8b332ed673215a52d208a43f8bacc030b1419376129408719e", size = 111296, upload-time = "2026-09-25T13:46:22.163Z" },
 ]
 
 [[package]]
