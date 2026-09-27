@@ -922,3 +922,41 @@ changing one mapping.
 
 **Status:** approved in practice, pending Samraj's confirmation (QUESTIONS.md Q13).
 **Date:** 2026-09-27
+
+---
+
+## D26 — The allocation tiebreak is scaled by the service distance
+
+**Context.** PROMPT.md §8 sets the LP objective as
+
+> maximise Σ p_i·x_ij − ε·Σ d_ij·x_ij … a small ε breaks ties in favour of closer cells
+
+with `epsilon_distance_tiebreak: 0.001` in `config/allocation.yaml`.
+
+**The problem.** Read literally, with `d_ij` in metres, that term is not small. At the
+service limit of 5,000 m it contributes 0.001 × 5000 = **5.0 per unit**, while `p_i` is
+a normalised score that never exceeds **1.0**. The "tiebreak" would be five times larger
+than the quantity it is supposed to break ties in. The solver would in effect be
+minimising travel distance, treating priority as a rounding error — while every comment,
+document and variable name in the project said the opposite. It would have produced
+plausible-looking allocations that were optimising the wrong thing.
+
+**Decision.** The distance term is divided by the service distance D:
+
+$$\varepsilon \sum_{ij} \frac{d_{ij}}{D} x_{ij}$$
+
+`d/D` lies in [0, 1] within the service area, so the whole term is bounded by ε and can
+only ever decide between plans that are otherwise equal — which is what a tiebreak means.
+ε keeps its configured value of 0.001; only the units change.
+
+**Alternative considered.** Set ε to 2×10⁻⁷ instead, so that ε·d at 5,000 m comes to
+0.001. Rejected: it hides a units problem inside a magic number, and it silently breaks
+again the moment D changes. Dividing by D is scale-free and states the intent.
+
+**Consequence worth knowing.** A cell whose priority is below ε is not worth serving at
+all, so the solver leaves it empty even with unlimited stock. With the real data no such
+cell has any need — priority is exactly zero where population is zero (D6b) — but if that
+stops being true, this is where it will show up. Documented in `docs/allocation.md` §2.
+
+**Status:** adopted in P4-01, verified by an independent checker.
+**Date:** 2026-09-27
