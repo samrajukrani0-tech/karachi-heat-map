@@ -25,9 +25,70 @@
 <main id="main">
     <div class="wrap">
         <h2>How it works</h2>
-        <p class="notice">This page is not built yet. It arrives in Phase 3 (P3-06).</p>
-    </div>
+        <p>Landhi Town is divided into 265 areas of about 0.1 km&sup2; each. For
+        every one, the model asks three questions and multiplies the answers together.</p>
 
+        <h3>The three questions</h3>
+        <table><tbody>
+        <tr><th scope="row">Heat</th><td>How hot does the ground get on a typical
+        hot-season afternoon? Measured by satellite across five April&ndash;June
+        seasons.</td></tr>
+        <tr><th scope="row">People</th><td>How many people live there?</td></tr>
+        <tr><th scope="row">Vulnerability</th><td>What makes heat more dangerous here:
+        little greenery, distance from a clinic, distance from a relief centre.</td></tr>
+        </tbody></table>
+
+        <h3>Why multiply rather than add?</h3>
+        <p>Because all three have to be present for anyone to be harmed. A scorching but
+        empty industrial yard scores near zero, which is the right answer &mdash; there is
+        nobody there to help. Adding the three would let the heat and the lack of greenery
+        cover for the fact that nobody lives there.</p>
+
+        <h3>How sure is it?</h3>
+        <p>The whole model was re-run 1,000 times with the assumptions varied.
+        Of the 53 areas in the top fifth, <strong>28
+        stayed there in at least 80% of runs</strong> and
+        <strong>12 did not survive a coin flip</strong>.
+        Roughly half the list is solid and roughly half is not. The Confidence layer on the
+        map shows which is which.</p>
+
+        <h3 id="provisional">Why it says &ldquo;provisional&rdquo;</h3>
+        <p>Two things are unfinished, and both are stated wherever they matter:</p>
+        <ul>
+        <li>The <strong>weights</strong> &mdash; how much each factor counts &mdash; are
+        placeholders. They have not yet been set by considered judgement.</li>
+        <li><strong>Distance to a relief centre</strong> has no data at all. No centre has
+        been verified on the ground yet, and OpenStreetMap does not list any inside Landhi
+        &mdash; which is not evidence that none exist, because OpenStreetMap maps only
+        about a tenth of Landhi&rsquo;s buildings.</li>
+        </ul>
+
+        <h3>What it cannot tell you</h3>
+        <ul>
+        <li>The people count is modelled, and comes to roughly <strong>half</strong> the
+        2023 census figure for Landhi. Use it to compare areas, never as a headcount.</li>
+        <li>Satellites measure the temperature of the <strong>ground</strong>, not the air,
+        and say nothing about humidity &mdash; which matters enormously in Karachi.</li>
+        <li><strong>Power cuts are not included</strong>, although long outages are a large
+        part of why heat harms people here. The published schedules name electrical feeders,
+        not places, so there is no honest way to put them on a map.</li>
+        <li>Results describe areas, not the people in them, and are never a verdict on a
+        neighbourhood.</li>
+        </ul>
+
+        <h3>The maths, for anyone who wants it</h3>
+        <p>Each factor is scaled to a 0&ndash;1 range by clipping at the 5th and 95th
+        percentile and stretching what remains, so one unusual area cannot squash
+        everything else. The three are then combined as a geometric mean:</p>
+        <p class="formula">Priority = (Heat &times; People &times; Vulnerability)<sup>1/3</sup></p>
+        <p>Heat and Vulnerability are given a small floor of 0.01 first, because a zero
+        there is an artefact of the clipping rather than a fact. People is deliberately
+        <em>not</em> floored: a zero there means nobody lives in the area, which is real, so
+        those areas score zero priority by construction.</p>
+        <p>The full derivation, every limitation, and the independent checks are in the
+        <a href="https://github.com/samrajukrani0-tech/karachi-heat-map/blob/main/docs/model-report.md">model
+        report</a>.</p>
+    </div>
 </main>
 <footer class="site">
   <div class="wrap">

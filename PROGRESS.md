@@ -840,3 +840,18 @@ changing one mapping.
 "confidently out" cell it asserts the panel states the right label and the exact rank
 interval from the file, so the prose cannot drift from the numbers.
 **Next:** P3-06 Content pages.
+
+## 2026-09-27 — P3-06 Content pages
+**Evidence:** `npx playwright test` -> 107 passed, 1 skipped; `check.py --quick` ->
+`CHECK: PASS (7 checks)`.
+**Generated from the committed data**, so the figures on the site cannot drift from the
+model. How it works explains the three questions, why the model multiplies rather than
+adds, and how sure it is — with the maths section deliberately placed *after* the plain
+explanation, which a test asserts by checking the order.
+**The uncomfortable numbers are on the public site, not just in the report:** 28 of 53
+top areas survive, 12 fail a coin flip, the population count is roughly half the census
+figure, and power cuts are absent.
+**Three decisions are now enforced by tests on the live pages:** no page names the school
+(D11b), About shows no email or contact channel of any kind (D11c), and no page calls an
+area unsafe or dangerous (§2.5).
+**Next:** P3-08 Quality gates, then P3-09 Deploy. (P3-07 and P3-07b are dropped by D9.)

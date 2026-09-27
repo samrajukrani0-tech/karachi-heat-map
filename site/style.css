@@ -178,3 +178,8 @@ footer.site p { max-width: 38rem; }
   .map-frame { display: grid; grid-template-columns: 1fr; }
   .panel-wrap { border-top: 1px solid var(--rule); }
 }
+
+.formula {
+  font-size: 1.05rem; font-variant-numeric: tabular-nums;
+  border-left: 3px solid var(--rule); padding-left: 12px; margin: 0.8rem 0;
+}

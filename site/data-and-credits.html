@@ -25,9 +25,53 @@
 <main id="main">
     <div class="wrap">
         <h2>Data and credits</h2>
-        <p class="notice">This page is not built yet. It arrives in Phase 3 (P3-06).</p>
-    </div>
+        <p>Every figure on this site traces to one of these sources. Full details, access
+        dates and caveats are in
+        <a href="https://github.com/samrajukrani0-tech/karachi-heat-map/blob/main/data/SOURCES.md">SOURCES.md</a>.</p>
 
+        <h3>Sources</h3>
+        <table>
+        <thead><tr><th scope="col">Used for</th><th scope="col">Source</th>
+        <th scope="col">Licence</th></tr></thead>
+        <tbody>
+        <tr><th scope="row">Area boundary and roads</th><td>OpenStreetMap, via the Overpass
+        API</td><td>ODbL 1.0</td></tr>
+        <tr><th scope="row">Surface temperature</th><td>Landsat 8/9 Collection&nbsp;2
+        Level-2, via Microsoft Planetary Computer</td><td>US public domain (USGS)</td></tr>
+        <tr><th scope="row">Population and age counts</th><td>Meta High Resolution
+        Population Density (Data for Good), via HDX</td><td>CC BY 4.0</td></tr>
+        <tr><th scope="row">Population cross-check</th><td>WorldPop constrained 100&nbsp;m,
+        Pakistan</td><td>CC BY 4.0</td></tr>
+        <tr><th scope="row">Green cover and built surface</th><td>ESA WorldCover
+        10&nbsp;m</td><td>CC BY 4.0</td></tr>
+        <tr><th scope="row">Health facilities</th><td>OpenStreetMap</td><td>ODbL 1.0</td></tr>
+        <tr><th scope="row">Census comparison</th><td>Pakistan Bureau of Statistics, 2023
+        census</td><td>Official statistics</td></tr>
+        <tr><th scope="row">Basemap</th><td>Esri World Light Gray Canvas</td>
+        <td>Free, no key required</td></tr>
+        <tr><th scope="row">Map library</th><td>Leaflet 1.9.4</td><td>BSD-2-Clause</td></tr>
+        </tbody></table>
+
+        <h3>Attribution</h3>
+        <p>Basemap tiles &copy; Esri &mdash; Esri, HERE, Garmin, &copy; OpenStreetMap
+        contributors, and the GIS user community. Boundary, road and facility data
+        &copy; OpenStreetMap contributors, available under the
+        <a href="https://opendatacommons.org/licenses/odbl/1-0/">Open Database License</a>.</p>
+
+        <h3>Licences for this project</h3>
+        <ul>
+        <li><strong>Code:</strong> MIT.</li>
+        <li><strong>This text and the documentation:</strong> CC BY 4.0.</li>
+        <li><strong>The processed data:</strong> ODbL 1.0 &mdash; it contains values derived
+        from OpenStreetMap, so the share-alike terms apply.</li>
+        </ul>
+
+        <h3>Reproducing this</h3>
+        <p>Everything is open. The repository is
+        <a href="https://github.com/samrajukrani0-tech/karachi-heat-map">samrajukrani0-tech/karachi-heat-map</a>;
+        every raw download is checksummed, and the pipeline rebuilds the whole model from
+        the cache.</p>
+    </div>
 </main>
 <footer class="site">
   <div class="wrap">

@@ -545,10 +545,10 @@
    "depends_on": [
     "P3-02"
    ],
-   "passes": false,
+   "passes": true,
    "blocked_on": null,
    "dropped": null,
-   "evidence": null
+   "evidence": "Three content pages written and generated from the committed data so their figures cannot go stale. How it works: the three questions in plain words, why the model multiplies rather than adds (a scorching empty yard scores near zero), how sure it is (28 of 53 survive, 12 fail a coin flip), why it says provisional, what it cannot tell you, and a maths section placed AFTER the plain explanation rather than before it -- asserted by a test on the order. Data and credits: all nine sources with their licences, the required Esri and OpenStreetMap attribution, and the three project licences including why the processed data is ODbL. About: the three 'what it is not' disclaimers, why the project exists, and the D12 AI disclosure. npx playwright test -> 107 passed, 1 skipped, including tests that no page names the school (D11b), that About shows no email or contact channel (D11c), and that no page calls an area unsafe or dangerous (section 2.5). check.py --quick -> 'CHECK: PASS (7 checks)'."
   },
   {
    "id": "P3-07",
