@@ -800,3 +800,25 @@ than the test runner's tail.
 **One unnecessary element removed:** the footer said "Built by Samraj Lal Ukrani" and then
 "fieldwork by Samraj Lal Ukrani" one sentence later.
 **Next:** P3-03 Map and legend.
+
+## 2026-09-27 — P3-03 Map and legend, P3-04 Layers and panel
+**Evidence:** `npx playwright test` -> 83 passed, 1 skipped; `check.py --quick` ->
+**`CHECK: PASS (7 checks)`** — axe-core is now live.
+**A fault no test could have caught as written (P3-03).** CARTO's basemap tiles return
+HTTP 200 with `naturalWidth > 0`, so "tiles actually load" passed — while serving
+**"API KEY REQUIRED" watermarks**. §9 requires a basemap needing no key. Visible only by
+looking at the screenshot. Measured at z=13 over Landhi: CARTO 2.0 kB / **16 distinct
+colours**; Esri Light Gray Canvas 12.3 kB / 161; OSM standard 35.7 kB / 256. Switched to
+Esri (**D24**), and the test now rasterises a tile to a canvas and requires > 40 distinct
+colours, because "it is an image" was never the property that mattered.
+**DESIGN.md principle 1 is now enforced in code.** Uncertain cells are **hatched**, not
+tinted — a tint would read as "lower priority", a different claim — and a test asserts a
+non-`none` `stroke-dasharray` on them.
+**The panel cannot drift from the data:** a test reads `cells.geojson` directly and
+compares the rendered rank, temperature and population against it.
+**The caveats travel with the screenshot.** "What this cannot tell you" carries the
+population undercount, the missing relief-centre indicator, LST not being air temperature,
+and the absent power cuts — so a panel forwarded on WhatsApp still says what it cannot do.
+**One unnecessary element removed:** "never a verdict on a neighbourhood" appeared three
+times (panel, standalone paragraph, footer). The standalone paragraph is gone.
+**Next:** P3-05 Confidence.

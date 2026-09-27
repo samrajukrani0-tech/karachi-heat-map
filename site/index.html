@@ -32,13 +32,17 @@
         The weights are placeholders and one indicator has no data.
         <a href="how-it-works.html">What that means</a></p>
     </div>
+    <div class="wrap" id="controls"></div>
     <div class="map-frame">
         <div id="map"></div>
         <p class="notice" id="map-error" hidden></p>
     </div>
-    <div class="wrap">
-        <p class="small muted">Priority is a ranking <em>within</em> Landhi. It is not a
-        measurement of risk on any absolute scale, and never a verdict on a neighbourhood.</p>
+    <div id="legend-host"></div>
+    <div class="panel-wrap" id="panel-wrap">
+        <div class="panel-inner">
+            <button type="button" id="panel-close" class="panel-close">Close</button>
+            <div id="panel" aria-live="polite"></div>
+        </div>
     </div>
     <p id="live" class="visually-hidden" role="status" aria-live="polite"></p>
 

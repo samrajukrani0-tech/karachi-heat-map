@@ -126,3 +126,55 @@ footer.site p { max-width: 38rem; }
 
 /* Keyboard focus must be visible on the map too. */
 .leaflet-interactive:focus { outline: 3px solid var(--deep); outline-offset: 1px; }
+
+
+/* --- layer picker --------------------------------------------------------- */
+.layer-picker { display: flex; align-items: center; gap: 8px; padding-top: 4px; }
+.layer-picker label { font-size: 0.875rem; color: var(--muted); font-weight: 600; }
+.layer-picker select {
+  min-height: var(--tap); padding: 0 8px;
+  font: 1rem var(--font); color: var(--ink);
+  background: var(--paper); border: 1px solid var(--rule);
+}
+
+/* --- uncertainty hatching (DESIGN.md principle 1) ------------------------- */
+/* A cell the model is unsure about must LOOK unsure. Hatch, not a lighter tint:
+   a tint would read as "lower priority", which is a different claim. */
+.cell-uncertain {
+  stroke: #FFFFFF;
+  stroke-dasharray: 3 2;
+  stroke-width: 1.4;
+}
+
+/* --- cell panel ----------------------------------------------------------- */
+.panel-wrap { border-top: 1px solid var(--rule); }
+.panel-inner { max-width: 44rem; margin: 0 auto; padding: 0 var(--gutter) 1rem; position: relative; }
+.panel-close {
+  position: absolute; top: 8px; right: var(--gutter);
+  min-height: var(--tap); min-width: var(--tap);
+  background: none; border: 1px solid var(--rule); color: var(--signal);
+  font: 0.875rem var(--font); cursor: pointer;
+}
+.panel-wrap:not(.is-open) .panel-close { display: none; }
+.panel-rank { font-size: 1.6rem; font-weight: 600; font-variant-numeric: tabular-nums;
+              margin: 0.75rem 0 0; }
+.panel-band { margin: 0 0 0.5rem; font-weight: 600; }
+#panel h4 { font-size: 0.8rem; font-weight: 600; letter-spacing: 0.01em;
+            margin: 1.1rem 0 0.3rem; color: var(--muted); }
+.reasons { margin: 0; padding-left: 1.1rem; }
+.chip {
+  display: inline-block; padding: 2px 8px; border: 1px solid var(--rule);
+  font-size: 0.8rem; font-weight: 600;
+}
+.chip-uncertain { border-color: var(--deep); }
+.cannot { margin-top: 1.2rem; border-top: 1px solid var(--rule); padding-top: 0.6rem; }
+.cannot summary { cursor: pointer; font-weight: 600; min-height: var(--tap);
+                  display: flex; align-items: center; }
+.cannot ul { margin: 0.4rem 0 0; padding-left: 1.1rem; }
+
+@media (min-width: 900px) {
+  /* Persistent side panel on a laptop, bottom sheet on a phone -- same DOM order, so
+     keyboard and screen-reader users get one reading order at both widths. */
+  .map-frame { display: grid; grid-template-columns: 1fr; }
+  .panel-wrap { border-top: 1px solid var(--rule); }
+}
