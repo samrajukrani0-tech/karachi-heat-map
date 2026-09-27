@@ -564,3 +564,83 @@ about tests that finished, so it is not a verdict on the run — it has to be re
 how many tests *should* have run. The 6.2-minute duration for twelve tests was the second
 clue, since the same tests take seconds when they are actually loading a page.
 </details>
+
+## P4-01 — The allocation solver, and a rule that gamed itself
+
+**What and why.** The planner answers "we have this much supply at these centres, which
+cells get how much?" as a linear program: maximise the priority-weighted supply
+delivered, subject to each centre's stock, each cell's need, and a 5 km service
+distance. A greedy baseline — highest-priority cell first, nearest centre with stock —
+is there so the LP has something to beat, and because it is fast enough to run in a
+browser. Two things in the first version were wrong in ways that looked completely
+normal from the outside, and both are worth understanding.
+
+**The first was a units problem.** The spec says to subtract a "small" term
+$\varepsilon \sum d_{ij} x_{ij}$ to break ties in favour of closer cells, with
+$\varepsilon = 0.001$. But $d$ is in metres, so at the 5 km limit that term is
+$0.001 \times 5000 = 5.0$, while priority never exceeds $1.0$. The "tiebreak" was five
+times bigger than the thing it was breaking ties in: the solver would have been
+minimising travel distance and treating priority as a rounding error, while every
+comment in the code said the opposite. Dividing by $D$ makes the term dimensionless and
+genuinely small.
+
+**The second was worse, and an independent checker found it, not me.** The equity rule
+— "the top 20% of cells should get at least 25% of the supply" — was written as
+$\sum_T x \ge \alpha \sum x$, with a penalty $\lambda$ per unit of shortfall. That makes
+the target a share of *what the solver decides to allocate*, so the solver can hit it by
+allocating less. Work out what one unit sent to an ordinary cell is worth: it raises the
+requirement by $\alpha$, so the penalty rises by $\lambda\alpha$, and the unit nets
+$p_i - 0.25$. **Every cell below Priority 0.25 became worth not serving.** In one test
+the solver shipped 20 units and left 280 in the warehouse — and reported no shortfall,
+because by its own definition there wasn't one. A relief plan that withholds most of the
+supply in order to look equitable, with a clean map and no warning, is about the worst
+thing this project could ship.
+
+**The key idea in A Level terms.** Both bugs are about what happens when you put two
+quantities into the same expression without checking they are commensurable — the same
+discipline as **dimensional analysis** in Physics. You cannot add 5 metres to 3 seconds,
+and you should be equally suspicious of adding a normalised score to a raw distance.
+The second bug is a case of an **endogenous constraint**: the quantity on the
+right-hand side, $\alpha\sum x$, is not a fixed number but a function of the decision
+variables. Optimisers exploit that ruthlessly, because a constraint you can move is not
+really a constraint. The fix is to anchor the floor to something outside the solver's
+control — $\alpha \cdot \min(\text{total stock}, \text{total need})$ — so that the
+requirement is a constant and the only way to meet it is to actually serve those cells.
+This is the same reason an economics or game-theory problem specifies which quantities
+are exogenous: the answer depends entirely on what the agent is allowed to move.
+
+**Questions to check you have it.**
+
+1. In the broken version, why did the solver refuse to serve a cell with Priority 0.20
+   but happily serve one at 0.30?
+<details><summary>Answer</summary>
+Serving an ordinary cell raised the requirement $\alpha \sum x$ by $\alpha = 0.25$, and
+each unit of extra shortfall cost $\lambda = 1$. So the unit's net value was
+$p_i - \lambda\alpha = p_i - 0.25$: positive at 0.30, negative at 0.20. The cutoff sat
+exactly at $\lambda\alpha$, which is why 0.249 was dropped and 0.251 was kept. Note that
+nothing in the code said "ignore cells below 0.25" — the threshold emerged from the
+interaction of two settings that each looked reasonable alone.
+</details>
+
+2. Why does anchoring the floor to $\min(\text{total stock},\ \text{total need})$ remove
+   the incentive, when anchoring it to $\sum x$ did not?
+<details><summary>Answer</summary>
+Because the new floor is a constant: total stock and total need are inputs, fixed before
+the solve, and no choice of $x$ changes them. Sending a unit to an ordinary cell
+therefore leaves the requirement — and the penalty — exactly where it was, so the unit
+is worth its full $p_i$ and is still worth sending. Under the old version the
+requirement moved every time the solver allocated anything, which is what let the
+solver "satisfy" it by doing less.
+</details>
+
+3. The checker also found that the objective became `nan` when an out-of-range distance
+   was written as `inf`, even though no supply was ever sent along that route. Why, and
+   why was that dangerous rather than merely untidy?
+<details><summary>Answer</summary>
+The cost was summed over the whole distance matrix, and an unservable pair has $x = 0$,
+so the term was $\infty \times 0$ — which is `nan` in IEEE arithmetic, not 0. The danger
+is that **every comparison involving `nan` evaluates to False**, including
+`lp.objective >= greedy.objective`. So the check "is the LP at least as good as greedy?"
+would have silently answered "no" without anything raising an error. A crash is safe;
+a wrong answer that looks like a normal answer is not.
+</details>

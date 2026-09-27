@@ -12,6 +12,7 @@ import pytest
 from pipeline.allocate import (
     Plan,
     distance_matrix,
+    equity_floor,
     largest_remainder,
     need_units,
     objective_value,
@@ -192,9 +193,9 @@ def test_the_distance_tiebreak_cannot_outweigh_priority():
 
 
 def test_largest_remainder_respects_both_caps():
-    x = np.array([[2.6, 1.6], [3.6, 0.6]])       # fractional total 8.4
+    x = np.array([[2.6, 1.0], [3.2, 0.9]])       # fractional total 7.7
     stock = np.array([6.0, 2.0])
-    need = np.array([4.0, 4.0])
+    need = np.array([4.0, 5.0])
     out = largest_remainder(x, stock, need)
     assert np.all(out == np.floor(out)), "rounding must produce whole units"
     assert np.all(out.sum(axis=0) <= stock)
@@ -242,7 +243,7 @@ def test_the_equity_rule_is_soft_rather_than_infeasible():
                     min_share_top_quintile=0.25, equity_penalty=1.0)
     assert plan.total == 150, "the solver should still place all the stock it can"
     assert plan.equity_shortfall > 0, "the missed floor must be reported, not hidden"
-    assert plan.notes and "not reachable" in plan.notes[0]
+    assert plan.notes and "no centre within the service distance" in plan.notes[0]
     assert not plan.reachable[0]
 
 
@@ -288,3 +289,137 @@ def test_the_config_the_solver_will_run_on_is_still_marked_provisional(allocatio
     assert allocation["provisional"] is True
     water = next(c for c in allocation["commodities"] if c["id"] == "water")
     assert "UNVERIFIED" in water["basis"]
+
+
+# --- regressions: every defect the independent checker found in the first version ----
+#
+# Each of these failed before the fix. They are named after what goes wrong in the
+# field, not after the line of code, because that is what a future reader needs.
+
+
+def test_the_equity_rule_cannot_be_satisfied_by_withholding_supply():
+    """The checker's repro. The first version left 280 of 300 units in the warehouse.
+
+    With the floor written as a share of what gets allocated, a unit sent to a non-top
+    cell cost alpha * lambda in penalty, so every cell below Priority 0.25 was worth
+    not serving -- and the plan reported no shortfall at all while doing it.
+    """
+    priority = np.array([0.95, 0.20, 0.18, 0.16, 0.14])
+    need = np.array([5.0, 100.0, 100.0, 100.0, 100.0])
+    stock = np.array([300.0])
+    dist = np.full((5, 1), 1000.0)
+
+    without = solve_lp(priority, need, stock, dist, max_distance_m=D, epsilon=EPS,
+                       min_share_top_quintile=0.0)
+    with_equity = solve_lp(priority, need, stock, dist, max_distance_m=D, epsilon=EPS,
+                           min_share_top_quintile=0.25, equity_penalty=1.0)
+
+    assert without.total == 300
+    assert with_equity.total == 300, (
+        f"the equity rule withheld {300 - with_equity.total:,.0f} units of supply "
+        "rather than deliver them to low-priority cells")
+
+
+@pytest.mark.parametrize("seed", range(40))
+def test_the_equity_rule_never_reduces_how_much_is_delivered(seed):
+    """The general form: turning equity on may move supply, but never shrink it."""
+    problem = random_problem(np.random.default_rng(seed))
+    off = solve_lp(**problem, max_distance_m=D, epsilon=EPS, min_share_top_quintile=0.0)
+    on = solve_lp(**problem, max_distance_m=D, epsilon=EPS,
+                  min_share_top_quintile=0.25, equity_penalty=1.0)
+    assert on.total >= off.total - 1e-6, (
+        f"seed {seed}: equity cut delivery from {off.total:,.0f} to {on.total:,.0f}")
+
+
+def test_a_cell_just_below_the_share_is_still_worth_serving():
+    """The old cutoff sat exactly at alpha * lambda = 0.25. Priority 0.249 was dropped."""
+    priority = np.array([0.95, 0.249])
+    need = np.array([5.0, 100.0])
+    stock = np.array([300.0])
+    dist = np.full((2, 1), 1000.0)
+    plan = solve_lp(priority, need, stock, dist, max_distance_m=D, epsilon=EPS,
+                    min_share_top_quintile=0.25, equity_penalty=1.0)
+    assert plan.delivered[1] == 100.0, "an ordinary low-priority cell must still be served"
+
+
+def test_the_shortfall_note_gives_the_real_reason():
+    """It used to assert the top cells were out of range even when they plainly were not.
+
+    Here every cell is 1,000 m from the only centre. The floor is unreachable purely
+    because the top cell's own need is 1 unit. A brief repeating "not reachable" would
+    send someone to solve a distance problem that does not exist.
+    """
+    priority = np.full(5, 0.9)
+    need = np.array([1.0, 100.0, 100.0, 100.0, 100.0])
+    stock = np.array([300.0])
+    dist = np.full((5, 1), 1000.0)
+    plan = solve_lp(priority, need, stock, dist, max_distance_m=D, epsilon=EPS,
+                    min_share_top_quintile=0.25, equity_penalty=1.0)
+
+    assert plan.reachable.all()
+    assert plan.equity_shortfall > 0
+    note = plan.notes[0]
+    assert "already fully met" in note, note
+    assert "service distance" not in note, f"claims a distance problem that is absent: {note}"
+
+
+@pytest.mark.parametrize("solver", [solve_lp, solve_greedy])
+def test_an_out_of_range_distance_written_as_infinity_does_not_poison_the_objective(solver):
+    """inf * 0 is nan, and every comparison against nan is False.
+
+    Summing the distance cost over the whole matrix turned one unservable pair into a
+    nan objective -- so "did the LP beat greedy?" would have quietly answered no.
+    """
+    priority = np.array([0.9, 0.8])
+    need = np.array([10.0, 10.0])
+    stock = np.array([10.0, 10.0])
+    dist = np.array([[1000.0, np.inf], [1000.0, np.inf]])
+    plan = solver(priority, need, stock, dist, max_distance_m=D, epsilon=EPS)
+    assert np.isfinite(plan.objective), f"{plan.method} objective is {plan.objective}"
+    assert plan.objective > 0
+    assert not np.any(plan.x[:, 1] > 0), "nothing may be sent to an unreachable centre"
+
+
+@pytest.mark.parametrize("solver", [solve_lp, solve_greedy])
+def test_both_solvers_refuse_the_same_malformed_input(solver):
+    """Greedy is the browser-side path, so malformed input reaches it first."""
+    good = dict(priority=np.array([0.5, 0.5]), need=np.array([1.0, 1.0]),
+                stock=np.array([1.0]), dist=np.array([[100.0], [100.0]]))
+
+    with pytest.raises(ValueError, match="non-negative"):
+        solver(**{**good, "stock": np.array([-5.0])}, max_distance_m=D)
+    with pytest.raises(ValueError, match="one entry per cell"):
+        solver(**{**good, "need": np.array([1.0])}, max_distance_m=D)
+    with pytest.raises(ValueError, match="one entry per centre"):
+        solver(**{**good, "stock": np.array([1.0, 1.0])}, max_distance_m=D)
+    with pytest.raises(ValueError, match="nan"):
+        solver(**{**good, "dist": np.array([[100.0], [np.nan]])}, max_distance_m=D)
+    with pytest.raises(ValueError, match="max_distance_m must be positive"):
+        solver(**good, max_distance_m=0)
+    with pytest.raises(ValueError, match="farther"):
+        solver(**good, max_distance_m=D, epsilon=-0.001)
+
+
+def test_rounding_refuses_a_plan_that_is_already_infeasible():
+    """floor(9.7) is 9, which is still 4.5x over a stock of 2. Rounding cannot fix that."""
+    with pytest.raises(ValueError, match="already exceeds"):
+        largest_remainder(np.array([[9.7]]), stock=np.array([2.0]), need=np.array([100.0]))
+
+
+@pytest.mark.parametrize("seed", range(25))
+def test_rounding_never_returns_more_than_it_was_given(seed):
+    rng = np.random.default_rng(seed)
+    x = rng.uniform(0, 30, (6, 3))
+    out = largest_remainder(x, stock=x.sum(axis=0) + 5, need=x.sum(axis=1) + 5)
+    assert out.sum() <= np.floor(x.sum()) + 1e-9, (
+        f"rounding turned {x.sum():.2f} units of plan into {out.sum():.0f}")
+
+
+def test_the_equity_floor_is_a_fixed_quantity_not_a_share_of_the_decision():
+    """D27. The floor must not depend on anything the solver chooses."""
+    need = np.array([10.0, 10.0, 10.0])
+    stock = np.array([12.0])
+    top = np.array([True, False, False])
+    assert equity_floor(need, stock, top, 0.25) == pytest.approx(0.25 * 12)   # stock binds
+    assert equity_floor(need, np.array([100.0]), top, 0.25) == pytest.approx(0.25 * 30)
+    assert equity_floor(need, stock, np.zeros(3, bool), 0.25) == 0.0

@@ -48,8 +48,12 @@ $$\sum_{ij} p_i\,x_{ij} \;-\; \varepsilon \sum_{ij} \frac{d_{ij}}{D}\,x_{ij} \;-
 
 $$\sum_i x_{ij} \le s_j \quad \text{(no centre sends more than it has)}$$
 $$\sum_j x_{ij} \le n_i \quad \text{(no cell receives more than it needs)}$$
-$$\sum_{i \in T, j} x_{ij} \;\ge\; \alpha \sum_{ij} x_{ij} \;-\; u \quad \text{(equity, soft)}$$
+$$\sum_{i \in T, j} x_{ij} \;\ge\; F \;-\; u \quad \text{(equity, soft)}$$
 $$x_{ij} \ge 0,\qquad u \ge 0$$
+
+where $F = \alpha \cdot \min\!\left(\sum_j s_j,\ \sum_i n_i\right)$ is a **constant**
+worked out before the solve — not a share of $\sum x$. That distinction matters a great
+deal, and §2 below explains why.
 
 Solved with `scipy.optimize.linprog(method="highs")`.
 
@@ -78,6 +82,35 @@ the solver will leave it empty even with unlimited stock. With real data no such
 has any need, because priority is zero exactly where the population is zero — but if
 that ever stops being true, this is where it would show up.
 
+### Why the floor is a fixed quantity, not a share (D27)
+
+The obvious way to write "the top 20% of cells should get at least a quarter of the
+supply" is $\sum_{i \in T} x \ge \alpha \sum x$. **That version is a trap, and the
+first draft of this solver fell into it.**
+
+The floor is a share of *what the solver decides to allocate*, so the solver can meet
+it by allocating less — shrinking the denominator instead of raising the numerator.
+Work out what a unit sent to an ordinary cell is worth: it raises $\alpha \sum x$ by
+$\alpha$, so the shortfall $u$ grows by $\alpha$ and the penalty by $\lambda\alpha$.
+The unit nets
+
+$$p_i - \lambda\alpha = p_i - 0.25$$
+
+at the configured settings. **Every cell with Priority below 0.25 becomes actively
+worth not serving.** Priority is a geometric mean on $[0,1]$, so sub-0.25 cells are
+perfectly ordinary — in one test case the solver shipped 20 units and left **280 in the
+warehouse**, and reported no shortfall while doing it, because by its own definition
+there wasn't one.
+
+Anchoring $F$ to $\min(\text{total stock}, \text{total need})$ — the most that could
+ever be delivered, which the solver has no way to influence — removes the incentive
+entirely. Sending a unit to an ordinary cell leaves $F$ untouched, so it is still worth
+sending; sending one to a top-quintile cell reduces $u$ and earns $\lambda$ on top of
+$p_i$, until the floor is met. That is what the rule was meant to say.
+
+**This is a judgement call on Samraj's rule, not just on its algebra** — see QUESTIONS.md
+Q15 for the alternatives and what each would change.
+
 ### Why the equity rule is soft
 
 A hard floor of $\alpha$ can make the problem **infeasible** — for instance when the
@@ -85,8 +118,12 @@ highest-priority cells simply lie more than $D$ from every centre holding stock.
 infeasible LP returns nothing at all, which is the least useful possible answer to a
 coordinator with a van. The slack variable $u$ lets the solver miss the floor when it
 must, at a price of $\lambda$ per unit, and the plan then *reports* the shortfall
-rather than hiding it. A shortfall is a finding: it means the stock is in the wrong
-place, which is exactly what a planner would want to be told.
+rather than hiding it. A shortfall is a finding, so the plan also says **which of three
+things caused it**: the top cells' own need is already met and the floor asks for more
+than they can use; some of them have no centre within $D$; or there is simply not
+enough stock within reach. The first draft asserted the second cause every time, which
+is usually wrong — a field brief repeating that would send someone to fix a distance
+problem that does not exist.
 
 ### Rounding
 
@@ -95,6 +132,11 @@ every $x_{ij}$, then hands back the discarded units in order of the largest frac
 part — **checking, as each unit is placed, that the centre still has stock and the
 cell still has unmet need.** Rounding per centre alone would respect stock and quietly
 break the need constraint.
+
+Two limits worth stating. It hands back only as many units as flooring discarded, so a
+plan of 7.7 units rounds to 7 and never to 8. And it can only preserve a cap the plan
+already respects: flooring 9.7 against a stock of 2 gives 9, which is still over, so an
+infeasible plan is refused rather than silently passed through.
 
 ---
 

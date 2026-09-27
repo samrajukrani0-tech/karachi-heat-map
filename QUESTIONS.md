@@ -383,3 +383,32 @@ Three options, with Claude's recommendation first:
 
 **What changes:** option 1 is a change to `scripts/lighthouse.mjs` only, no threshold
 moves, and Claude can do it in one feature. Options 2 and 3 need no work.
+
+## Q15 — What should the 25% equity floor be a share *of*? (P4-01, 2026-09-27)
+
+**Not blocking — a working answer is in place. But it is your rule, so you should own it.**
+
+D8 says the top 20% of cells should get "at least a 25% share". A share of *what*?
+
+The first version read it as a share of whatever the solver allocates, and that turned
+out to be a trap: the solver could meet the floor by delivering **less**, and in the
+checker's test it left 280 of 300 units undelivered while reporting no problem at all.
+That reading is out — see D27 for the algebra.
+
+That leaves three honest readings, and they differ in what a "shortfall" warning means:
+
+1. **A share of what could possibly be delivered — `min(total stock, total need)`.**
+   Currently implemented. A shortfall then means "the top cells could not take their
+   quarter of everything that was available", which is a real finding.
+2. **A share of total need.** Stricter. When stock is far below need — the usual case in
+   a heatwave — the floor becomes unreachable and *every* plan reports a shortfall.
+   Claude's worry: a warning that always fires is a warning nobody reads.
+3. **A share of the top cells' own need** — i.e. "serve at least 25% of what the top
+   quintile needs before anyone else gets anything". This is closest to how a
+   coordinator would actually phrase a rule, and it never asks for more than those cells
+   can use. It is the one Claude would pick if starting from scratch, but it is a
+   different rule from what D8 currently says, so it is not being adopted unasked.
+
+**Recommendation:** keep (1) for now; consider (3) when you have real centres and can see
+whether the shortfall warning fires sensibly. **What changes:** each is a two-line edit to
+`equity_floor` in `pipeline/allocate.py`, plus its test. Nothing else in the model moves.

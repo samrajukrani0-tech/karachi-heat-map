@@ -50,7 +50,7 @@ class Plan:
     delivered: np.ndarray        # units per cell
     dispatched: np.ndarray       # units per centre
     unmet: np.ndarray            # need not covered, per cell
-    equity_shortfall: float      # units by which the top-quintile share falls short
+    equity_shortfall: float      # units by which the top quintile misses its floor
     reachable: np.ndarray        # bool per cell: any centre within D
     notes: list[str] = field(default_factory=list)
 
@@ -105,18 +105,75 @@ def top_quintile(priority: np.ndarray, need: np.ndarray) -> np.ndarray:
 
 def objective_value(x: np.ndarray, priority: np.ndarray, dist: np.ndarray,
                     max_distance_m: float, epsilon: float) -> float:
-    """Sum of priority-weighted units delivered, less the small distance tiebreak."""
+    """Sum of priority-weighted units delivered, less the small distance tiebreak.
+
+    The cost is summed over servable pairs only. Summing over the whole matrix looks
+    equivalent -- an unservable pair has x = 0 -- but ``inf * 0`` is ``nan`` in IEEE
+    arithmetic, so a single out-of-range distance recorded as ``inf`` would turn the
+    objective into ``nan``. Every comparison against a nan is False, so "did the LP
+    beat greedy?" would quietly answer no.
+    """
     x = np.asarray(x, dtype=float)
+    dist = np.asarray(dist, dtype=float)
+    servable = dist <= max_distance_m
     gain = float((np.asarray(priority, float)[:, None] * x).sum())
-    cost = float(epsilon * ((np.asarray(dist, float) / max_distance_m) * x).sum())
+    cost = float(epsilon * (dist[servable] / max_distance_m * x[servable]).sum())
     return gain - cost
 
 
-def _shortfall(x: np.ndarray, top: np.ndarray, min_share: float) -> float:
-    total = float(x.sum())
-    if total <= 0:
-        return 0.0
-    return max(0.0, min_share * total - float(x[top].sum()))
+def equity_floor(need: np.ndarray, stock: np.ndarray, top: np.ndarray,
+                 min_share: float) -> float:
+    """The units the top-quintile cells are owed, as a fixed quantity (D27).
+
+    Deliberately NOT a share of what the solver decides to allocate. A floor written
+    as ``sum_T x >= alpha * sum x`` can be satisfied by making ``sum x`` smaller, and
+    with a penalty of lambda per unit of shortfall a unit sent to a non-top cell nets
+    ``p_i - alpha*lambda`` -- so at the configured 0.25 every cell below Priority 0.25
+    becomes worth *not* serving, and the plan leaves supply in the warehouse to look
+    equitable. Priority is a geometric mean on [0, 1], so sub-0.25 cells are entirely
+    ordinary, not a corner case.
+
+    Anchoring the floor to ``min(total stock, total need)`` -- the most that could ever
+    be delivered, which the solver cannot influence -- removes the incentive: sending a
+    unit to a non-top cell leaves the floor untouched, so it is still worth sending.
+    """
+    deliverable = min(float(np.asarray(stock, float).sum()),
+                      float(np.asarray(need, float).sum()))
+    return min_share * deliverable if top.any() else 0.0
+
+
+def _validate(priority, need, stock, dist, max_distance_m, epsilon):
+    """Checks both solvers share, so greedy refuses exactly what the LP refuses.
+
+    Greedy is the path the site exposes as the browser-side "quick estimate", so it is
+    the one malformed input reaches first. It used to accept a negative stock as an
+    empty centre and a shape mismatch as an IndexError.
+    """
+    priority = np.asarray(priority, dtype=float)
+    need = np.asarray(need, dtype=float)
+    stock = np.asarray(stock, dtype=float)
+    dist = np.asarray(dist, dtype=float)
+    if dist.ndim != 2:
+        raise ValueError(f"dist must be (cells, centres), got shape {dist.shape}")
+    n_cells, n_centres = dist.shape
+    if priority.shape != (n_cells,) or need.shape != (n_cells,):
+        raise ValueError(
+            f"priority and need must have one entry per cell ({n_cells}), got "
+            f"{priority.shape} and {need.shape}")
+    if stock.shape != (n_centres,):
+        raise ValueError(f"stock must have one entry per centre ({n_centres}), "
+                         f"got {stock.shape}")
+    if np.any(need < 0) or np.any(stock < 0):
+        raise ValueError("need and stock must be non-negative")
+    if np.isnan(dist).any():
+        raise ValueError("dist contains nan; an unservable pair must be a large "
+                         "distance, not a missing one")
+    if not max_distance_m > 0:
+        raise ValueError(f"max_distance_m must be positive, got {max_distance_m}")
+    if epsilon < 0:
+        raise ValueError(f"epsilon must be non-negative, got {epsilon}: a negative "
+                         "tiebreak would prefer the *farther* centre")
+    return priority, need, stock, dist
 
 
 def solve_lp(priority: np.ndarray, need: np.ndarray, stock: np.ndarray, dist: np.ndarray,
@@ -128,25 +185,21 @@ def solve_lp(priority: np.ndarray, need: np.ndarray, stock: np.ndarray, dist: np
         maximise   sum_ij p_i x_ij - eps * sum_ij (d_ij / D) x_ij - lambda * u
         subject to sum_i x_ij <= s_j            (stock at each centre)
                    sum_j x_ij <= need_i         (nobody gets more than they need)
-                   sum_{i in T,j} x_ij  >=  alpha * sum_ij x_ij - u   (equity, soft)
+                   sum_{i in T,j} x_ij  >=  F - u            (equity, soft)
                    x_ij >= 0, defined only where d_ij <= D;  u >= 0
 
-    The equity rule is soft -- ``u`` absorbs the shortfall at a price -- because a
-    hard version can make the problem infeasible when the top-quintile cells simply
-    are not reachable from the centres that hold stock, and an infeasible solver
-    returns nothing at all rather than the best plan available.
+    ``F = alpha * min(total stock, total need)`` is a constant, computed before the
+    solve. Writing the floor as a share of ``sum x`` instead lets the solver satisfy
+    it by allocating less -- see ``equity_floor`` and D27.
+
+    The rule is soft -- ``u`` absorbs the shortfall at a price -- because a hard
+    version can be infeasible when the top-quintile cells are simply not reachable
+    from the centres holding stock, and an infeasible solver returns nothing at all
+    rather than the best plan available. The shortfall is reported, with its cause.
     """
-    priority = np.asarray(priority, dtype=float)
-    need = np.asarray(need, dtype=float)
-    stock = np.asarray(stock, dtype=float)
-    dist = np.asarray(dist, dtype=float)
+    priority, need, stock, dist = _validate(
+        priority, need, stock, dist, max_distance_m, epsilon)
     n_cells, n_centres = dist.shape
-    if priority.shape != (n_cells,) or need.shape != (n_cells,):
-        raise ValueError("priority and need must have one entry per cell")
-    if stock.shape != (n_centres,):
-        raise ValueError("stock must have one entry per centre")
-    if np.any(need < 0) or np.any(stock < 0):
-        raise ValueError("need and stock must be non-negative")
 
     within = dist <= max_distance_m
     reachable = within.any(axis=1)
@@ -162,7 +215,8 @@ def solve_lp(priority: np.ndarray, need: np.ndarray, stock: np.ndarray, dist: np
     rows, cols = pairs[:, 0], pairs[:, 1]
     m = len(pairs)
     top = top_quintile(priority, need)
-    use_equity = min_share_top_quintile > 0 and top.any()
+    floor_units = equity_floor(need, stock, top, min_share_top_quintile)
+    use_equity = floor_units > 0
 
     # minimise c.x, so the sign of the gain flips
     c = np.concatenate([epsilon * (dist[rows, cols] / max_distance_m) - priority[rows],
@@ -185,12 +239,12 @@ def solve_lp(priority: np.ndarray, need: np.ndarray, stock: np.ndarray, dist: np
     b.extend(need[keep_cell].tolist())
 
     if use_equity:
-        # alpha * sum(x) - sum_{i in T} x - u <= 0
+        # floor - sum_{i in T} x - u <= 0, with the floor a constant (D27)
         equity = np.zeros((1, n_vars))
-        equity[0, :m] = min_share_top_quintile - top[rows].astype(float)
+        equity[0, :m] = -top[rows].astype(float)
         equity[0, m] = -1.0
         blocks.append(equity)
-        b.append(0.0)
+        b.append(-floor_units)
 
     a_ub = np.vstack(blocks)
     upper = np.concatenate([np.minimum(need[rows], stock[cols]),
@@ -205,7 +259,7 @@ def solve_lp(priority: np.ndarray, need: np.ndarray, stock: np.ndarray, dist: np
     if round_units:
         x = largest_remainder(x, stock, need)
     return _plan(x, "lp", priority, need, dist, max_distance_m, epsilon, top,
-                 min_share_top_quintile, reachable, notes)
+                 floor_units, reachable, notes)
 
 
 def solve_greedy(priority: np.ndarray, need: np.ndarray, stock: np.ndarray,
@@ -216,10 +270,9 @@ def solve_greedy(priority: np.ndarray, need: np.ndarray, stock: np.ndarray,
     Deterministic: ties in priority break on cell index and ties in distance on
     centre index, so the same inputs always give the same plan.
     """
-    priority = np.asarray(priority, dtype=float)
-    need = np.asarray(need, dtype=float).copy()
-    left = np.asarray(stock, dtype=float).copy()
-    dist = np.asarray(dist, dtype=float)
+    priority, need, stock, dist = _validate(
+        priority, need, stock, dist, max_distance_m, epsilon)
+    need, left = need.copy(), stock.copy()
     n_cells, n_centres = dist.shape
     x = np.zeros((n_cells, n_centres))
 
@@ -240,10 +293,11 @@ def solve_greedy(priority: np.ndarray, need: np.ndarray, stock: np.ndarray,
             need[i] -= send
             left[j] -= send
 
-    top = top_quintile(priority, np.asarray(need, dtype=float) + x.sum(axis=1))
-    return _plan(x, "greedy", priority, np.asarray(need) + x.sum(axis=1), dist,
-                 max_distance_m, epsilon, top, min_share_top_quintile,
-                 (dist <= max_distance_m).any(axis=1), [])
+    original_need = need + x.sum(axis=1)   # need was decremented in place
+    top = top_quintile(priority, original_need)
+    floor_units = equity_floor(original_need, stock, top, min_share_top_quintile)
+    return _plan(x, "greedy", priority, original_need, dist, max_distance_m, epsilon,
+                 top, floor_units, (dist <= max_distance_m).any(axis=1), [])
 
 
 def largest_remainder(x: np.ndarray, stock: np.ndarray, need: np.ndarray) -> np.ndarray:
@@ -252,16 +306,34 @@ def largest_remainder(x: np.ndarray, stock: np.ndarray, need: np.ndarray) -> np.
     Floor everything, then hand out the units that floor threw away in order of the
     largest fractional remainder -- but only where the centre still has stock and the
     cell still has unmet need. Both caps are checked at the moment each unit is
-    placed, so neither can be broken by the rounding. Plain per-centre rounding would
+    placed, so the rounding cannot break either. Plain per-centre rounding would
     respect stock and quietly break need.
+
+    It can only preserve a cap that ``x`` already respects: flooring 9.7 against a
+    stock of 2 gives 9, which is still over. Every plan ``solve_lp`` produces is
+    feasible, but this is a public function, so an infeasible input is refused rather
+    than quietly passed through -- a future JavaScript port of the browser-side
+    estimate is exactly the caller that would be caught out.
     """
     x = np.asarray(x, dtype=float)
+    stock = np.asarray(stock, dtype=float)
+    need = np.asarray(need, dtype=float)
+    if np.any(x.sum(axis=0) > stock + 1e-9) or np.any(x.sum(axis=1) > need + 1e-9):
+        raise ValueError("largest_remainder was given a plan that already exceeds "
+                         "stock or need; rounding cannot repair an infeasible plan")
     out = np.floor(x)
-    centre_left = np.floor(np.asarray(stock, float)) - out.sum(axis=0)
-    cell_left = np.floor(np.asarray(need, float)) - out.sum(axis=1)
+    centre_left = np.floor(stock) - out.sum(axis=0)
+    cell_left = np.floor(need) - out.sum(axis=1)
     remainder = x - out
+    # Hand back only the units flooring actually discarded. Without this budget the
+    # method can return more than it was given -- flooring 7.7 units of plan down to 6
+    # and then adding one unit per position with slack gives 8 -- which is feasible but
+    # is no longer a rounding of the plan it was handed.
+    budget = int(np.floor(x.sum() + 1e-9) - out.sum())
     order = np.argsort(-remainder, axis=None, kind="stable")
     for flat in order:
+        if budget <= 0:
+            break
         i, j = np.unravel_index(flat, x.shape)
         if remainder[i, j] <= 0:
             break
@@ -269,22 +341,38 @@ def largest_remainder(x: np.ndarray, stock: np.ndarray, need: np.ndarray) -> np.
             out[i, j] += 1
             centre_left[j] -= 1
             cell_left[i] -= 1
+            budget -= 1
     return out
 
 
-def _plan(x, method, priority, need, dist, max_distance_m, epsilon, top, min_share,
+def _plan(x, method, priority, need, dist, max_distance_m, epsilon, top, floor_units,
           reachable, notes) -> Plan:
     delivered = x.sum(axis=1)
-    shortfall = _shortfall(x, top, min_share) if top.any() else 0.0
+    need = np.asarray(need, float)
+    shortfall = max(0.0, floor_units - float(x[top].sum())) if top.any() else 0.0
     if shortfall > 0:
-        notes.append(
-            f"the top-quintile share is {shortfall:,.0f} units below the "
-            f"{min_share:.0%} floor -- those cells are not reachable from the stock")
+        notes.append(f"the top-priority cells are {shortfall:,.0f} units short of the "
+                     f"{floor_units:,.0f} they are owed -- {_why_short(x, top, need, reachable)}")
     return Plan(x=x, method=method,
                 objective=objective_value(x, priority, dist, max_distance_m, epsilon),
                 delivered=delivered, dispatched=x.sum(axis=0),
                 unmet=np.maximum(np.asarray(need, float) - delivered, 0.0),
                 equity_shortfall=shortfall, reachable=reachable, notes=notes)
+
+
+def _why_short(x, top, need, reachable) -> str:
+    """Say which of the three causes it actually was.
+
+    The first version of this note asserted the top cells were out of range, which is
+    frequently untrue -- the usual cause is that they are already full. A field brief
+    repeating that would send someone to solve a distance problem that does not exist.
+    """
+    if np.allclose(x[top].sum(axis=1), need[top]):
+        return ("their own need is already fully met, so the floor asks for more than "
+                "they can use")
+    if not reachable[top].all():
+        return "some of them have no centre within the service distance"
+    return "there is not enough stock within reach of them"
 
 
 def main() -> int:

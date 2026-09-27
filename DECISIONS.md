@@ -960,3 +960,51 @@ stops being true, this is where it will show up. Documented in `docs/allocation.
 
 **Status:** adopted in P4-01, verified by an independent checker.
 **Date:** 2026-09-27
+
+---
+
+## D27 — The equity floor is a fixed quantity, not a share of the allocation
+
+**Context.** D8 sets `min_share_top_quintile: 0.25` — the top 20% of cells by priority
+should receive at least a quarter of the supply — and PROMPT.md §8 says to add it "as a
+soft constraint with a penalty".
+
+**The problem, found by the independent checker.** Written the obvious way, as
+$\sum_{i \in T} x \ge \alpha \sum x - u$, the floor is a share of *what the solver
+chooses to allocate*. The solver can therefore satisfy it by allocating **less**. A unit
+sent to an ordinary cell raises $\alpha \sum x$ by $\alpha$, so the shortfall and its
+penalty grow by $\lambda\alpha$, and the unit nets $p_i - \lambda\alpha = p_i - 0.25$.
+
+**Every cell with Priority below 0.25 became worth not serving.** In the checker's
+repro — one high-priority cell needing 5 units, four ordinary cells needing 100 each,
+one centre with 300 units, everything 1,000 m apart — the solver shipped **20 units and
+left 280 in the warehouse**, and reported `equity_shortfall = 0.0` with no notes, because
+by its own definition there was no shortfall. It happened in 15% of random test problems.
+Priority is a geometric mean on [0, 1], so sub-0.25 cells are entirely ordinary.
+
+A relief plan that withholds most of the supply in order to look equitable is the worst
+failure this project could ship, and it would have looked completely normal on the map.
+
+**Decision.** The floor is an absolute quantity, fixed before the solve:
+
+$$F = \alpha \cdot \min\left(\textstyle\sum_j s_j,\ \sum_i n_i\right), \qquad \sum_{i \in T} x \ge F - u$$
+
+$F$ is anchored to the most that could ever be delivered, which the solver cannot
+influence. Sending a unit to an ordinary cell leaves $F$ untouched, so it stays worth
+sending; sending one to a top-quintile cell reduces $u$ and earns $\lambda$ on top of
+$p_i$ until the floor is met. A test now asserts that turning equity on never reduces
+the total delivered, on the checker's repro and on 40 random problems.
+
+**Alternatives considered.**
+- *Share of total need* rather than min(stock, need). Rejected as the default: when
+  stock is far below need the floor becomes unreachable and $u$ is always positive,
+  which makes every plan report a shortfall and trains the reader to ignore it.
+- *Keep the share form and add a withholding guard* — solve twice and warn if the
+  equity version delivers less. Rejected: it detects the symptom, leaves the incentive
+  in place, and doubles the solve time.
+- *Hard constraint.* Rejected for the reason §8 gives: it can be infeasible, and an
+  infeasible solver returns nothing at all.
+
+**Status:** adopted in P4-01. **Samraj should confirm the interpretation** — QUESTIONS.md
+Q15. The old behaviour is not an option, but which denominator to anchor to is his call.
+**Date:** 2026-09-27
