@@ -644,3 +644,72 @@ is that **every comparison involving `nan` evaluates to False**, including
 would have silently answered "no" without anything raising an error. A crash is safe;
 a wrong answer that looks like a normal answer is not.
 </details>
+
+## P4-01 (continued) — Round the problem, not the answer
+
+**What and why.** The first round of fixes passed its own tests and was still wrong. A
+second independent check found that the *rounding step* — turning the LP's real-numbered
+answer into whole units a van can carry — had broken the module's headline claim. On the
+265 real Landhi cells, the "clever" solver was delivering **fewer units than the greedy
+paper-map baseline** in every scenario tried, and stranding 44 to 99 units in the
+warehouse. In about 5% of random problems it also scored worse. The 346-test suite was
+fully green throughout, because the guarantee had only ever been tested on the
+*continuous* version of the problem, which was never the version the site would run.
+
+The cause is worth understanding, because the rounding method was not careless. It hands
+back units in order of the largest discarded fraction and stops at the first zero — and
+it must, because it cannot see distances. A pair the fractional plan left at exactly zero
+might be one the 5 km service limit forbids, so putting a unit there would break a
+constraint the function has no way to check. The caution is correct. The mistake was
+asking a rounding function to make an allocation decision at all.
+
+The fix is to stop rounding and solve the integer problem directly. `scipy`'s `linprog`
+takes an `integrality` mask, which switches HiGHS into mixed-integer mode; every shipment
+is declared a whole number from the start. The full 265-cell problem solves in under a
+tenth of a second, so there was never anything to trade away.
+
+**The key idea in A Level terms.** An optimisation problem has a **feasible region** —
+the set of allocations that satisfy every constraint — and the answer is the best point
+*in* that region. Rounding takes the optimum of the continuous problem and moves it to a
+nearby integer point. But "near the best point" and "the best nearby point" are different
+things, and the gap between them is real: in Further Maths terms, the integer optimum of
+a linear program is generally *not* the rounded LP optimum. This is exactly why integer
+programming exists as its own subject rather than being a footnote to linear
+programming. The slogan to remember is **round the problem, not the answer** — state up
+front that the variables are whole numbers, and let the solver search the integer
+feasible region, rather than solving an easier problem and patching the result.
+
+**Questions to check you have it.**
+
+1. Greedy hit the true integer optimum's total every time, while the rounded LP did not.
+   Does that mean greedy is the better algorithm?
+<details><summary>Answer</summary>
+No. Greedy is integral by construction — it only ever ships whole units — so it never
+pays a rounding penalty, but it is still myopic and can strand a cell by spending its
+only reachable centre (worked example B in docs/allocation.md, where greedy delivers 10
+units against the LP's 20). The comparison was not "greedy beats LP"; it was "the
+rounding step was costing the LP more than its advantage". Fix the rounding and the LP
+wins again, by construction: greedy's plan is itself an integer feasible point, so the
+integer optimum is at least as good.
+</details>
+
+2. Why did 346 passing tests fail to catch this?
+<details><summary>Answer</summary>
+Because the test asserting "the LP is never worse than greedy" ran with
+`round_units=False`, on the continuous relaxation. That is the version where the claim is
+provable, so the test could never fail — it was testing the mathematics, not the code
+path the site would use. The lesson is to test the configuration you actually ship. The
+regression test now runs at defaults, and a second one runs on all 265 real cells,
+because the small synthetic problems also hid it.
+</details>
+
+3. The rounding function refuses to put a unit into a pair the plan left at zero, even
+   when both the centre and the cell have room. Is that a bug?
+<details><summary>Answer</summary>
+No — it is the only safe behaviour for that function, and removing it would be a real
+bug. `largest_remainder` receives only the plan, the stock and the need; it never sees
+the distance matrix. A zero entry may be zero because the route is longer than the
+service limit, so "filling it in" would ship supply further than the model allows and
+nothing would catch it. The function is right to be conservative; the design was wrong to
+put the decision there.
+</details>
