@@ -957,3 +957,32 @@ says so in those words.
 expansion would involve. Explained in the session (data, solver scale, time, risks);
 no expansion work started, pending his go-ahead.
 **Next:** P4-02 Scenarios.
+
+## 2026-09-27 — P4-02 split; P4-02a Scenario pipeline and export: PASS
+**Why split:** P4-02 asks for precomputed scenarios, and a scenario needs a centre that
+holds stock. None has been verified in person (Q2), and inventing one is forbidden
+(§2.1). So P4-02a builds and tests the pipeline and the export; **P4-02b** (real
+scenarios from a verified centre) is blocked on Q2 and runs automatically once a row
+is added to `centres.csv`. Every original P4-02 criterion is kept in P4-02a, and two
+were added: shares only (D21), and an honest empty export.
+**What changed:** `pipeline/scenarios.py`, `tests/test_scenarios.py` (11 tests),
+`site/data/scenarios.json`, `docs/allocation.md` §6, a Sphere entry in `data/SOURCES.md`.
+**The Sphere figure is verified, not recalled.** The handbook text says survival water
+intake is 2.5–3 L per person per day, "depends on climate and individual physiology"
+(p. 107; Appendix 3, p. 145). The 3 L in config is the top of that range, which is right
+for a heatwave. The official PDF returned HTTP 403 to our client. We did not retry with a
+disguised user agent. The same file hosted by Support to Life was read instead, and the
+source is recorded.
+**A test replaced by a stronger one.** `test_the_config_the_solver_will_run_on_is_still_
+marked_provisional` asserted the basis said UNVERIFIED — a placeholder meant to fail the
+moment P4-02 changed it without checking. It now requires the Sphere citation and page,
+and still requires `provisional: true`.
+**The D21 test found a real leak on its first run.** The solver's equity note says
+"8,244 units short of the 16,947 they are owed" — fine for a mentor, a D21 breach on the
+site. Summaries now say "fall short by 19% of the stock", and the note is not exported.
+**Evidence:** pytest 853 passed; `check.py --quick` CHECK: PASS (7 checks). On the real
+grid with a test-only SYNTHETIC depot, LP ≥ greedy in all 18 scenarios.
+**Flake, second sighting:** `basemap tiles actually load` (phone) failed once under the
+full suite and passed alone and on the rerun. It depends on live Esri tiles; recorded,
+not loosened.
+**Next:** P4-03 Planner page.

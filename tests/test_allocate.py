@@ -292,10 +292,16 @@ def test_a_plan_reports_what_it_could_not_reach():
 
 
 def test_the_config_the_solver_will_run_on_is_still_marked_provisional(allocation):
-    """A guard, not a preference: P4-02 must not quietly publish unverified figures."""
+    """A guard, not a preference: P4-02 must not quietly publish unverified figures.
+
+    Until P4-02 this asserted the basis still said UNVERIFIED. P4-02 checked the figure
+    against the handbook text, so the guard now demands the citation instead -- a
+    stronger condition than the placeholder it replaces, and the settings stay
+    provisional (D8) until the field visit."""
     assert allocation["provisional"] is True
     water = next(c for c in allocation["commodities"] if c["id"] == "water")
-    assert "UNVERIFIED" in water["basis"]
+    assert "UNVERIFIED" not in water["basis"]
+    assert "Sphere Handbook" in water["basis"] and "p. 107" in water["basis"]
 
 
 # --- regressions: every defect the independent checker found in the first version ----

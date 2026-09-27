@@ -79,6 +79,22 @@
   "licence": "ODbL 1.0 - (c) OpenStreetMap contributors",
   "note": "Overpass query response; rebuildable from the query in the caller"
  },
+ "sphere/Sphere-Handbook-2018-EN.pdf": {
+  "url": "https://www.supporttolife.org/wp-content/uploads/2023/03/Sphere-Handbook-2018-EN.pdf",
+  "sha256": "eeb7e680c296e15389ca8a1e5882a3796f23cbba31cfb21dd4661332c4c8cf63",
+  "bytes": 6274447,
+  "downloaded": "2026-09-27",
+  "licence": "(c) Sphere Association 2018; cited, not redistributed",
+  "note": "P4-02: the official spherestandards.org PDF returned HTTP 403 to this client; this is a copy of the same file hosted by Support to Life. Verify the survival water figure."
+ },
+ "sphere/who-tn-09-how-much-water-is-needed.pdf": {
+  "url": "https://cdn.who.int/media/docs/default-source/wash-documents/who-tn-09-how-much-water-is-needed.pdf",
+  "sha256": "3c3f4f1e1e22e42cb2d3292247c319c03d4270a497008617e54725ecb0281e1f",
+  "bytes": 895946,
+  "downloaded": "2026-09-27",
+  "licence": "(c) WHO; cited, not redistributed",
+  "note": "P4-02: WHO/WEDC Technical Note 9, reproduces the Sphere survival water table"
+ },
  "worldpop/pak_ppp_2020_constrained.tif": {
   "url": "https://data.worldpop.org/GIS/Population/Global_2000_2020_Constrained/2020/BSGM/PAK/pak_ppp_2020_constrained.tif",
   "sha256": "706547258b124a707d532606819b6a3dc994bf262a83f1aeadc7b4035415ae57",

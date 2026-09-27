@@ -292,7 +292,37 @@ hit routinely.
 
 ---
 
-## 6. What the planner does not know
+## 6. Precomputed scenarios (P4-02a)
+
+`uv run python -m pipeline.scenarios` writes `site/data/scenarios.json`. A scenario is one
+"what if": a commodity (water or ORS), a stock level, and a service distance (3, 5 or
+8 km, from D8). Both solvers run on each and both results are exported.
+
+**Stock is set relative to need** — 25%, 50% or 100% of the model's estimated need —
+because the model does not know how much any centre holds, and because D21 allows only
+ratios. For the same reason every exported figure is a **share**: the share of the stock
+a cell receives, the share of its estimated need that is met, the share of the stock
+reaching the highest-priority fifth of cells, and the order in which cells are served.
+A test fails if a summary ever states "N litres", "N sachets" or "N units".
+
+**The equity note is restated as a share.** The solver's shortfall note gives units
+("the top-priority cells are 8,244 units short"), which is right for a mentor checking
+the LP but breaks D21 on the site. The scenario summary says "fall short by 19% of the
+stock" instead, and the unit-bearing note is not exported.
+
+**Stock is split equally between stock-holding centres** — an assumption, stated in every
+scenario, until centres report what they hold (P4-02b).
+
+**Centres enter only through `stock_holding_centres()`** (D13, D29). An ambulance standby
+point never appears as a source; one marked `can_hold_stock: yes` stops the run with the
+row named.
+
+**Today the file is empty, on purpose.** No centre has been verified in person (Q2), so
+`scenarios.json` has `status: "no_verified_centre"` and no scenarios. The tests exercise
+the pipeline on the real 265-cell grid with a SYNTHETIC depot that exists only inside
+the test file. Nothing built from an invented location reaches the site.
+
+## 7. What the planner does not know
 
 - **Road distance.** Distances are straight-line × 1.3. A real route may be longer,
   and the Lyari Expressway or a railway line can put two nearby cells far apart in

@@ -281,6 +281,26 @@ Storage CRS: EPSG:4326. All distances and areas: EPSG:32642 (UTM zone 42N).
   the site has no third-party runtime dependency and works offline in P5-02.
 - **Licence:** BSD-2-Clause. 144 kB of JavaScript, 14 kB of CSS.
 
+### The Sphere Handbook 2018 — survival water figure (P4-02a, 2026-09-27)
+- **Citation:** Sphere Association, *The Sphere Handbook: Humanitarian Charter and
+  Minimum Standards in Humanitarian Response*, 4th edition, Geneva, 2018. Water supply
+  standard 2.1, table "Minimum basic survival water needs", printed p. 107 (PDF p. 132);
+  WASH Appendix 3, printed p. 145 (PDF p. 170).
+- **What it says:** survival water intake (drinking and food) **2.5–3 litres per person
+  per day**, "depends on climate and individual physiology"; total basic water 7.5–15;
+  "a minimum of 15 litres per person per day is established practice".
+- **Used for:** `config/allocation.yaml` water rate, 3 L — the top of the survival range,
+  because the scenario is a heatwave. It is a drinking figure only.
+- **Access, recorded honestly:** the official PDF at
+  `spherestandards.org/wp-content/uploads/Sphere-Handbook-2018-EN.pdf` returned **HTTP 403**
+  to this project's client, and the site was not retried with a disguised user agent.
+  The text was read from a copy of the same file hosted by the humanitarian NGO Support
+  to Life (`supporttolife.org/wp-content/uploads/2023/03/Sphere-Handbook-2018-EN.pdf`,
+  6.27 MB), cached and manifested at `data/raw/sphere/`. A WHO/WEDC Technical Note 9
+  ("How much water is needed in emergencies") was also cached as a cross-reference.
+- **Licence:** © Sphere Association. Cited, not redistributed; the cached PDF is
+  gitignored with the rest of `data/raw/`.
+
 ## Planned (Phase 1) — verify at fetch time; IDs, band names and licences change
 
 | Dataset | Indicator | Access | Licence | Notes |

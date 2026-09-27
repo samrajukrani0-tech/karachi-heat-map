@@ -833,3 +833,38 @@ test. If it still passes, it was never testing that rule. Here, emptying the set
 that can never hold stock made `test_an_ambulance_standby_marked_as_holding_stock_is_refused`
 fail, which is the evidence that the test depends on the role check.
 </details>
+
+## P4-02a — scenarios, and why every number is a share
+
+**What and why.** A scenario is one "what if": water or ORS, stock equal to 25%, 50% or
+100% of estimated need, and a 3, 5 or 8 km service limit. The exact solver and the
+greedy quick estimate both run on each. Everything exported is a *share* — of the
+stock, or of a cell's estimated need — because the population layer undercounts Landhi
+by about 2.3×. With no verified centre yet, the live file honestly contains no
+scenarios at all.
+
+**The key idea in A Level terms.** *Ratios cancel a common scale factor.* If every
+population figure is k times too small, then need is k times too small and so is total
+need, so need_i / Σneed is unchanged, and so is any stock set as a fraction of Σneed.
+An absolute figure like "send 900 L" carries the full factor k ≈ 1/2.3. That is the
+same reason a percentage change survives a change of units and an absolute change does
+not.
+
+**Questions.**
+1. Why is "stock equal to 50% of estimated need" safer to publish than "stock of
+   20,000 L"?
+2. If the undercount were worse in dense cells than sparse ones, would the shares
+   still be unbiased?
+3. Why does the site show no scenarios at all, rather than one built from a candidate
+   centre?
+
+<details><summary>Answers</summary>
+
+1. Both numerator and denominator come from the same undercounted population, so the
+   factor cancels; an absolute stock figure is compared against a need that is about
+   2.3× too low, so it would look like far more coverage than it is.
+2. No. A uniform factor cancels; a non-uniform one does not. Dense cells would get a
+   smaller share than they should, which is why D16 flags the non-uniform undercount.
+3. The candidates are unverified. Using one would present an invented source of stock
+   as real, which §2.1 forbids; an honest empty list is the correct output.
+</details>

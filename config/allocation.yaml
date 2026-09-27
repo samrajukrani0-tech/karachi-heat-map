@@ -10,10 +10,14 @@ commodities:
     unit: "litres per day"
     units_per_person_per_day: 3.0
     basis: >
-      Sphere minimum survival water allocation for drinking and food intake is
-      about 2.5-3 litres per person per day. UNVERIFIED - P4-02 must check this
-      against the Sphere Handbook and record the exact citation before it is used
-      anywhere public.
+      Sphere Association, The Sphere Handbook: Humanitarian Charter and Minimum
+      Standards in Humanitarian Response, 4th edition, Geneva, 2018. Water supply
+      standard 2.1, table "Minimum basic survival water needs" (p. 107), and WASH
+      Appendix 3 (p. 145): survival water intake (drinking and food) is 2.5-3
+      litres per person per day, depending on climate and individual physiology.
+      3 L, the top of the range, is used because this is a heatwave. It is a
+      survival figure for drinking only; Sphere's 15 L minimum covers hygiene and
+      cooking too. Verified against the handbook text on 2026-09-27 (P4-02).
   - id: ors
     name_en: Oral rehydration salts
     unit: "sachets per day"
