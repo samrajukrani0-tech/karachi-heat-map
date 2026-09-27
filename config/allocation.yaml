@@ -35,8 +35,20 @@ service:
 
 equity:
   min_share_top_quintile: 0.25        # soft constraint with a penalty
-  epsilon_distance_tiebreak: 0.001    # the small eps in the objective
+  # The floor is alpha x min(total stock, total need), a fixed quantity -- NOT a share
+  # of what the solver allocates. Written as a share it can be satisfied by delivering
+  # less (D27). Which denominator to anchor to is QUESTIONS.md Q15.
+  equity_penalty: 1.0                 # lambda: cost per unit of missed floor. Must be
+                                      # > 0; set min_share to 0 to switch equity off.
+  epsilon_distance_tiebreak: 0.001    # the small eps in the objective, applied to d/D
+                                      # rather than to raw metres (D26)
 
 solver:
   method: highs
-  rounding: largest_remainder         # never exceeds stock
+  exact_integers: true                # solve the integer problem exactly (integrality
+                                      # mask on HiGHS). Rounding an optimal fractional
+                                      # plan strands supply and made this solver lose
+                                      # to the greedy baseline at pilot scale.
+  rounding: largest_remainder         # the fallback when exact_integers is false; it
+                                      # never exceeds stock or need, but can leave a
+                                      # few units undistributed

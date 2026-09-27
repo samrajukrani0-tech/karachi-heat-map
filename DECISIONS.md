@@ -1008,3 +1008,41 @@ the total delivered, on the checker's repro and on 40 random problems.
 **Status:** adopted in P4-01. **Samraj should confirm the interpretation** — QUESTIONS.md
 Q15. The old behaviour is not an option, but which denominator to anchor to is his call.
 **Date:** 2026-09-27
+
+---
+
+## D28 — The allocation is solved in whole units, not rounded to them
+
+**Context.** The LP works in real numbers; a van carries whole units. PROMPT.md §8 says
+to "round to whole units with a largest-remainder method that never exceeds stock".
+
+**What went wrong.** The rounding method is correct on its own terms — it never exceeds
+stock or need — but it can only add units to pairs the fractional plan already used. It
+must: it cannot see distances, so a pair left at exactly zero may be one the 5 km service
+limit forbids, and putting a unit there would break a constraint the function has no way
+to check.
+
+The price of that caution is **stranded supply**. The second independent checker measured
+it on the real 265-cell Landhi grid: 44, 81 and 99 units left undelivered across three
+scenarios, and in all three the rounded LP delivered *fewer units than the greedy
+baseline*. On random problems it lost to greedy on objective in 5.1% of cases. The
+module's headline claim — "the LP can never do worse than greedy" — was false at default
+settings, and the 346-test suite did not catch it because the guarantee was only ever
+tested on the continuous relaxation.
+
+**Decision.** Solve the integer problem exactly. `scipy.optimize.linprog` accepts an
+`integrality` mask, which puts HiGHS into MILP mode; every shipment is marked integer and
+the equity slack stays continuous. The full 265-cell instance solves in under 0.1 s, so
+there is no trade-off to weigh. The checker's repro now returns the true optimum of 202
+instead of 201, and across 1,500 random problems the LP loses to greedy 0 times on
+objective and 0 times on units delivered — against 76 and 62 before.
+
+`exact_integers=False` keeps the rounding path, because it documents honestly what a
+browser-side port without a solver can and cannot do (P4-03's "quick estimate").
+
+**The general lesson, recorded because it will recur:** *round the problem, not the
+answer.* Rounding an optimum gives a feasible point near the optimum, which is not the
+same thing as the best feasible point.
+
+**Status:** adopted in P4-01, confirmed by an independent checker.
+**Date:** 2026-09-27

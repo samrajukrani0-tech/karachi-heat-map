@@ -125,18 +125,36 @@ enough stock within reach. The first draft asserted the second cause every time,
 is usually wrong — a field brief repeating that would send someone to fix a distance
 problem that does not exist.
 
-### Rounding
+### Whole units: solved exactly, not rounded
 
-The LP works in real numbers; a van carries whole units. `largest_remainder` floors
-every $x_{ij}$, then hands back the discarded units in order of the largest fractional
-part — **checking, as each unit is placed, that the centre still has stock and the
-cell still has unmet need.** Rounding per centre alone would respect stock and quietly
-break the need constraint.
+A van carries whole units, so the answer must be in whole units. There are two ways to
+get there, and the difference turned out to matter.
 
-Two limits worth stating. It hands back only as many units as flooring discarded, so a
-plan of 7.7 units rounds to 7 and never to 8. And it can only preserve a cap the plan
-already respects: flooring 9.7 against a stock of 2 gives 9, which is still over, so an
-infeasible plan is refused rather than silently passed through.
+**Rounding an optimal fractional plan** was the first approach: floor every $x_{ij}$,
+then hand back the discarded units in order of the largest fractional part, checking at
+each step that the centre still has stock and the cell still has unmet need. It is what
+`largest_remainder` does, and it is what a browser-side port without a solver would have
+to do.
+
+It has a flaw that only shows at scale. The method can only add units to pairs the
+fractional plan already used — it stops at the first zero remainder — because it cannot
+see distances, and a pair left at exactly zero may be one the service limit forbids.
+Inventing a route would break a constraint the function does not know exists. The cost
+of that caution is **stranded supply**: units that the true integer optimum would have
+delivered, sitting in the warehouse. On 265 real Landhi cells it stranded 44 to 99
+units in every scenario tried, and in about 5% of random problems it cost the LP enough
+value to **lose to greedy** — the clever method shipping fewer litres than the paper map,
+which is the wrong headline for a relief tool.
+
+**So the integer problem is solved exactly instead.** HiGHS takes an integrality mask,
+and `solve_lp` marks every shipment as an integer while leaving the equity slack $u$
+continuous. The full 265-cell instance solves in well under a tenth of a second, so
+there is nothing to trade away. `exact_integers=False` selects the rounding path, kept
+because it documents what the browser can do without a solver.
+
+The lesson generalises: *round the problem, not the answer.* Rounding an optimum gives
+you a feasible point near the optimum, which is not the same as the optimum among
+feasible points.
 
 ---
 
@@ -151,8 +169,11 @@ a browser, which is why the site offers it as a clearly-labelled **"quick estima
 while the precomputed scenarios use the exact solver.
 
 **The LP can never score worse than greedy**, because greedy's answer is itself a
-feasible point of the LP: it respects stock, need and the distance limit. The LP
-searches every feasible point, so the best one it finds is at least as good.
+feasible point of the LP: it respects stock, need and the distance limit, and it is
+already in whole units. The LP searches every feasible point, so the best one it finds
+is at least as good. This is tested at the settings the site actually uses, not on the
+continuous relaxation — the guarantee is easy to state and easy to lose, and it *was*
+lost for a while to the rounding step described above.
 
 ---
 

@@ -24,6 +24,7 @@ Run:
 
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass, field
 
 import numpy as np
@@ -143,7 +144,7 @@ def equity_floor(need: np.ndarray, stock: np.ndarray, top: np.ndarray,
 
 
 def _validate(priority, need, stock, dist, max_distance_m, epsilon):
-    """Checks both solvers share, so greedy refuses exactly what the LP refuses.
+    """Checks both solvers share, so greedy refuses what the LP refuses.
 
     Greedy is the path the site exposes as the browser-side "quick estimate", so it is
     the one malformed input reaches first. It used to accept a negative stock as an
@@ -165,9 +166,17 @@ def _validate(priority, need, stock, dist, max_distance_m, epsilon):
                          f"got {stock.shape}")
     if np.any(need < 0) or np.any(stock < 0):
         raise ValueError("need and stock must be non-negative")
+    if np.any(dist < 0):
+        raise ValueError("dist must be non-negative: a negative distance turns the "
+                         "tiebreak into a bonus and pays the solver to use that route")
+    for name, arr in (("priority", priority), ("need", need), ("stock", stock)):
+        if np.isnan(arr).any():
+            raise ValueError(f"{name} contains nan")
     if np.isnan(dist).any():
         raise ValueError("dist contains nan; an unservable pair must be a large "
                          "distance, not a missing one")
+    if np.isnan(epsilon):
+        raise ValueError("epsilon is nan")
     if not max_distance_m > 0:
         raise ValueError(f"max_distance_m must be positive, got {max_distance_m}")
     if epsilon < 0:
@@ -176,10 +185,29 @@ def _validate(priority, need, stock, dist, max_distance_m, epsilon):
     return priority, need, stock, dist
 
 
+def _validate_equity(min_share: float, equity_penalty: float) -> None:
+    """The two settings that drive the soft constraint, neither previously checked.
+
+    The share is checked unconditionally. Guarding this behind ``min_share > 0`` is
+    exactly how -0.1 and nan got past it: both compare False against zero.
+    """
+    if np.isnan(min_share) or not 0.0 <= min_share <= 1.0:
+        raise ValueError(f"min_share_top_quintile must be a share in [0, 1], got "
+                         f"{min_share}")
+    if min_share == 0:
+        return
+    if np.isnan(equity_penalty) or equity_penalty <= 0:
+        raise ValueError(
+            f"equity_penalty must be positive, got {equity_penalty}. A penalty of zero "
+            "leaves the floor in the model but gives it no force, so the plan reports a "
+            "shortfall it never tried to avoid. To switch equity off, "
+            "set min_share_top_quintile to 0.")
+
+
 def solve_lp(priority: np.ndarray, need: np.ndarray, stock: np.ndarray, dist: np.ndarray,
              *, max_distance_m: float, epsilon: float = 0.001,
              min_share_top_quintile: float = 0.0, equity_penalty: float = 1.0,
-             round_units: bool = True) -> Plan:
+             round_units: bool = True, exact_integers: bool = True) -> Plan:
     """Exact allocation by linear programming (HiGHS).
 
         maximise   sum_ij p_i x_ij - eps * sum_ij (d_ij / D) x_ij - lambda * u
@@ -196,9 +224,20 @@ def solve_lp(priority: np.ndarray, need: np.ndarray, stock: np.ndarray, dist: np
     version can be infeasible when the top-quintile cells are simply not reachable
     from the centres holding stock, and an infeasible solver returns nothing at all
     rather than the best plan available. The shortfall is reported, with its cause.
+
+    A van carries whole units, so by default the integer problem is solved *exactly*
+    (``exact_integers``), by handing HiGHS an integrality mask. Rounding an optimal
+    fractional plan afterwards is not the same thing and is measurably worse: it can
+    strand supply that the integer optimum would have delivered, and at real Landhi
+    scale that was enough to make this solver ship fewer units than the greedy
+    baseline it is supposed to beat. HiGHS solves the full 265-cell instance in well
+    under a tenth of a second, so there is nothing to trade away. Setting
+    ``exact_integers=False`` selects the older rounding path, which is what a
+    browser-side port without a solver would have to do -- see docs/allocation.md.
     """
     priority, need, stock, dist = _validate(
         priority, need, stock, dist, max_distance_m, epsilon)
+    _validate_equity(min_share_top_quintile, equity_penalty)
     n_cells, n_centres = dist.shape
 
     within = dist <= max_distance_m
@@ -249,15 +288,23 @@ def solve_lp(priority: np.ndarray, need: np.ndarray, stock: np.ndarray, dist: np
     a_ub = np.vstack(blocks)
     upper = np.concatenate([np.minimum(need[rows], stock[cols]),
                             [np.inf] if use_equity else []])
+    integral = round_units and exact_integers
+    integrality = None
+    if integral:
+        # 1 = integer for every shipment; the equity slack u stays continuous.
+        integrality = np.zeros(n_vars, dtype=int)
+        integrality[:m] = 1
     result = linprog(c, A_ub=a_ub, b_ub=np.array(b, dtype=float),
-                     bounds=np.column_stack([np.zeros(n_vars), upper]), method="highs")
+                     bounds=np.column_stack([np.zeros(n_vars), upper]), method="highs",
+                     integrality=integrality)
     if not result.success:
         raise RuntimeError(f"the allocation LP did not solve: {result.message}")
 
     x = np.zeros((n_cells, n_centres))
     x[rows, cols] = np.maximum(result.x[:m], 0.0)
     if round_units:
-        x = largest_remainder(x, stock, need)
+        # HiGHS returns integers to within its tolerance, not exactly.
+        x = np.round(x) if integral else largest_remainder(x, stock, need)
     return _plan(x, "lp", priority, need, dist, max_distance_m, epsilon, top,
                  floor_units, reachable, notes)
 
@@ -272,6 +319,7 @@ def solve_greedy(priority: np.ndarray, need: np.ndarray, stock: np.ndarray,
     """
     priority, need, stock, dist = _validate(
         priority, need, stock, dist, max_distance_m, epsilon)
+    _validate_equity(min_share_top_quintile, 1.0)
     need, left = need.copy(), stock.copy()
     n_cells, n_centres = dist.shape
     x = np.zeros((n_cells, n_centres))
@@ -314,10 +362,22 @@ def largest_remainder(x: np.ndarray, stock: np.ndarray, need: np.ndarray) -> np.
     feasible, but this is a public function, so an infeasible input is refused rather
     than quietly passed through -- a future JavaScript port of the browser-side
     estimate is exactly the caller that would be caught out.
+
+    **It stops at the first zero remainder, and that is deliberate**, although it means
+    units can be left undistributed when the caps block every fraction above them. This
+    function cannot see distances. A pair the plan left at exactly zero may be one the
+    service limit forbids, so putting a unit there would break a constraint this
+    function does not know exists. Refusing to invent routes is worth more than the
+    last unit or two -- which is precisely why ``solve_lp`` solves the integer problem
+    exactly instead of rounding a fractional one. See docs/allocation.md.
     """
     x = np.asarray(x, dtype=float)
     stock = np.asarray(stock, dtype=float)
     need = np.asarray(need, dtype=float)
+    if np.any(x < 0):
+        raise ValueError("largest_remainder was given negative shipments")
+    if np.isnan(x).any():
+        raise ValueError("largest_remainder was given a plan containing nan")
     if np.any(x.sum(axis=0) > stock + 1e-9) or np.any(x.sum(axis=1) > need + 1e-9):
         raise ValueError("largest_remainder was given a plan that already exceeds "
                          "stock or need; rounding cannot repair an infeasible plan")
@@ -351,8 +411,10 @@ def _plan(x, method, priority, need, dist, max_distance_m, epsilon, top, floor_u
     need = np.asarray(need, float)
     shortfall = max(0.0, floor_units - float(x[top].sum())) if top.any() else 0.0
     if shortfall > 0:
-        notes.append(f"the top-priority cells are {shortfall:,.0f} units short of the "
-                     f"{floor_units:,.0f} they are owed -- {_why_short(x, top, need, reachable)}")
+        notes.append(
+            f"the top-priority cells are {math.ceil(shortfall):,} units short of the "
+            f"{math.ceil(floor_units):,} they are owed -- "
+            f"{_why_short(x, top, need, reachable)}")
     return Plan(x=x, method=method,
                 objective=objective_value(x, priority, dist, max_distance_m, epsilon),
                 delivered=delivered, dispatched=x.sum(axis=0),
@@ -367,7 +429,8 @@ def _why_short(x, top, need, reachable) -> str:
     frequently untrue -- the usual cause is that they are already full. A field brief
     repeating that would send someone to solve a distance problem that does not exist.
     """
-    if np.allclose(x[top].sum(axis=1), need[top]):
+    if np.all(need[top] - x[top].sum(axis=1) <= 0.5):   # absolute: a relative
+        # tolerance would call a 5-unit shortfall "met" once need reached 1e6
         return ("their own need is already fully met, so the floor asks for more than "
                 "they can use")
     if not reachable[top].all():

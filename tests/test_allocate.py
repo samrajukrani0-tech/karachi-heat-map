@@ -7,6 +7,7 @@ Samraj can solve them himself and compare.
 """
 
 import numpy as np
+import pandas as pd
 import pytest
 
 from pipeline.allocate import (
@@ -423,3 +424,153 @@ def test_the_equity_floor_is_a_fixed_quantity_not_a_share_of_the_decision():
     assert equity_floor(need, stock, top, 0.25) == pytest.approx(0.25 * 12)   # stock binds
     assert equity_floor(need, np.array([100.0]), top, 0.25) == pytest.approx(0.25 * 30)
     assert equity_floor(need, stock, np.zeros(3, bool), 0.25) == 0.0
+
+
+# --- regressions: the second review, on the repaired version --------------------------
+
+
+def test_the_lp_does_not_strand_supply_when_rounding_to_whole_units():
+    """The checker's minimal repro. Rounding a fractional optimum gave 201, not 202.
+
+    ``largest_remainder`` stops at the first zero remainder, so a pair the fractional
+    plan left at exactly zero can never receive a freed unit -- even when both the
+    centre and the cell have room. Solving the integer problem exactly removes the
+    question.
+    """
+    priority = np.array([0.707, 0.771, 0.057, 0.733, 0.817])
+    need = np.array([66.78, 9.37, 102.44, 36.92, 96.5])
+    stock = np.array([75.32, 127.43])
+    dist = np.array([[2323.2, 4288.8], [4722.1, 5679.1], [1828.5, 8658.5],
+                     [2602.2, 2754.2], [2306.8, 607.3]])
+    kw = dict(max_distance_m=D, epsilon=EPS, min_share_top_quintile=0.5)
+
+    assert solve_lp(priority, need, stock, dist, **kw).total == 202
+    assert solve_lp(priority, need, stock, dist, exact_integers=False, **kw).total == 201
+
+
+@pytest.mark.parametrize("seed", range(60))
+def test_the_lp_beats_greedy_at_the_settings_the_site_will_use(seed):
+    """The headline claim, tested at DEFAULTS rather than on the continuous relaxation.
+
+    The first repair made this false in about 5% of problems: whole-unit rounding cost
+    the LP more than its advantage over greedy, so the clever method shipped fewer
+    litres than the paper map.
+    """
+    problem = random_problem(np.random.default_rng(seed))
+    lp = solve_lp(**problem, max_distance_m=D, epsilon=EPS)
+    greedy = solve_greedy(**problem, max_distance_m=D, epsilon=EPS)
+    assert lp.objective >= greedy.objective - 1e-9, f"seed {seed}: objective"
+    assert lp.total >= greedy.total - 1e-9, f"seed {seed}: units delivered"
+
+
+def test_the_lp_beats_greedy_at_landhi_scale(root):
+    """265 real cells, synthetic centres and stock. Small problems can hide this."""
+    scores = pd.read_csv(root / "data" / "processed" / "scores.csv")
+    ages = pd.read_csv(root / "data" / "processed" / "age_cells.csv")
+    grid = pd.read_csv(root / "data" / "processed" / "access_cells.csv")
+    frame = scores.merge(ages, on="h3").merge(grid, on="h3")
+    priority = frame["priority"].to_numpy()
+    need = need_units(frame["people_over60"] + frame["people_under5"], 3.0)
+
+    rng = np.random.default_rng(0)
+    n_centres = 5                                     # SYNTHETIC centres: no verified
+    dist = rng.uniform(200, 9000, (len(frame), n_centres))   # centre exists yet (Q2)
+    stock = np.full(n_centres, 0.35 * need.sum() / n_centres)
+
+    lp = solve_lp(priority, need, stock, dist, max_distance_m=D, epsilon=EPS,
+                  min_share_top_quintile=0.25)
+    greedy = solve_greedy(priority, need, stock, dist, max_distance_m=D, epsilon=EPS,
+                          min_share_top_quintile=0.25)
+    assert lp.objective >= greedy.objective
+    assert lp.total >= greedy.total, (
+        f"the LP delivered {greedy.total - lp.total:,.0f} fewer units than greedy")
+    assert np.all(lp.dispatched <= stock + 1e-9)
+    assert np.all(lp.delivered <= need + 1e-9)
+    assert not np.any(lp.x[dist > D] > 0)
+
+
+def test_a_shortfall_is_never_reported_as_smaller_than_it_is():
+    """92.5 units short printed as '92' reads low; a shortfall is rounded up."""
+    priority = np.array([0.9, 0.5, 0.4, 0.3, 0.2])
+    need = np.full(5, 100.0)
+    stock = np.array([10.0, 400.0])
+    dist = np.array([[1000.0, 9000.0]] + [[1000.0, 1000.0]] * 4)
+    plan = solve_lp(priority, need, stock, dist, max_distance_m=D, epsilon=EPS,
+                    min_share_top_quintile=0.25)
+    assert plan.equity_shortfall == pytest.approx(92.5)
+    assert "93 units short of the 103" in plan.notes[0], plan.notes[0]
+
+
+def test_a_large_need_does_not_make_a_real_shortfall_look_met():
+    """np.allclose's relative tolerance called a 5-unit gap 'fully met' at need 1e6."""
+    priority = np.array([0.9, 0.5, 0.4, 0.3, 0.2])
+    need = np.full(5, 1e6)
+    stock = np.array([999_995.0, 4e6])
+    dist = np.array([[1000.0, 99_000.0]] + [[1000.0, 1000.0]] * 4)
+    plan = solve_lp(priority, need, stock, dist, max_distance_m=D, epsilon=EPS,
+                    min_share_top_quintile=0.25)
+    if plan.equity_shortfall > 0:
+        assert "already fully met" not in plan.notes[0], plan.notes[0]
+
+
+@pytest.mark.parametrize("solver", [solve_lp, solve_greedy])
+def test_a_negative_distance_is_refused(solver):
+    """It was accepted, and the tiebreak then paid the solver to use that route."""
+    with pytest.raises(ValueError, match="non-negative"):
+        solver(np.array([0.9, 0.8]), np.array([10.0, 10.0]), np.array([10.0, 10.0]),
+               np.array([[-1e6, 1000.0], [1000.0, 1000.0]]), max_distance_m=D)
+
+
+@pytest.mark.parametrize("solver", [solve_lp, solve_greedy])
+@pytest.mark.parametrize("field", ["priority", "need", "stock"])
+def test_a_nan_input_is_refused_by_both_solvers(solver, field):
+    """Greedy accepted all of these and returned a nan objective."""
+    good = dict(priority=np.array([0.5, 0.5]), need=np.array([1.0, 1.0]),
+                stock=np.array([1.0]), dist=np.array([[100.0], [100.0]]))
+    bad = {**good, field: np.full_like(good[field], np.nan)}
+    with pytest.raises(ValueError, match="nan"):
+        solver(**bad, max_distance_m=D)
+    with pytest.raises(ValueError, match="nan"):
+        solver(**good, max_distance_m=D, epsilon=float("nan"))
+
+
+@pytest.mark.parametrize("bad_penalty", [0.0, -1.0, float("nan")])
+def test_a_penalty_that_gives_the_floor_no_force_is_refused(bad_penalty):
+    """equity_penalty=0 left the floor in the model but made it toothless, and the
+    plan then reported a shortfall it had never tried to avoid."""
+    with pytest.raises(ValueError, match="equity_penalty must be positive"):
+        solve_lp(np.full(5, 0.6), np.full(5, 200.0), np.array([500.0]),
+                 np.array([[4999.0]] + [[10.0]] * 4), max_distance_m=D,
+                 min_share_top_quintile=0.25, equity_penalty=bad_penalty)
+
+
+@pytest.mark.parametrize("bad_share", [1.5, -0.1, float("nan")])
+def test_a_share_outside_zero_to_one_is_refused(bad_share):
+    with pytest.raises(ValueError, match="share in"):
+        solve_lp(np.full(3, 0.6), np.full(3, 10.0), np.array([100.0]),
+                 np.full((3, 1), 100.0), max_distance_m=D,
+                 min_share_top_quintile=bad_share)
+
+
+def test_the_equity_rule_still_actually_shifts_supply():
+    """A fix that satisfied 'never delivers less' by disabling the rule would be worse."""
+    priority = np.full(5, 0.6)
+    need = np.full(5, 200.0)
+    stock = np.array([500.0])
+    dist = np.array([[4999.0]] + [[10.0]] * 4)      # the top cell is the farthest
+    off = solve_lp(priority, need, stock, dist, max_distance_m=D, epsilon=EPS,
+                   min_share_top_quintile=0.0)
+    on = solve_lp(priority, need, stock, dist, max_distance_m=D, epsilon=EPS,
+                  min_share_top_quintile=0.25)
+    top = top_quintile(priority, need)
+    assert off.delivered[top].sum() == 0, "without the rule the far cell is skipped"
+    assert on.delivered[top].sum() == pytest.approx(125.0), "0.25 x min(stock, need)"
+    assert on.total == off.total, "and the shift costs no delivered supply"
+
+
+def test_rounding_refuses_negative_or_missing_shipments():
+    with pytest.raises(ValueError, match="negative"):
+        largest_remainder(np.array([[-3.0, 1.0]]), np.array([10.0, 10.0]),
+                          np.array([10.0]))
+    with pytest.raises(ValueError, match="nan"):
+        largest_remainder(np.array([[np.nan]]), np.array([10.0]), np.array([10.0]))
