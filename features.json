@@ -772,7 +772,7 @@
         "P2-05"
       ],
       "passes": false,
-      "blocked_on": "Not a goal until Samraj has real field rankings.",
+      "blocked_on": "PENDING, not abandoned (Samraj, 2026-09-27). Blocked on collecting real expert rankings from relief workers in Landhi using docs/expert-ranking-form.md. Resume when the completed forms exist.",
       "dropped": null,
       "evidence": null
     }

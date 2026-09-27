@@ -1091,7 +1091,7 @@ It would only start to bite if the protected set were defined *independently* of
 priority — by age, say, or by a ward boundary, or by cells a field team names. That is a
 different rule, and Samraj's to choose: QUESTIONS.md Q15.
 
-## D29 — A contradictory centre row is refused, not guessed (2026-09-27, PROPOSED)
+## D29 — A contradictory centre row is refused, not guessed (2026-09-27)
 
 **Context.** D13 says the allocation draws stock only from centres marked
 `can_hold_stock: yes`, and P4-01 requires a test proving an `ambulance_standby` centre is
@@ -1119,3 +1119,16 @@ error in the one file the project says must be verified in person.
 
 **Samraj to decide.** Nothing downstream depends on which you pick yet — `centres.csv`
 has no rows (Q2). Changing it is one `raise` in `stock_holding_centres()` and one test.
+
+**Samraj's decision (2026-09-27):** go with the recommendation — "if a centre is listed
+as an ambulance standby point but also marked 'can hold stock: yes', stop the run and
+flag that exact row as an error, rather than silently excluding it."
+
+**What this binds.** `stock_holding_centres()` raises `ValueError` naming the centre;
+the run stops and no plan is produced until the row is corrected. The same applies to
+any role or flag outside the vocabulary. Tests in `tests/test_allocate.py` pin the
+refusal, and P4-02's scenario builder reaches centres only through this function, so
+it cannot be bypassed by a later feature.
+
+**Status:** approved
+**Date:** 2026-09-27

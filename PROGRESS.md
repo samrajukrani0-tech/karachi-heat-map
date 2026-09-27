@@ -942,3 +942,18 @@ under full-suite load. It passed alone and in the next three full runs. It was n
 caused by this change (no site code touched), but it depends on live Esri tiles and may
 flake again.
 **Next:** P4-02 Scenarios.
+
+## 2026-09-27 — D29 approved; Phase 6 marked pending
+**D29 decided by Samraj:** an `ambulance_standby` row marked `can_hold_stock: yes` stops
+the run with that row named, rather than being silently excluded. This is what
+`stock_holding_centres()` already does, so no code changed; DECISIONS.md now records his
+decision and the status moves from proposed to approved.
+**Phase 6 is PENDING, not abandoned.** P6-01 (expert agreement) is explicitly blocked on
+Samraj collecting real rankings from relief workers in Landhi, using
+`docs/expert-ranking-form.md`. There is nothing to build until those forms exist, and
+nothing may be simulated in their place (§2.1). `features.json` P6-01 `blocked_on` now
+says so in those words.
+**Also answered this turn, before any building:** Samraj asked what a Karachi-wide
+expansion would involve. Explained in the session (data, solver scale, time, risks);
+no expansion work started, pending his go-ahead.
+**Next:** P4-02 Scenarios.
