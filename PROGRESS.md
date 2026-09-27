@@ -1214,3 +1214,26 @@ Nothing is relabelled as final: the site, briefs, one-pager and report still say
 release date); CHANGELOG `[1.0.0]`; README status line; Q17 updated.
 `check.py --lighthouse` CHECK: PASS (8 checks). The annotated tag `v1.0.0` was pushed and
 confirmed with `git ls-remote --tags origin`.
+
+## 2026-09-27 — Handover: what Samraj should bring back from Edhi, Saylani and others
+Pending by Samraj's choice, until he has talked to his contacts:
+1. **A relief centre, verified in person (Q2 → P1-09b, P4-02b).** For each: name,
+   organisation, role (distribution point, clinic, ambulance standby, morgue, office,
+   other), whether it can hold stock (yes / no / unknown), its location (lat, lon), who
+   checked it and when. Add it to `data/manual/centres.csv`. The distance indicator and
+   the exact supply plans then build automatically.
+2. **From that centre:** how far they deliver, the water per person they plan with, and
+   roughly what they hold. That replaces D8's provisional settings and the equal stock
+   split.
+3. **Completed ranking forms (P6-01).** Printed `docs/expert-ranking-form.md`, filled in
+   **before** people see the map, with the person's organisation, role and years in
+   Landhi, but **no names**. Enter them as in `docs/expert-ranking-import.md`, then run
+   `uv run python -m pipeline.expert`.
+4. **A host organisation (P5-03b).** Once one says yes, tailor `docs/pitch/one-pager.md`
+   to it and run `uv run python scripts/one_pager.py`.
+5. **Optional, very useful:** the feeder names printed on 10–15 K-Electric bills from
+   different parts of Landhi (the v2 route to power cuts, D20).
+6. **Decisions at home:** the weights (`uv run python -m pipeline.ahp`, → v1.1.0); Q16
+   (may the planner use stock points the user places?); D31 (how a place is scored for
+   the expert comparison); and the Karachi-wide expansion go-ahead. No work has been
+   started on the expansion.
