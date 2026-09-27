@@ -1072,3 +1072,23 @@ reason. It is not a blanket skip.
 **Evidence:** pytest 870 passed; `check.py --quick` CHECK: PASS (7 checks); every PDF is
 one A4 page; every file is under 1 MB (largest 422 kB).
 **Next:** P5-04 README, P5-03 one-pager.
+
+## 2026-09-27 — P5-04 README: PASS
+**What changed:** `README.md` rewritten, `CITATION.cff`, three screenshots in `docs/img/`
+taken from the running site and colour-quantised (map 207 kB, panel 19 kB, planner
+212 kB), `tests/test_readme.py` (7). The Sphere Handbook and the OSM place names were
+added to the site's Data and credits page. About now says that until Samraj sets the
+weights, the site runs on placeholder equal weights. Before, it read as if the weights
+were already his.
+**The README says what is not done.** Its status line names P2-02b, P1-09b and Phase 6.
+It also states the 2.3× undercount and that the model cannot see power cuts. A test
+fails if any of those disappear.
+**Every reproduce command is checked:** a test parses the Reproduce block and asserts
+that every `python -m pipeline.X` and `scripts/X.py` it names exists. That is how the
+missing `pipeline.run` would have been caught.
+**Housekeeping:** the in-progress README and screenshots went into the P5-01 commit by
+accident (`git add -A`). They are finished and recorded here.
+**For Samraj to check:** `CITATION.cff` splits your name as given names "Samraj Lal",
+family name "Ukrani". If "Lal" belongs with the family name, it is a one-line change.
+**Evidence:** tests/test_readme.py 7 passed; `check.py --quick` CHECK: PASS (7 checks).
+**Next:** P5-03 NGO one-pager.

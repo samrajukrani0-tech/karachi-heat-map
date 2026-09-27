@@ -753,10 +753,10 @@
       "depends_on": [
         "P3-09"
       ],
-      "passes": false,
+      "passes": true,
       "blocked_on": null,
       "dropped": null,
-      "evidence": null
+      "evidence": "2026-09-27: README rewritten with overview, three real screenshots (docs/img, 19-212 kB, taken from the running site), reproduce steps that all name existing modules and scripts (pipeline.run added, full rebuild from cache verified byte-identical), credits table, all three licences, the D12 disclosure verbatim, and the open blockers stated. CITATION.cff 1.2.0 added. tests/test_readme.py 7 passed; check.py --quick CHECK: PASS (7 checks)."
     },
     {
       "id": "P5-05",

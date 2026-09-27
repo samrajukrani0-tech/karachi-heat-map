@@ -1,0 +1,22 @@
+cff-version: 1.2.0
+message: "If you use this software or its data, please cite it as below."
+title: "Karachi Heat Priority Map"
+abstract: >
+  A free, mobile-first map to help a Karachi relief team decide where heat-relief
+  support should go first during a heatwave, and why. Pilot area: Landhi Town.
+  Priority is a weighted geometric mean of hazard (Landsat surface temperature),
+  exposure (modelled population) and vulnerability, on an H3 resolution-9 grid.
+type: software
+authors:
+  - given-names: "Samraj Lal"
+    family-names: "Ukrani"
+repository-code: "https://github.com/samrajukrani0-tech/karachi-heat-map"
+url: "https://samrajukrani0-tech.github.io/karachi-heat-map/"
+license: MIT
+keywords:
+  - heatwave
+  - Karachi
+  - humanitarian
+  - relief allocation
+  - linear programming
+  - H3
