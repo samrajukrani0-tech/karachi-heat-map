@@ -24,6 +24,7 @@ Run:
 
 from __future__ import annotations
 
+import inspect
 import math
 from dataclasses import dataclass, field
 
@@ -195,22 +196,36 @@ def _validate(priority, need, stock, dist, max_distance_m, epsilon):
     if epsilon < 0:
         raise ValueError(f"epsilon must be non-negative, got {epsilon}: a negative "
                          "tiebreak would prefer the *farther* centre")
+    if epsilon >= 1:
+        raise ValueError(
+            f"epsilon must be below 1, got {epsilon}. Priority is at most 1 and d/D is "
+            "at most 1, so at epsilon >= 1 the tiebreak can equal or outweigh the whole "
+            "gain from delivering a unit, and the solver stops delivering.")
     return priority, need, stock, dist
 
 
-def _validate_equity(min_share: float, equity_penalty: float,
-                     epsilon: float = 0.0) -> None:
-    """The two settings that drive the soft constraint, neither previously checked.
+def _validate_share(min_share: float) -> None:
+    """The share, checked unconditionally.
 
-    The share is checked unconditionally. Guarding this behind ``min_share > 0`` is
-    exactly how -0.1 and nan got past it: both compare False against zero.
+    Guarding this behind ``min_share > 0`` is exactly how -0.1 and nan got past it:
+    both compare False against zero.
     """
     if np.isnan(min_share) or not 0.0 <= min_share <= 1.0:
         raise ValueError(f"min_share_top_quintile must be a share in [0, 1], got "
                          f"{min_share}")
+
+
+def _validate_equity(min_share: float, equity_penalty: float,
+                     epsilon: float) -> None:
+    """The two settings that drive the soft constraint, neither previously checked.
+
+    Only ``solve_lp`` takes a penalty; greedy checks the share alone, because greedy
+    has no penalty to weigh -- see its docstring on why it needs no equity pass.
+    """
+    _validate_share(min_share)
     if min_share == 0:
         return
-    if np.isnan(equity_penalty) or equity_penalty <= 0:
+    if not np.isfinite(equity_penalty) or equity_penalty <= 0:
         raise ValueError(
             f"equity_penalty must be positive, got {equity_penalty}. A penalty of zero "
             "leaves the floor in the model but gives it no force, so the plan reports a "
@@ -227,7 +242,7 @@ def _validate_equity(min_share: float, equity_penalty: float,
 def solve_lp(priority: np.ndarray, need: np.ndarray, stock: np.ndarray, dist: np.ndarray,
              *, max_distance_m: float, epsilon: float = 0.001,
              min_share_top_quintile: float = 0.0, equity_penalty: float = 1.0,
-             round_units: bool = True, exact_integers: bool = True) -> Plan:
+             round_units: bool = True, exact_integers: bool | None = None) -> Plan:
     """Exact allocation by linear programming (HiGHS).
 
         maximise   sum_ij p_i x_ij - eps * sum_ij (d_ij / D) x_ij - lambda * u
@@ -288,7 +303,10 @@ def solve_lp(priority: np.ndarray, need: np.ndarray, stock: np.ndarray, dist: np
 
     # The problem is small -- at most one variable per (cell, centre) pair within D --
     # so a dense constraint matrix is clearer here than a sparse one and costs nothing.
-    integral = round_units and exact_integers
+    if exact_integers and not round_units:
+        raise ValueError("exact_integers=True contradicts round_units=False: one asks "
+                         "for whole units and the other for the fractional relaxation")
+    integral = round_units and exact_integers is not False
     n_vars = m + (1 if use_equity else 0)
     blocks, b = [], []
     centre_of = np.zeros((n_centres, n_vars))
@@ -350,21 +368,21 @@ def solve_greedy(priority: np.ndarray, need: np.ndarray, stock: np.ndarray,
     Deterministic: ties in priority break on cell index and ties in distance on
     centre index, so the same inputs always give the same plan.
 
-    When an equity floor is set, greedy serves the top-quintile cells first until the
-    floor is met, then carries on in plain priority order. Without that pass the floor
-    changed nothing about greedy's plan -- only the shortfall it reported -- which would
-    have made the site's browser-side "quick estimate" silently ignore a rule the exact
-    solver applies, and disagree with the plan it is meant to be estimating.
+    **Greedy needs no equity pass, and adding one is provably pointless.** The top
+    quintile is by definition the set of highest-priority cells, and greedy already
+    works in priority order, so those cells are served first with the whole stock still
+    untouched. If the floor can be met at all, this order meets it; if it cannot, no
+    order can. An "equity first" pass was written here and then removed after it was
+    shown to change nothing in 200,000 comparisons -- it re-served a prefix of the
+    sequence the main loop was about to serve anyway. The floor still affects what
+    greedy *reports*, which is why min_share_top_quintile is still accepted.
     """
     priority, need, stock, dist = _validate(
         priority, need, stock, dist, max_distance_m, epsilon)
-    _validate_equity(min_share_top_quintile, 1.0)
+    _validate_share(min_share_top_quintile)
     need, left = need.copy(), stock.copy()
     n_cells, n_centres = dist.shape
     x = np.zeros((n_cells, n_centres))
-
-    top = top_quintile(priority, need)
-    floor_units = equity_floor(need, stock, top, min_share_top_quintile)
 
     def serve(i: int) -> None:
         for j in np.argsort(dist[i], kind="stable"):
@@ -381,18 +399,13 @@ def solve_greedy(priority: np.ndarray, need: np.ndarray, stock: np.ndarray,
             need[i] -= send
             left[j] -= send
 
-    if floor_units > 0:                       # the equity pass, before anything else
-        for i in np.argsort(-priority, kind="stable"):
-            if x[top].sum() >= floor_units:
-                break
-            if top[i] and need[i] > 0:
-                serve(i)
-
     for i in np.argsort(-priority, kind="stable"):
         if need[i] > 0:
             serve(i)
 
     original_need = need + x.sum(axis=1)   # need was decremented in place
+    top = top_quintile(priority, original_need)
+    floor_units = equity_floor(original_need, stock, top, min_share_top_quintile)
     return _plan(x, "greedy", priority, original_need, dist, max_distance_m, epsilon,
                  top, floor_units, (dist <= max_distance_m).any(axis=1), [], stock)
 
@@ -464,12 +477,15 @@ def _plan(x, method, priority, need, dist, max_distance_m, epsilon, top, floor_u
     delivered = x.sum(axis=1)
     need = np.asarray(need, float)
     shortfall = max(0.0, floor_units - float(x[top].sum())) if top.any() else 0.0
-    # Shipments are whole units, so anything under one unit is float residue, not a
-    # finding. Without this an exactly-met floor of 27.000000000000004 was reported as
-    # "1 units short of the 28 they are owed".
-    if shortfall >= 1.0:
+    # When the plan is in whole units, anything under one unit is float residue rather
+    # than a finding -- without this an exactly-met floor of 27.000000000000004 was
+    # reported as "1 units short of the 28". But that reasoning does not hold for the
+    # fractional relaxation, where a real shortfall of 0.7 units is a real shortfall.
+    whole = bool(np.all(x == np.floor(x)))
+    if shortfall >= (1.0 if whole else 1e-9):
         notes.append(
-            f"the top-priority cells are {math.ceil(shortfall):,} units short of the "
+            f"the top-priority cells are {math.ceil(shortfall):,} "
+            f"{'unit' if math.ceil(shortfall) == 1 else 'units'} short of the "
             f"{math.floor(floor_units + 0.5):,} they are owed -- "
             f"{_why_short(x, top, need, reachable, dist, max_distance_m, stock)}")
     else:
@@ -500,36 +516,63 @@ def _why_short(x, top, need, reachable, dist, max_distance_m, stock) -> str:
     if not reachable[top].all():
         return "some of them have no centre within the service distance"
     if stock is not None:
-        in_reach = (dist[top] <= max_distance_m).any(axis=0)      # centres serving them
-        spare = float((np.asarray(stock, float) - x.sum(axis=0))[in_reach].sum())
-        if spare >= 1.0:
-            return (f"{spare:,.0f} units sit within reach of them unsent -- the equity "
-                    "penalty was outweighed by demand elsewhere")
+        # Both of these tests must be about the cells that are actually SHORT and the
+        # centres that can actually reach THEM. An earlier version asked about centres
+        # in reach of any top cell, including ones already fully served, and summed
+        # per-centre leftovers -- so two centres holding 0.5 units each were reported
+        # as "1 unit sitting unsent". Both branches were false every time they fired.
+        short = np.zeros(len(need), dtype=bool)
+        short[np.flatnonzero(top)[unmet >= 1.0]] = True
+        in_reach = (dist[short] <= max_distance_m).any(axis=0)
+        leftover = (np.asarray(stock, float) - x.sum(axis=0))[in_reach]
+        if leftover.size and leftover.max() >= 1.0:
+            return (f"{leftover.max():,.0f} units sit at a centre within reach of them, "
+                    "unsent -- the equity penalty was outweighed by demand elsewhere")
         if float(x[~top][:, in_reach].sum()) >= 1.0:
             return "the stock within reach of them went to other cells first"
     return "there is not enough stock within reach of them"
 
 
-def solver_settings(commodity: str = "water") -> dict:
-    """The solver keyword arguments config/allocation.yaml actually specifies.
+def lp_kwargs() -> dict:
+    """Exactly the keyword arguments ``solve_lp`` takes, read from the config file.
 
-    Until this existed, nothing read the config: the settings Samraj had decided lived
-    in a YAML file the solver never opened, while ``solve_lp`` defaulted to no equity
-    rule at all. Anyone reading `min_share_top_quintile: 0.25` would have believed the
-    model used it. P4-02 builds every scenario through this function, and a test
-    asserts the two stay in step.
+    Until this existed, nothing read config/allocation.yaml at all: the settings Samraj
+    had decided lived in a YAML file the solver never opened, while ``solve_lp``
+    defaulted to no equity rule whatsoever. Anyone reading `min_share_top_quintile: 0.25`
+    would reasonably have believed the model used it.
+
+    It returns *only* solver arguments, so `solve_lp(..., **lp_kwargs())` works. The
+    first version mixed in the commodity rate and the circuity factor and could not be
+    passed to either solver -- a helper that cannot be called the way its own docstring
+    describes is worse than none.
     """
     cfg = load("allocation")
-    item = next((c for c in cfg["commodities"] if c["id"] == commodity), None)
-    if item is None:
-        raise KeyError(f"no commodity {commodity!r} in config/allocation.yaml")
     return {
         "max_distance_m": float(cfg["service"]["max_distance_m"]),
         "epsilon": float(cfg["equity"]["epsilon_distance_tiebreak"]),
         "min_share_top_quintile": float(cfg["equity"]["min_share_top_quintile"]),
         "equity_penalty": float(cfg["equity"]["equity_penalty"]),
         "exact_integers": bool(cfg["solver"]["exact_integers"]),
+    }
+
+
+def greedy_kwargs() -> dict:
+    """The subset of the same settings ``solve_greedy`` accepts."""
+    accepted = set(inspect.signature(solve_greedy).parameters)
+    return {k: v for k, v in lp_kwargs().items() if k in accepted}
+
+
+def commodity_settings(commodity: str = "water") -> dict:
+    """One commodity's rate and provenance from the config file."""
+    cfg = load("allocation")
+    item = next((c for c in cfg["commodities"] if c["id"] == commodity), None)
+    if item is None:
+        raise KeyError(f"no commodity {commodity!r} in config/allocation.yaml")
+    return {
         "units_per_person_per_day": float(item["units_per_person_per_day"]),
+        "unit": item["unit"],
+        "name_en": item["name_en"],
+        "basis": item["basis"],
         "circuity_factor": float(cfg["service"]["circuity_factor"]),
         "provisional": bool(cfg["provisional"]),
     }

@@ -111,6 +111,19 @@ $p_i$, until the floor is met. That is what the rule was meant to say.
 **This is a judgement call on Samraj's rule, not just on its algebra** — see QUESTIONS.md
 Q15 for the alternatives and what each would change.
 
+**And a caveat that matters more than the algebra.** Measured over 24,000 synthetic
+cases and 12 real ones, turning the floor on changes the allocation **0.025%** of the
+time, and on the real Landhi grid it changed nothing at all. For the greedy baseline the
+answer is exactly zero, in every case. That is structural: the top quintile *is* the
+highest-priority cells, and the model already maximises priority-weighted delivery, so
+those cells are favoured before any equity rule is added. The floor can only overturn a
+choice the ε tiebreak made, and ε is at most 0.001.
+
+So the rule shapes the **report**, not the **plan** — its real product is the shortfall
+warning, which says where stock is sitting relative to where it is needed. A floor that
+actually redistributed supply would have to protect a set defined *independently* of
+Priority. That is a different rule, and a decision for Samraj (Q15).
+
 ### Why the equity rule is soft
 
 A hard floor of $\alpha$ can make the problem **infeasible** — for instance when the

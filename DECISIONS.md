@@ -1064,3 +1064,29 @@ solver reporting success is not evidence that the answer is optimal.** `status=0
 `mip_gap=0.0` were both present and both misleading. The only check that caught it was
 comparing against an independently written solver and, on small cases, against brute
 force.
+
+**D27 addendum (fourth review) — the equity rule barely does anything, and that is
+structural.** An independent check measured how often turning the floor on actually
+changes the allocation. Verified separately here: **6 of 24,000** (problem, share) pairs
+on synthetic data — 0.025% — and **0 of 12** scenarios on the real 265-cell Landhi grid.
+For greedy the answer is exactly zero, provably and in every case.
+
+The reason is not a bug, it is the definition. The top quintile *is* the set of
+highest-priority cells, and the objective already maximises priority-weighted delivery,
+so the solver prefers those cells before any equity rule is added. The only thing the
+floor can overturn is a choice the ε tiebreak made, and ε is at most 0.001. For greedy
+it is stronger still: greedy works in priority order with the whole stock untouched, so
+the top-quintile cells are served first anyway — if the floor can be met, that order
+meets it, and if it cannot, no order can. The "equity first" pass written for greedy was
+removed after it was shown to change nothing in 200,000 comparisons.
+
+**What this means in practice: the floor shapes the *report*, not the *plan*.** Its real
+value is the shortfall it surfaces — "the top-priority cells are N units short of what
+they are owed, because X" — which is a genuine finding about where the stock is sitting.
+That is worth keeping. But `min_share_top_quintile: 0.25` reads like a rule that
+redistributes supply, and it is not one, so this is recorded rather than left for someone
+to discover from the code.
+
+It would only start to bite if the protected set were defined *independently* of
+priority — by age, say, or by a ward boundary, or by cells a field team names. That is a
+different rule, and Samraj's to choose: QUESTIONS.md Q15.

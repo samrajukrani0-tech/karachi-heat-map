@@ -412,3 +412,29 @@ That leaves three honest readings, and they differ in what a "shortfall" warning
 **Recommendation:** keep (1) for now; consider (3) when you have real centres and can see
 whether the shortfall warning fires sensibly. **What changes:** each is a two-line edit to
 `equity_floor` in `pipeline/allocate.py`, plus its test. Nothing else in the model moves.
+
+### Update after the fourth review — the rule barely does anything at all
+
+Measured: turning the floor on changes the allocation in **6 of 24,000** synthetic
+(problem, share) pairs and **0 of 12** scenarios on the real Landhi grid. For the greedy
+baseline it is exactly zero, provably.
+
+That is structural, not a defect. The top quintile *is* the highest-priority cells, and
+the model is already maximising priority-weighted delivery, so those cells are preferred
+before any equity rule exists. The floor can only overturn what the ε tiebreak decided,
+and ε is at most 0.001.
+
+**So a fourth reading is now on the table, and it is the interesting one:**
+
+4. **Protect a set defined independently of Priority.** For example the cells with the
+   most residents aged 60+ and under 5 in absolute terms, or the cells a field team
+   names after a visit. Only this version can actually move supply, because only this
+   version can disagree with the objective. Everything anchored to Priority is, in
+   effect, asking the model to do harder what it is already doing.
+
+**Claude's view:** options 1-3 are all honest, but you should know that none of them will
+noticeably change a map. If you want the equity rule to *mean* something, it has to
+protect a set the priority score does not already favour. That is a real modelling
+decision and squarely yours. Until you choose, the floor earns its place by producing
+the shortfall warning, which is a genuine finding about where stock is sitting relative
+to where it is needed.

@@ -12,14 +12,16 @@ import pytest
 
 from pipeline.allocate import (
     Plan,
+    commodity_settings,
     distance_matrix,
     equity_floor,
+    greedy_kwargs,
     largest_remainder,
+    lp_kwargs,
     need_units,
     objective_value,
     solve_greedy,
     solve_lp,
-    solver_settings,
     top_quintile,
 )
 
@@ -650,41 +652,130 @@ def test_rounding_refuses_negative_or_missing_shipments():
 def test_the_solver_settings_come_from_the_config_file(allocation):
     """Nothing read config/allocation.yaml. Samraj's decisions lived in a file the
     solver never opened, while solve_lp defaulted to no equity rule at all."""
-    settings = solver_settings("water")
+    settings = lp_kwargs()
     assert settings["max_distance_m"] == allocation["service"]["max_distance_m"]
     assert settings["min_share_top_quintile"] == \
         allocation["equity"]["min_share_top_quintile"]
     assert settings["equity_penalty"] == allocation["equity"]["equity_penalty"]
     assert settings["epsilon"] == allocation["equity"]["epsilon_distance_tiebreak"]
     assert settings["exact_integers"] == allocation["solver"]["exact_integers"]
-    assert settings["provisional"] is True
+    assert commodity_settings("water")["provisional"] is True
 
 
-def test_every_configured_setting_is_one_the_solver_accepts():
-    """A config key the solver does not take is a decision that silently does nothing."""
-    import inspect
-
-    settings = solver_settings("water")
-    accepted = set(inspect.signature(solve_lp).parameters)
-    solver_keys = set(settings) - {"units_per_person_per_day", "circuity_factor",
-                                   "provisional"}
-    assert solver_keys <= accepted, f"config sets what solve_lp ignores: "\
-                                    f"{solver_keys - accepted}"
-
-
-def test_the_configured_settings_actually_solve():
-    settings = solver_settings("water")
-    kw = {k: settings[k] for k in ("max_distance_m", "epsilon",
-                                   "min_share_top_quintile", "equity_penalty",
-                                   "exact_integers")}
-    plan = solve_lp(np.array([0.9, 0.6, 0.3]), np.array([80.0, 90.0, 50.0]),
-                    np.array([100.0, 60.0]),
-                    np.array([[1000.0, 4000.0], [2000.0, 1000.0], [6000.0, 2000.0]]),
-                    **kw)
+@pytest.mark.parametrize("solver,kwargs", [(solve_lp, lp_kwargs),
+                                           (solve_greedy, greedy_kwargs)])
+def test_the_configured_settings_can_actually_be_passed_to_the_solver(solver, kwargs):
+    """The first version mixed in the commodity rate and could not be passed to either
+    solver, while its docstring said P4-02 would build every scenario through it."""
+    plan = solver(np.array([0.9, 0.6, 0.3]), np.array([80.0, 90.0, 50.0]),
+                  np.array([100.0, 60.0]),
+                  np.array([[1000.0, 4000.0], [2000.0, 1000.0], [6000.0, 2000.0]]),
+                  **kwargs())
     assert plan.total == 160
     assert np.all(plan.dispatched <= [100, 60])
 
 
+def test_the_configured_water_rate_is_the_sphere_survival_figure(allocation):
+    """Sphere Handbook 2018, Water supply standard 2.1 (p. 107) and Appendix 3
+    (p. 145): survival water intake is 2.5-3 litres per person per day."""
+    water = commodity_settings("water")
+    assert 2.5 <= water["units_per_person_per_day"] <= 3.0
+    assert allocation["provisional"] is True
+
+
 def test_an_unknown_commodity_is_refused():
     with pytest.raises(KeyError, match="lemonade"):
-        solver_settings("lemonade")
+        commodity_settings("lemonade")
+
+
+# --- regressions: the fourth review ---------------------------------------------------
+
+
+@pytest.mark.parametrize("share", [0.25, 0.5, 0.9])
+@pytest.mark.parametrize("seed", range(20))
+def test_the_equity_floor_never_changes_greedys_plan(share, seed):
+    """Not a bug but a fact, and one worth pinning down.
+
+    The top quintile IS the set of highest-priority cells, and greedy works in priority
+    order with the whole stock untouched, so those cells are already served first. If
+    the floor can be met, that order meets it; if it cannot, no order can. An "equity
+    first" pass was written here and removed once it was shown to change nothing in
+    200,000 comparisons. If this test ever fails, the reasoning above has stopped
+    holding and greedy may genuinely need one.
+    """
+    problem = random_problem(np.random.default_rng(seed))
+    base = solve_greedy(**problem, max_distance_m=D, epsilon=EPS)
+    with_floor = solve_greedy(**problem, max_distance_m=D, epsilon=EPS,
+                              min_share_top_quintile=share)
+    np.testing.assert_array_equal(base.x, with_floor.x)
+
+
+def test_the_cause_is_about_the_cells_that_are_actually_short():
+    """It asked about centres in reach of ANY top cell, including fully-served ones.
+
+    Here the short cell is cell 1, whose only in-range centre is empty; the 195 spare
+    units are 9,000 m away at a centre serving cell 0. The note claimed they were
+    'within reach of them, unsent'.
+    """
+    plan = solve_lp(np.array([0.99, 0.98, 0.5, 0.4, 0.3, 0.2]),
+                    np.array([5.0, 100.0, 100.0, 100.0, 100.0, 100.0]),
+                    np.array([200.0, 10.0]),
+                    np.array([[1000.0, 9000.0], [9000.0, 1000.0]] + [[9000.0, 9000.0]] * 4),
+                    max_distance_m=D, epsilon=EPS, min_share_top_quintile=0.25)
+    assert "not enough stock within reach" in plan.notes[0], plan.notes[0]
+
+
+def test_sub_unit_leftovers_at_separate_centres_are_not_added_up():
+    """Two centres holding 0.5 units each were reported as '1 unit sitting unsent'.
+    No van can carry half a unit from one centre and half from another."""
+    plan = solve_lp(np.array([0.99, 0.98, 0.5, 0.4, 0.3, 0.2]), np.full(6, 100.0),
+                    np.array([10.5, 10.5]),
+                    np.array([[1000.0, 1000.0]] * 2 + [[9000.0, 9000.0]] * 4),
+                    max_distance_m=D, epsilon=EPS, min_share_top_quintile=1.0)
+    assert "sit at a centre" not in plan.notes[0], plan.notes[0]
+
+
+def test_a_fractional_shortfall_is_reported_when_the_plan_is_fractional():
+    """The one-unit reporting floor is only sound for whole-unit plans. On the
+    continuous relaxation a real shortfall of 0.7 units was reported as none."""
+    plan = solve_lp(np.array([0.9, 0.5, 0.4, 0.3, 0.2]),
+                    np.array([4.0, 3.7, 3.7, 3.7, 3.7]), np.array([50.0]),
+                    np.full((5, 1), 1000.0), max_distance_m=D, epsilon=EPS,
+                    min_share_top_quintile=0.25, round_units=False)
+    assert plan.equity_shortfall == pytest.approx(0.7, abs=1e-6)
+    assert plan.notes and "short of" in plan.notes[0]
+
+
+def test_contradictory_rounding_flags_are_refused():
+    """exact_integers was silently ignored when round_units was False."""
+    args = (np.array([0.9]), np.array([10.5]), np.array([10.5]), np.array([[100.0]]))
+    with pytest.raises(ValueError, match="contradicts"):
+        solve_lp(*args, max_distance_m=D, round_units=False, exact_integers=True)
+    fractional = solve_lp(*args, max_distance_m=D, round_units=False)
+    assert fractional.total == pytest.approx(10.5), "the relaxation stays fractional"
+
+
+def test_an_infinite_equity_penalty_is_refused():
+    with pytest.raises(ValueError, match="equity_penalty must be positive"):
+        solve_lp(np.full(3, 0.6), np.full(3, 10.0), np.array([100.0]),
+                 np.full((3, 1), 100.0), max_distance_m=D,
+                 min_share_top_quintile=0.25, equity_penalty=np.inf)
+
+
+@pytest.mark.parametrize("solver", [solve_lp, solve_greedy])
+def test_a_tiebreak_big_enough_to_stop_delivery_is_refused(solver):
+    """epsilon had no upper bound, so a 'tiebreak' of 2.0 shipped nothing at all --
+    the exact failure the module header warns about, one order of magnitude up."""
+    with pytest.raises(ValueError, match="epsilon must be below 1"):
+        solver(np.full(3, 0.9), np.full(3, 10.0), np.array([100.0]),
+               np.full((3, 1), 4000.0), max_distance_m=D, epsilon=2.0)
+
+
+def test_both_solvers_accept_the_same_equity_settings():
+    """greedy hard-coded a penalty of 1.0 and never passed epsilon, so the two solvers
+    disagreed about which settings were legal."""
+    args = (np.full(3, 0.6), np.full(3, 10.0), np.array([100.0]), np.full((3, 1), 100.0))
+    for bad in (1.5, -0.1, float("nan")):
+        for solver in (solve_lp, solve_greedy):
+            with pytest.raises(ValueError, match="share in"):
+                solver(*args, max_distance_m=D, min_share_top_quintile=bad)
