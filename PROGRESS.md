@@ -1185,3 +1185,22 @@ tiles and failed once under full-suite load twice this session. It passed on rer
 **To resume:** read this entry, run `uv run python scripts/features.py` and
 `uv run python scripts/check.py --quick`, then act on whichever item above Samraj has
 answered.
+
+## 2026-09-27 — P6-00 Expert agreement prepared: PASS; P6-01 waits only on real rankings
+**What changed:** `pipeline/expert.py`, a header-only `data/manual/expert_rankings.csv`,
+`docs/expert-ranking-import.md` (how to type forms in, and how to run it),
+`tests/test_expert.py` (13) with `tests/fixtures/expert_rankings_SYNTHETIC.csv`, a
+`pipeline.run` step, and **D31** (provisional): a place is scored by the
+population-weighted mean Priority of the cells its field brief shows, with the maximum
+reported alongside.
+**What running it produces, once there is data:** each respondent's Spearman ρ against the
+model, with a Fisher 95% CI and a permutation p. Also a consensus of the respondents who
+ranked **before** seeing the map, with Kendall's W for how far they agree with each
+other. The output is `data/processed/expert_agreement.json` and `docs/expert-agreement.md`.
+**Today it does nothing, on purpose:** the rankings file has only its header, the
+command says so, and a test checks that no result file exists. Nothing was simulated
+in place of real answers.
+**Caught by the SYNTHETIC fixture:** two respondents who rank in exactly opposite orders
+average to a flat ranking, and the bootstrap crashed on it. That case is now reported as
+"undefined", which it is, rather than as ρ = 0.
+**Evidence:** tests 13 passed; pytest 900 passed; `check.py --quick` CHECK: PASS (7 checks).

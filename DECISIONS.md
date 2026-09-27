@@ -1196,3 +1196,23 @@ absolute quantity. It does not forbid splitting stock the user has entered. The
 model's need still appears only as "model's estimated need met" (a percentage), with the
 2.3× undercount stated beside it. Placing user stock points (the rest of D30, Q16)
 stays pending.
+
+---
+
+## D31 — How the model scores a named place for the expert comparison (2026-09-27, PROVISIONAL)
+
+**Question.** Field staff rank places ("Ilyas Goth"); the model ranks 0.1 km² cells.
+Comparing them needs one model score per place.
+
+**Recommendation:** the **population-weighted mean Priority of the cells within 500 m** of
+the place's OSM point, the same cells its field brief shows (a test holds the two to the
+same cell sets). A coordinator asked "which place needs support first?" is thinking
+about the people there, so a cell with 3,000 residents should count for more than one
+with 40.
+
+**Main alternative:** the **maximum** Priority among those cells: "is there a hotspot
+here?". It is reported alongside every result, so if the two disagree the choice is
+visible rather than buried.
+
+**Status:** provisional. Samraj to confirm before P6-01's results are read. Changing it
+is one key in `pipeline/expert.py`.

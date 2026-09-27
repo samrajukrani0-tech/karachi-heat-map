@@ -72,7 +72,7 @@ site checks, Node 20+.
 uv sync
 npm ci && npx playwright install chromium    # site checks only
 
-uv run python -m pipeline.run --list         # the 18 steps, in order
+uv run python -m pipeline.run --list         # the 19 steps, in order
 uv run python -m pipeline.run --all          # rebuild everything
 uv run python scripts/check.py --quick       # quality gates, ends in one CHECK: line
 uv run python scripts/check.py --lighthouse  # adds Lighthouse

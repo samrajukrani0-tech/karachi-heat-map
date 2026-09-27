@@ -42,6 +42,7 @@ STEPS: list[tuple[str, str]] = [
     ("roads", "P5-02 offline road outline"),
     ("site", "site data files"),
     ("briefs", "P5-01 field briefs (needs node: npm ci)"),
+    ("expert", "P6-01 expert agreement (does nothing until real rankings exist)"),
 ]
 
 
