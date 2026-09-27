@@ -449,7 +449,8 @@ are never stored or published. See D30.
 **Recommendation:** keep it. **Alternative:** disable the quick estimate until a centre is
 verified. **What changes:** one handler and one button in `site/plan.js`.
 
-**Answer:**
+**Answer:** pending. Samraj will decide after talking to his contacts (2026-09-27).
+Related and decided: the table keeps showing actual unit quantities (D30 addendum).
 
 ## Q17 — Release v1.0.0: your weights, or a decision to ship equal weights? (P5-05, 2026-09-27)
 
@@ -470,4 +471,6 @@ the ranking in the middle band depends on them.
 **Also, small:** `CITATION.cff` gives your name as given names "Samraj Lal", family name
 "Ukrani". Tell Claude if "Lal" belongs with the family name.
 
-**Answer:**
+**Answer (2026-09-27, partial):** CITATION.cff name confirmed by Samraj: "Samraj Lal" +
+"Ukrani" is correct. The weights question stays open: he will decide after talking to
+his contacts.

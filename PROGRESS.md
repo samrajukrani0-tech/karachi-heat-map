@@ -1148,3 +1148,40 @@ with both routes.
 **Phase status:** Phases 0–5 have every feature resolved except those blocked on Samraj:
 P1-09b (verify a centre), P2-02b (weights), P4-02b (real scenarios, needs a centre),
 P5-03b (tailor the one-pager to a host), P5-05 (tag, needs P2-02b). Phase 6 pending.
+
+## 2026-09-27 — Wrap-up: stable stopping point (usage limit)
+**Samraj's answers this turn:**
+- `CITATION.cff` name confirmed: "Samraj Lal" + "Ukrani" (recorded under Q17).
+- The supplies table keeps **actual unit quantities** of the user's own stock (D30
+  addendum). No code change was needed; this is already how it works, and it stays
+  within D21 because the model's own need estimate is never shown in units.
+
+**State of the repository:** working tree clean after this commit; `main` pushed; last CI
+run on 8a924ba green (check + deploy); live site
+https://samrajukrani0-tech.github.io/karachi-heat-map/ serving the current build.
+Last full evidence: pytest 887 passed; `check.py --lighthouse` CHECK: PASS (8 checks);
+full Playwright suite against the live URL 147 passed.
+
+**Done (Phases 0–5):** 40 of 46 features resolved. The data pipeline, the model with its
+sensitivity and validation checks, the model report, the six-page site, the allocation
+solver and scenario pipeline, the Plan supplies page, offline mode, 12 field briefs, the
+NGO one-pager draft, the README, CITATION.cff and the CHANGELOG. `pipeline.run --all`
+rebuilds everything from the cache.
+
+**Waiting on Samraj; all left pending by his choice until he has talked to his contacts:**
+| Item | What it needs | Unblocks |
+|---|---|---|
+| Q2 / P1-09b | at least one relief centre verified in person, added to `data/manual/centres.csv` | P4-02b real scenarios (automatic), the `dist_centre` indicator |
+| Q17 / P2-02b | run `uv run python -m pipeline.ahp`, or record a decision to ship equal weights | P5-05: rebuild, re-check, tag v1.0.0 |
+| P5-03b | tailor `docs/pitch/one-pager.md` to whichever organisation agrees to host | — |
+| P6-01 | real expert rankings on `docs/expert-ranking-form.md` | Phase 6 |
+| Q16 / D30 | confirm that the planner may use stock points the user places | — |
+| Karachi-wide expansion | go-ahead after the explanation given this session; **no work started** | — |
+| Open, not blocking | Q10 (CR threshold), Q11 (the name "Intensity"), Q12 (D19 reasoning), Q14 (Lighthouse headroom), Q15 (equity floor) | — |
+
+**Known flake, not a regression:** `basemap tiles actually load` depends on live Esri
+tiles and failed once under full-suite load twice this session. It passed on rerun.
+
+**To resume:** read this entry, run `uv run python scripts/features.py` and
+`uv run python scripts/check.py --quick`, then act on whichever item above Samraj has
+answered.

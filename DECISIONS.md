@@ -1186,3 +1186,13 @@ priority interval 0.193 → 0.190; empty cells' priority interval now exactly [0
 Three new tests pin it: exactly zero in every draw, the zero applied under both methods,
 and deterministic row order. The model report is corrected, with a note saying why.
 **No decision changes.** This makes the code do what D23 already said.
+
+**D30 addendum (2026-09-27) — units in the supplies table: decided by Samraj.** "Keep
+showing actual unit quantities in the supplies table, not shares/percentages — that's
+more useful for relief teams to act on." No code changes: the quick-estimate table
+already shows units of the user's own stock (with the share alongside). This is
+consistent with D21, which forbids publishing the *model's own* estimate of need as an
+absolute quantity. It does not forbid splitting stock the user has entered. The
+model's need still appears only as "model's estimated need met" (a percentage), with the
+2.3× undercount stated beside it. Placing user stock points (the rest of D30, Q16)
+stays pending.
