@@ -63,6 +63,14 @@
   "licence": "ODbL 1.0 - (c) OpenStreetMap contributors",
   "note": "Overpass query response; rebuildable from the query in the caller"
  },
+ "osm/main_roads_buffer1km.json": {
+  "url": "https://overpass-api.de/api/interpreter",
+  "sha256": "766f1c97192d0920e8595a57933bd0f87c0d4632b58ca3dbd32db521b4f66502",
+  "bytes": 436262,
+  "downloaded": "2026-09-27",
+  "licence": "ODbL 1.0 - (c) OpenStreetMap contributors",
+  "note": "Overpass query response; rebuildable from the query in the caller"
+ },
  "osm/relation_16350631.json": {
   "url": "https://overpass-api.de/api/interpreter",
   "sha256": "0a9b249905a9e5ff039f4239e548b90ac247bf9e9d749cad4697ff8af96181e8",

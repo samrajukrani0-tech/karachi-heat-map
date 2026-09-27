@@ -256,6 +256,7 @@
         }).addTo(map);
 
         map.fitBounds(geo.getBounds(), { padding: [8, 8] });
+        if (window.OfflineView) OfflineView.attach(map);
         window.addEventListener("layer:change", function () {
           geo.setStyle(function (feature) {
             return { fillColor: fillFor(feature.properties) };

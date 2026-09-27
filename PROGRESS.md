@@ -1014,3 +1014,28 @@ top-ranked area alone takes 36% of the stock, and only 9 areas are served. That 
 priority-first working as designed, and it shows how quickly supply is used up.
 **Next:** P5-02 Offline and P5-04 README, which have no Phase 4 dependency; then P5-01
 Field briefs.
+
+## 2026-09-27 — P5-02 Offline: PASS (and `pipeline.run` finally exists)
+**What changed:** `site/sw.js` (network-first service worker that precaches the shell and
+data), `site/offline.js` and `site/sw-register.js`, `pipeline/roads.py`
+(`site/data/roads.geojson`, 421 OSM main-road lines, 72 kB), `tests/test_offline.py`,
+`tests/e2e/offline.spec.js`.
+**Offline means instead of tiles, not on top of them.** The first test run found 12 Esri
+tiles showing offline. They came from the browser's own HTTP cache, not ours. A handful
+of leftover tiles would look like a map while missing most of it, so the offline view
+now removes the tile layer and draws the road outline alone. The test checks that our
+cache holds no third-party tile, because Esri's tiles are not ours to store.
+**A layout fault caught by the screenshot:** the offline notice sat outside the page
+column at x = 0. It is now inside it, and a test checks it shares the heading's edge.
+**Overpass was polite-failed, not hammered.** The roads query got 504 from both
+endpoints after five spaced retries. The next piece of work went ahead, and the query
+succeeded on a later run from the cache-backed client.
+**`pipeline.run` was referenced in CLAUDE.md but never written.** It now exists
+(`--all`, `--from STEP`, `--list`). A full rebuild from the cache took about 110 s. It
+reproduced every committed output byte for byte **except two date stamps**: the boundary's
+`accessed` and the grid's `generated` are set to today even when read from cache. Those
+two files were restored so the recorded access date stays true. The stamps are a small
+provenance bug, logged here rather than silently tolerated.
+**Evidence:** offline suite 8 passed; pytest 859 passed; `check.py --lighthouse` CHECK:
+PASS (8 checks), performance 88 / accessibility 100 / best practices 96 / SEO 100.
+**Next:** P5-04 README, then P5-01 Field briefs.

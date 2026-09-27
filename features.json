@@ -720,10 +720,10 @@
       "depends_on": [
         "P3-09"
       ],
-      "passes": false,
+      "passes": true,
       "blocked_on": null,
       "dropped": null,
-      "evidence": null
+      "evidence": "2026-09-27: offline.spec.js 8 passed (4 tests x 2 viewports): after one online visit, with the network cut, the map draws all 265 cells, draws >50 OSM road lines in place of the tile layer (0 tiles shown, 0 third-party entries in the cache), the panel still opens, the planner quick estimate runs, and plan/how-it-works/about/briefs open. tests/test_offline.py 4 passed: every file in site/ is precached and no precached path is missing. check.py --lighthouse CHECK: PASS (8 checks), performance 88. Offline screenshots at 375 and 1280 reviewed, no page errors."
     },
     {
       "id": "P5-03",

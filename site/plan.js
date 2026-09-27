@@ -233,6 +233,7 @@
         style: { fillColor: UNSERVED, fillOpacity: 0.85, color: "#8E8A82", weight: 0.4 }
       }).addTo(map);
       map.fitBounds(state.geo.getBounds(), { padding: [8, 8] });
+      if (window.OfflineView) OfflineView.attach(map);
 
       var sel = el("commodity");
       state.config.commodities.forEach(function (c) {

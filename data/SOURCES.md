@@ -281,6 +281,17 @@ Storage CRS: EPSG:4326. All distances and areas: EPSG:32642 (UTM zone 42N).
   the site has no third-party runtime dependency and works offline in P5-02.
 - **Licence:** BSD-2-Clause. 144 kB of JavaScript, 14 kB of CSS.
 
+### OpenStreetMap main roads — offline outline (P5-02, 2026-09-27)
+- **Query:** Overpass, `way["highway"~"^(motorway|trunk|primary|secondary|tertiary)$"]`
+  over the Landhi bounding box plus 1 km; cached at `data/raw/osm/main_roads_buffer1km.json`.
+  The first attempt got HTTP 504 from both endpoints after five polite retries; the
+  query was left alone and succeeded on a later run.
+- **Processing:** `pipeline/roads.py` simplifies each way by Douglas–Peucker at 15 m in
+  UTM 42N and rounds to 5 dp. 421 ways, 72 kB. Written to `site/data/roads.geojson`.
+- **Used for:** the offline map only, in place of the basemap tiles, which are Esri's and
+  are not cached. Orientation, not navigation.
+- **Licence:** ODbL 1.0, © OpenStreetMap contributors; attributed on the map when shown.
+
 ### The Sphere Handbook 2018 — survival water figure (P4-02a, 2026-09-27)
 - **Citation:** Sphere Association, *The Sphere Handbook: Humanitarian Charter and
   Minimum Standards in Humanitarian Response*, 4th edition, Geneva, 2018. Water supply
