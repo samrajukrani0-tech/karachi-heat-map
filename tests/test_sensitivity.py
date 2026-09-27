@@ -121,3 +121,42 @@ def test_empty_cells_sit_at_the_bottom_and_stay_there(confidence, root):
     empty = set(scores[scores["exposure"] == 0.0]["h3"])
     rows = confidence[confidence["h3"].isin(empty)]
     assert (rows["p_top20"] == 0.0).all(), "a cell with nobody in it reached the top 20%"
+
+
+def test_empty_cells_score_exactly_zero_in_every_draw(confidence, root):
+    """D6b/D23 in the sensitivity analysis itself, not only in the headline score.
+
+    The weaker test above passed while half the draws gave empty cells exposure 0.0379
+    under percentile rank: they never reached the top 20%, but they did outrank real
+    residents and widened everyone's intervals. Zero people must mean Priority 0 in every
+    draw, so the whole 5-95% priority interval is zero and the rank never rises above
+    the tied bottom rank."""
+    scores = pd.read_csv(root / "data" / "processed" / "scores.csv")
+    empty = set(scores[scores["exposure"] == 0.0]["h3"])
+    bottom = int(scores["rank"].max())
+    rows = confidence[confidence["h3"].isin(empty)]
+    assert len(rows) == 21
+    assert (rows["priority_high_95pct"] == 0.0).all()
+    assert (rows["rank_low_5pct"] >= bottom).all()
+
+
+def test_precompute_applies_the_structural_zero_under_both_methods(root):
+    import warnings
+
+    from pipeline.config import load
+    from pipeline.sensitivity import precompute
+    frame = pd.read_parquet(root / "data" / "processed" / "indicators.parquet")
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        values = precompute(frame, load("indicators")["indicators"], load("model"))
+    empty = (frame["population"] == 0).to_numpy()
+    for method, v in values.items():
+        assert (v["population"][empty] == 0.0).all(), method
+
+
+def test_output_row_order_is_deterministic_across_machines(root):
+    """Ties in rank must be ordered by a stable rule, not by quicksort's whim: CI's
+    Linux runner ordered the 21 tied empty cells differently from macOS."""
+    out = pd.read_csv(root / "data" / "processed" / "confidence.csv")
+    key = list(zip(out["rank"], out["h3"], strict=True))
+    assert key == sorted(key)

@@ -243,24 +243,24 @@ h3,hazard,exposure,vulnerability,priority,intensity,rank,top_reasons,weights_pro
 8942e44e447ffff,0.01,0.452733,0.5,0.131302,0.070711,242,Further from the nearest clinic or hospital,True,True
 8942e44e4d7ffff,0.01,0.292388,0.401327,0.105476,0.06335,243,Further from the nearest clinic or hospital,True,True
 8942e44e153ffff,0.01,0.535725,0.134354,0.089619,0.036654,244,Below the Landhi average on every measure we track,True,True
+8942e44c49bffff,0.846567,0.0,0.274335,0.0,,245,The ground here gets hotter on summer afternoons; Further from the nearest clinic or hospital,True,True
+8942e44c4cbffff,1.0,0.0,0.547825,0.0,,245,Further from the nearest clinic or hospital; The ground here gets hotter on summer afternoons,True,True
+8942e44e037ffff,0.546137,0.0,0.171892,0.0,,245,The ground here gets hotter on summer afternoons,True,True
+8942e44e083ffff,0.01,0.0,0.434966,0.0,,245,Further from the nearest clinic or hospital,True,True
+8942e44e087ffff,0.331974,0.0,0.353695,0.0,,245,Further from the nearest clinic or hospital,True,True
+8942e44e08bffff,0.01,0.0,0.491299,0.0,,245,Further from the nearest clinic or hospital,True,True
+8942e44e08fffff,0.01,0.0,0.379961,0.0,,245,Further from the nearest clinic or hospital,True,True
+8942e44e093ffff,0.558369,0.0,0.428701,0.0,,245,Further from the nearest clinic or hospital; The ground here gets hotter on summer afternoons,True,True
+8942e44e097ffff,0.595494,0.0,0.377129,0.0,,245,Further from the nearest clinic or hospital; The ground here gets hotter on summer afternoons,True,True
+8942e44e09bffff,0.01,0.0,0.5,0.0,,245,Further from the nearest clinic or hospital,True,True
 8942e44e0bbffff,0.227682,0.0,0.286457,0.0,,245,Further from the nearest clinic or hospital,True,True
 8942e44e247ffff,0.695494,0.0,0.275929,0.0,,245,The ground here gets hotter on summer afternoons,True,True
-8942e44e09bffff,0.01,0.0,0.5,0.0,,245,Further from the nearest clinic or hospital,True,True
-8942e44e407ffff,0.13691,0.0,0.25737,0.0,,245,Further from the nearest clinic or hospital,True,True
 8942e44e26bffff,0.6103,0.0,0.331788,0.0,,245,Further from the nearest clinic or hospital; The ground here gets hotter on summer afternoons,True,True
 8942e44e26fffff,1.0,0.0,0.296971,0.0,,245,The ground here gets hotter on summer afternoons; Further from the nearest clinic or hospital,True,True
 8942e44e27bffff,0.325322,0.0,0.275386,0.0,,245,Further from the nearest clinic or hospital,True,True
-8942e44c4cbffff,1.0,0.0,0.547825,0.0,,245,Further from the nearest clinic or hospital; The ground here gets hotter on summer afternoons,True,True
+8942e44e407ffff,0.13691,0.0,0.25737,0.0,,245,Further from the nearest clinic or hospital,True,True
 8942e44e413ffff,0.01,0.0,0.353337,0.0,,245,Further from the nearest clinic or hospital,True,True
 8942e44e43bffff,0.541631,0.0,0.298668,0.0,,245,Further from the nearest clinic or hospital; The ground here gets hotter on summer afternoons,True,True
-8942e44c49bffff,0.846567,0.0,0.274335,0.0,,245,The ground here gets hotter on summer afternoons; Further from the nearest clinic or hospital,True,True
 8942e44e46bffff,0.01,0.0,0.502814,0.0,,245,Further from the nearest clinic or hospital,True,True
 8942e44e693ffff,0.37618,0.0,0.426797,0.0,,245,Further from the nearest clinic or hospital,True,True
 8942e44e6a7ffff,0.264163,0.0,0.414559,0.0,,245,Further from the nearest clinic or hospital,True,True
-8942e44e093ffff,0.558369,0.0,0.428701,0.0,,245,Further from the nearest clinic or hospital; The ground here gets hotter on summer afternoons,True,True
-8942e44e08fffff,0.01,0.0,0.379961,0.0,,245,Further from the nearest clinic or hospital,True,True
-8942e44e08bffff,0.01,0.0,0.491299,0.0,,245,Further from the nearest clinic or hospital,True,True
-8942e44e087ffff,0.331974,0.0,0.353695,0.0,,245,Further from the nearest clinic or hospital,True,True
-8942e44e083ffff,0.01,0.0,0.434966,0.0,,245,Further from the nearest clinic or hospital,True,True
-8942e44e037ffff,0.546137,0.0,0.171892,0.0,,245,The ground here gets hotter on summer afternoons,True,True
-8942e44e097ffff,0.595494,0.0,0.377129,0.0,,245,Further from the nearest clinic or hospital; The ground here gets hotter on summer afternoons,True,True

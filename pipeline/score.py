@@ -181,7 +181,8 @@ def build() -> dict[str, object]:
         "weights_provisional": bool(weights_cfg["provisional"]),
         "model_incomplete": bool(missing),
     })
-    scores = scores.sort_values("rank").reset_index(drop=True)
+    # rank then h3, so tied cells come out in the same order on every machine
+    scores = scores.sort_values(["rank", "h3"], kind="stable").reset_index(drop=True)
 
     zero_priority = int((priority == 0).sum())
     print(f"\n  priority  min {priority.min():.6f}  median {np.median(priority):.6f}  "

@@ -1164,3 +1164,25 @@ coordinator who knows where their own stock sits gets no use from the page.
 
 **Samraj to confirm** (QUESTIONS.md Q16). Reversing it removes the map-click handler
 and the add-point button; the exact-scenario section is unaffected.
+
+**D23 addendum (2026-09-27) — the fix had not reached the sensitivity analysis.** D23
+was applied in `pipeline/score.py`, which produces the headline score, but not in
+`pipeline/sensitivity.precompute`, which normalises separately for the 1,000 draws.
+Under percentile rank the 21 empty cells therefore still got exposure 0.0379 in half the
+draws. Their priority ceiling reached 0.35 instead of 0, and they outranked real
+residents often enough to widen other cells' intervals. The original test checked only
+that empty cells never reached the top 20%, which they did not, so it passed.
+
+**Found by accident** while diagnosing a CI failure: the byte-for-byte reproducibility
+test failed on GitHub's Linux runner because quicksort ordered the 21 tied cells
+differently there. Looking at those rows showed empty cells with non-zero priority
+intervals.
+
+**Fixed:** `precompute` now calls the same `apply_structural_zero`, and both outputs sort
+by rank then cell id with a stable sort. **Measured effect:** stability class and
+P(top 20%) unchanged for all 265 cells (28 / 48 / 189; 12 top cells below a coin flip);
+rank intervals of 36 populated cells moved by at most 19 places (mean 0.9); median
+priority interval 0.193 → 0.190; empty cells' priority interval now exactly [0, 0].
+Three new tests pin it: exactly zero in every draw, the zero applied under both methods,
+and deterministic row order. The model report is corrected, with a note saying why.
+**No decision changes.** This makes the code do what D23 already said.

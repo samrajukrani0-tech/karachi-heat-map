@@ -129,3 +129,11 @@ def test_it_never_calls_an_area_dangerous_or_unsafe(report):
             assert "heat" in sentence.lower(), (
                 f"'dangerous' used without reference to heat: {sentence.strip()[:90]}"
             )
+
+
+def test_the_interval_widths_match(report, outputs):
+    """Added when a sensitivity fix moved the priority interval from 0.193 to 0.190 and
+    nothing noticed that the report still said 0.193."""
+    meta = outputs["sensitivity"]
+    assert f"**{meta['median_rank_interval']:.0f} places**" in report
+    assert f"**{meta['median_priority_interval']:.3f}** on a 0" in report

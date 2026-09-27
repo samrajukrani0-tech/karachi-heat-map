@@ -27,6 +27,7 @@ from pipeline.normalise import normalise  # noqa: E402
 from pipeline.score import (  # noqa: E402
     COLUMN_FOR,
     IncompleteDimensionWarning,
+    apply_structural_zero,
     dimension_score,
     weighted_geometric_mean,
 )
@@ -49,10 +50,14 @@ def precompute(frame: pd.DataFrame, indicators: list[dict], model: dict
                 continue
             if indicator.get("transform") == "log1p":
                 raw = np.log1p(raw)
-            values[indicator["id"]] = normalise(
+            scaled = normalise(
                 raw, method=method, direction=indicator["direction"], name=indicator["id"],
                 low_percentile=norm["clip_low_percentile"],
                 high_percentile=norm["clip_high_percentile"])
+            # D23 applies here too. Without it, percentile rank gave the 21 empty cells
+            # exposure 0.0379 in half the draws, so they outranked real residents and
+            # widened everyone's intervals, while the headline score (score.py) was fine.
+            values[indicator["id"]] = apply_structural_zero(scaled, frame, indicator)
         out[method] = values
     return out
 
@@ -165,7 +170,9 @@ def build() -> dict[str, object]:
         "certainty": certainty,
         "confidence": classify(certainty),
         "confidence_literal": classify(pooled["p"]),
-    }).sort_values("rank").reset_index(drop=True)
+    # rank then h3: 21 cells tie at the bottom, and quicksort ordered them differently
+    # on CI's Linux runner than on macOS, which broke the byte-for-byte check.
+    }).sort_values(["rank", "h3"], kind="stable").reset_index(drop=True)
 
     print(f"Monte Carlo: {n_draws} draws, seed {cfg['seed']}, Dirichlet concentration {alpha}")
     print(f"  methods run SEPARATELY then pooled: {methods} "
@@ -201,8 +208,8 @@ def build() -> dict[str, object]:
     return {"draws": n_draws, "seed": int(cfg["seed"]),
             "dirichlet_concentration": alpha,
             "median_rank_interval": float(np.median(out["rank_interval_width"])),
-            "median_priority_interval": float(np.median(
-                out["priority_high_95pct"] - out["priority_low_5pct"])),
+            "median_priority_interval": round(float(np.median(
+                out["priority_high_95pct"] - out["priority_low_5pct"])), 3),
             "mean_method_gap": float(method_gap.mean()),
             "confidently_in": int((out["stability"] == "confidently in").sum()),
             "uncertain": int((out["stability"] == "uncertain").sum()),

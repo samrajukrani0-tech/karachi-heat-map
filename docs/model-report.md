@@ -127,7 +127,7 @@ $$ CI = \frac{\lambda_{\max} - n}{n - 1}, \qquad CR = \frac{CI}{RI_n} $$
 
 1000 seeded draws (seed 20260926), jittering the Vulnerability weights and the dimension exponents with a Dirichlet of concentration 50, and swapping the normalisation method. The two method arms are run and reported **separately**: pooled, they produce bimodal rank distributions whose median lands in the trough — a value no draw favours.
 
-- Median 90% **rank** interval: **53 places**; median 90% **priority** interval: **0.193** on a 0–0.85 scale.
+- Median 90% **rank** interval: **53 places**; median 90% **priority** interval: **0.190** on a 0–0.85 scale. *(Corrected 2026-09-27 from 0.193: the sensitivity draws were not applying the D23 structural zero to empty cells under percentile rank. Fixing it moved 36 cells' rank intervals by at most 19 places and changed no stability class.)*
 - Mean |P(top 20%) under one normalisation − the other| = **0.144**. The normalisation choice is not a detail.
 
 Rank intervals look alarming next to priority intervals because **rank is competitive** — a cell moves when *other* cells move — and the priority curve is nearly flat through the middle of the ranking. Both are published.

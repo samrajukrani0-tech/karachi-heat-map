@@ -1115,3 +1115,20 @@ exactly this.
 **Not sent anywhere.** Samraj hands it over himself (§2.6).
 **Evidence:** PDF is 1 A4 page, 176 kB; tests 5 passed; `check.py --quick` CHECK: PASS (7).
 **Next:** P5-05 Release, which is blocked on P2-02b.
+
+## 2026-09-27 — CI was red since P4-03; two causes, one of them a real model bug
+**Cause 1 (test too strict about float noise):** the planner fixture-freshness test
+compared floats exactly, and PROJ on Linux and macOS differ by 4×10⁻¹⁰ m on a 2.6 km
+distance. It now compares structure and strings exactly and floats to 1e-9 relative. A
+guard test proves that a real change still fails it.
+**Cause 2 (non-deterministic sort, which exposed a bug):** the sensitivity
+reproducibility test failed on Linux because `sort_values("rank")` used quicksort, which
+orders the 21 tied bottom cells differently per platform. Reading those rows showed
+**empty cells with priority up to 0.35 in some draws**. D23's structural zero had never
+reached `sensitivity.precompute`. Fixed and pinned by three new tests; see the D23
+addendum for the measured effect. Headline numbers unchanged (28 / 48 / 189, 12 coin
+flips). 36 cells' rank intervals moved by at most 19 places. The model report's 0.193 is
+now 0.190, and a new test ties that sentence to the data, because nothing had.
+**Consequence:** the live site was stuck at the P4-01 deploy for three pushes. The
+planner, offline mode, briefs and README were committed but not live until this fix.
+**Evidence:** pytest 886 passed; `check.py --quick` CHECK: PASS (7 checks).
