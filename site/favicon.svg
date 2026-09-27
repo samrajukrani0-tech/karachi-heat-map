@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="Heat priority map">
+<rect width="32" height="32" fill="#FAF8F5"/>
+<polygon points="16,4 26,10 26,22 16,28 6,22 6,10" fill="#6C2A1F"/>
+<polygon points="16,10 21,13 21,19 16,22 11,19 11,13" fill="#F6E3D0"/>
+</svg>

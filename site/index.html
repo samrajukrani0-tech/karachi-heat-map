@@ -5,7 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Karachi Heat Priority Map</title>
 <meta name="description" content="Where heat support should go first in Landhi Town, and why.">
-<link rel="stylesheet" href="vendor/leaflet.css">
+<link rel="stylesheet" href="vendor/leaflet.css" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="vendor/leaflet.css"></noscript>
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="preload" href="data/cells.geojson" as="fetch" crossorigin="anonymous">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -28,7 +31,7 @@
         <h2>Where heat support should go first</h2>
         <p class="small muted">Landhi Town, <span id="cell-count">265</span> areas.
         Darker means higher priority. Tap an area to see why.</p>
-        <p class="notice small" id="provisional-note" hidden><strong>Provisional.</strong>
+        <p class="notice small" id="provisional-note"><strong>Provisional.</strong>
         The weights are placeholders and one indicator has no data.
         <a href="how-it-works.html">What that means</a></p>
     </div>

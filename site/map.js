@@ -263,9 +263,12 @@
           updateLegend();
         });
 
+        // The banner is visible by default, because the honest state should not depend
+        // on JavaScript running. It is only ever REMOVED, and only once the data says the
+        // model is no longer provisional.
         var note = document.getElementById("provisional-note");
-        if (note && (doc.metadata.weights_provisional || doc.metadata.model_incomplete)) {
-          note.hidden = false;
+        if (note && !doc.metadata.weights_provisional && !doc.metadata.model_incomplete) {
+          note.hidden = true;
         }
         var count = document.getElementById("cell-count");
         if (count) count.textContent = String(doc.metadata.cells);

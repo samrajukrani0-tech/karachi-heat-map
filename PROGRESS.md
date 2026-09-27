@@ -855,3 +855,24 @@ figure, and power cuts are absent.
 (D11b), About shows no email or contact channel of any kind (D11c), and no page calls an
 area unsafe or dangerous (§2.5).
 **Next:** P3-08 Quality gates, then P3-09 Deploy. (P3-07 and P3-07b are dropped by D9.)
+
+## 2026-09-27 — P3-08 Quality gates
+**Evidence:** `check.py --lighthouse` -> **`CHECK: PASS (8 checks)`**; Lighthouse
+performance 91, accessibility 100, best practices 96, SEO 100. All eight §10 gates are now
+live.
+**Performance started at 79 against a floor of 85, and the floor was not moved.** Three
+genuine faults were fixed instead, 79 → 84 → 86 → 91:
+1. **A 404 from a missing favicon.** Notable because the Playwright console test passed
+   while Lighthouse's console-errors audit failed — the favicon request happens outside
+   the page's own script, so the page-level listener never saw it.
+2. **A 0.165 layout shift** caused by the provisional banner being revealed by JavaScript
+   after load.
+3. **`leaflet.css` blocking the critical path**, now loaded non-blocking with a
+   `<noscript>` fallback.
+**The layout-shift fix improved the site's honesty, not just its score.** The provisional
+banner is now rendered visible in the HTML and is only ever *removed* by JavaScript — so
+the honest state no longer depends on a script running. A test loads the page with
+JavaScript disabled and asserts the banner is still there.
+**Two budget tests added:** first load excluding basemap tiles is well under 1.5 MB, and
+the site makes no third-party request except the basemap, because Leaflet is vendored.
+**Next:** P3-09 Deploy.

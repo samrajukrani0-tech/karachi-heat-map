@@ -594,10 +594,10 @@
     "P3-05",
     "P3-06"
    ],
-   "passes": false,
+   "passes": true,
    "blocked_on": null,
    "dropped": null,
-   "evidence": null
+   "evidence": "`uv run python scripts/check.py --lighthouse` -> 'CHECK: PASS (8 checks)' with 'performance: 91 (needs 85); accessibility: 100 (needs 95); best-practices: 96 (needs 90); seo: 100 (needs 90)'. Every section 10 gate is now live: ruff, pytest, data validation, site-data consistency, html-validate, Playwright, axe-core and Lighthouse. PERFORMANCE STARTED AT 79 AND THE THRESHOLD WAS NOT LOWERED. Three genuine faults were fixed instead: a 404 from a missing favicon (which was also failing Lighthouse's console-errors audit while the Playwright console test passed, because the favicon request happens outside the page's own script); a 0.165 layout shift caused by the provisional banner being revealed by JavaScript after load; and leaflet.css blocking the critical path. 79 -> 84 -> 86 -> 91. The layout-shift fix also improved the site's honesty: the provisional banner is now rendered visible in the HTML and only ever REMOVED by JavaScript, so the honest state no longer depends on a script running -- asserted by a test that loads the page with JavaScript disabled. Page-weight budget enforced by test: first load excluding basemap tiles is well under 1.5 MB, and a second test asserts the site makes no third-party request except the basemap, since Leaflet is vendored."
   },
   {
    "id": "P3-09",

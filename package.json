@@ -10,6 +10,7 @@
   "devDependencies": {
     "@axe-core/playwright": "^4.10.0",
     "@playwright/test": "^1.49.0",
-    "html-validate": "^8.24.0"
+    "html-validate": "^8.24.0",
+    "lighthouse": "^13.5.0"
   }
 }

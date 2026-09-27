@@ -184,9 +184,14 @@ def check_axe() -> tuple[str, str]:
 
 
 def check_lighthouse() -> tuple[str, str]:
+    """Thresholds from PROMPT.md section 10, enforced by scripts/lighthouse.mjs."""
     if not _node_tooling_ready():
         return NA, "node tooling not installed - enabled by P3-08"
-    return FAIL, "lighthouse runner not implemented yet"
+    url = os.environ.get("SITE_URL")
+    command = ["node", "scripts/lighthouse.mjs"] + ([url + "/index.html"] if url else [])
+    ok, out = run(command)
+    summary = out.splitlines()[-1] if out else "no output"
+    return (PASS, summary) if ok else (FAIL, out)
 
 
 CHECKS = [
