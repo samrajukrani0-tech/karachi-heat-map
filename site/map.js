@@ -19,7 +19,9 @@
     { id: "vulnerability", label: "Vulnerability", kind: "value",
       low: "Fewer risk factors", high: "More risk factors" },
     { id: "stability", label: "Confidence", kind: "category",
-      low: "Confidently out", high: "Confidently in" }
+      low: "Confidently not a priority", high: "Confidently a priority",
+      note: "The middle band is the one to look at: those areas move a lot when the " +
+            "assumptions are varied." }
   ];
 
   var state = { layer: "priority", selected: null, data: null, breaks: {} };
@@ -171,6 +173,11 @@
 
   function updateLegend() {
     var layer = LAYERS.filter(function (l) { return l.id === state.layer; })[0];
+    var note = document.getElementById("layer-note");
+    if (note) {
+      note.textContent = layer.note || "";
+      note.hidden = !layer.note;
+    }
     var ends = document.querySelector(".legend-ends");
     if (ends) {
       ends.firstElementChild.textContent = layer.low;

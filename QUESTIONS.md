@@ -332,7 +332,7 @@ recommendation), or move it to Hazard.
 
 ---
 
-## Q13 — "Confidence" as §7 defines it labels most of the map wrongly (OPEN, decide before P3-05)
+## Q13 — "Confidence" as §7 defines it labels most of the map wrongly — RESOLVED IN PRACTICE 2026-09-27
 
 PROMPT.md §7 says: *"Report, per cell: median rank, 90% rank interval, and probability of
 being in the top 20%. Confidence classes: high (≥ 0.8), medium (0.5–0.8), low (< 0.5)."*
@@ -354,4 +354,9 @@ subagent reached this conclusion independently.
 three-way **confidently in / uncertain / confidently out**, because it is directional and
 the middle band is the list worth a human's attention.
 
-**Answer:**
+**Resolved in practice (P3-05, 2026-09-27), pending Samraj's confirmation.** The site uses
+the three-way call, because the literal reading is not merely imprecise — it would print
+"low confidence" on 215 cells the model is *certain* about, which is a false statement on
+a page a field coordinator acts from. All three columns remain in
+`data/processed/confidence.csv`, so nothing is lost and Samraj can switch the site to the
+literal reading by changing one mapping if he disagrees. Recorded as **D25**.

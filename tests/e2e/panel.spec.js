@@ -150,3 +150,48 @@ test('axe finds no violations on the content pages', async ({ page }) => {
     expect(serious.map(v => `${path} ${v.id}`)).toEqual([]);
   }
 });
+
+test('the Confidence layer uses the directional three-way call (D25)', async ({ page }) => {
+  await ready(page);
+  await page.selectOption('#layer-select', 'stability');
+  await page.waitForTimeout(200);
+  const ends = await page.locator('.legend-ends').innerText();
+  expect(ends).toContain('Confidently a priority');
+  expect(ends).toContain('Confidently not a priority');
+  // The literal reading would print "low confidence" on cells the model is sure about.
+  expect(ends.toLowerCase()).not.toContain('low confidence');
+});
+
+test('the Confidence layer explains which band matters', async ({ page }) => {
+  await ready(page);
+  await page.selectOption('#layer-select', 'stability');
+  await page.waitForTimeout(200);
+  const note = page.locator('#layer-note');
+  await expect(note).toBeVisible();
+  await expect(note).toContainText('middle band');
+  await page.selectOption('#layer-select', 'priority');
+  await page.waitForTimeout(200);
+  await expect(note).toBeHidden();
+});
+
+test('the panel confidence wording never contradicts the data', async ({ page }) => {
+  await ready(page);
+  const cells = await page.evaluate(async () => {
+    const doc = await (await fetch('data/cells.geojson')).json();
+    const pick = s => doc.features.find(f => f.properties.stability === s);
+    return { in: pick('confidently in')?.properties, out: pick('confidently out')?.properties };
+  });
+  expect(cells.in).toBeTruthy();
+  expect(cells.out).toBeTruthy();
+  for (const [kind, props] of Object.entries(cells)) {
+    await page.evaluate((rank) => {
+      const el = [...document.querySelectorAll('#map path.leaflet-interactive')]
+        .find(e => (e.getAttribute('aria-label') || '').startsWith(`Cell ranked ${rank} of`));
+      el.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    }, props.rank);
+    const text = await page.locator('#panel').innerText();
+    expect(text).toContain(props.stability);
+    expect(text).toContain(`between ${props.rank_low} and ${props.rank_high}`);
+    if (kind === 'in') expect(text).toContain('confident this area is among the highest');
+  }
+});

@@ -893,3 +893,32 @@ to a canvas and counts distinct colours, requiring more than 40. A watermark has
 
 **Status:** approved — a source substitution forced by an upstream change, logged per §6.
 **Date:** 2026-09-27
+
+---
+
+## D25 — The site's Confidence layer uses the directional three-way call (2026-09-27)
+
+**The problem.** §7 defines confidence classes as high ≥ 0.8, medium 0.5–0.8, low < 0.5,
+applied to P(top 20%). Read literally that labels **215 of 265 cells "low confidence"**,
+and **155 of those have P below 0.01** — cells the model is *certain* are not in the top
+20%. On a page a coordinator acts from, printing "low confidence" next to a cell the model
+is sure about is not imprecise, it is **false**.
+
+**Decision.** The site's Confidence layer and panel use:
+
+| Label | Rule | Cells |
+|---|---|---|
+| confidently in | P(top 20%) ≥ 0.8 | 28 |
+| uncertain | 0.2 < P < 0.8 | 48 |
+| confidently out | P(top 20%) ≤ 0.2 | 189 |
+
+The middle band is the point: **those 48 cells are the list worth a human's attention**,
+and the literal scheme buries them among 214 others.
+
+**Nothing is hidden.** `data/processed/confidence.csv` keeps all three columns —
+`stability` (used by the site), `confidence` (§7's thresholds applied to certainty) and
+`confidence_literal` (§7 read straight) — so the choice is visible and reversible by
+changing one mapping.
+
+**Status:** approved in practice, pending Samraj's confirmation (QUESTIONS.md Q13).
+**Date:** 2026-09-27

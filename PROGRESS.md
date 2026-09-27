@@ -822,3 +822,21 @@ and the absent power cuts — so a panel forwarded on WhatsApp still says what i
 **One unnecessary element removed:** "never a verdict on a neighbourhood" appeared three
 times (panel, standalone paragraph, footer). The standalone paragraph is gone.
 **Next:** P3-05 Confidence.
+
+## 2026-09-27 — P3-05 Confidence
+**Evidence:** `npx playwright test` -> 89 passed, 1 skipped; `check.py --quick` ->
+`CHECK: PASS (7 checks)`.
+**Q13 had to be resolved here, because the site cannot show two definitions.** §7's
+classes read literally would print **"low confidence" on 215 of 265 cells**, 155 of them
+with P below 0.01 — cells the model is *certain* about. On a page a coordinator acts from
+that is not imprecise, it is false. The site therefore uses the directional three-way
+call (**D25**): confidently a priority 28, uncertain 48, confidently not a priority 189.
+All three columns stay in `confidence.csv`, so the choice is visible and reversible by
+changing one mapping.
+**The middle band is the product.** The Confidence layer carries a note saying so — those
+48 cells are the ones worth a human's attention, and the literal scheme buried them among
+214 others.
+**A test that checks wording against data:** for both a "confidently in" and a
+"confidently out" cell it asserts the panel states the right label and the exact rank
+interval from the file, so the prose cannot drift from the numbers.
+**Next:** P3-06 Content pages.

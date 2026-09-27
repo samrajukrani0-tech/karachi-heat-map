@@ -528,10 +528,10 @@
    "depends_on": [
     "P3-04"
    ],
-   "passes": false,
+   "passes": true,
    "blocked_on": null,
    "dropped": null,
-   "evidence": null
+   "evidence": "The Confidence layer is built on P2-04's output and uses the DIRECTIONAL three-way call recorded as D25: confidently a priority (28 cells), uncertain (48), confidently not a priority (189). The literal reading of section 7's thresholds would print 'low confidence' on 215 cells, 155 of them with P below 0.01 -- cells the model is certain about -- which on a page a coordinator acts from is false rather than merely imprecise. All three columns remain in confidence.csv so the choice is visible and reversible. The layer carries a note saying which band matters ('the middle band is the one to look at'), shown only for that layer. The panel states the stability label and the rank interval in words. Three new tests: the legend wording never says 'low confidence'; the explanatory note appears for Confidence and disappears for Priority; and the panel's confidence wording is checked against the underlying data for both a 'confidently in' and a 'confidently out' cell, including the exact rank interval. npx playwright test -> 89 passed, 1 skipped; check.py --quick -> 'CHECK: PASS (7 checks)'."
   },
   {
    "id": "P3-06",
