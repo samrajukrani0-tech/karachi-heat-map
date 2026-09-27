@@ -114,3 +114,14 @@ def test_unclosed_ways_raise_rather_than_guess():
     payload = {"elements": [{"members": [_way([(0.0, 0.0), (1.0, 1.0)])]}]}
     with pytest.raises(ValueError):
         relation_to_polygon(payload)
+
+
+def test_accessed_is_the_download_date_not_the_rebuild_date(root):
+    """A rebuild from the cache must not claim the boundary was re-fetched today."""
+    import json
+
+    doc = json.loads((root / "data" / "processed" / "pilot_area.geojson").read_text("utf-8"))
+    manifest = json.loads((root / "data" / "raw" / "manifest.json").read_text("utf-8"))
+    relation = doc["features"][0]["properties"]["osm_relation"]
+    entry = manifest[f"osm/relation_{relation}.json"]
+    assert doc["features"][0]["properties"]["accessed"] == entry["downloaded"]

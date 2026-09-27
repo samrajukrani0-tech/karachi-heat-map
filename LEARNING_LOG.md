@@ -901,3 +901,36 @@ tie cases could catch it.
    and the exact integer solver is guaranteed at least as good, so the plans a team
    would act on are the exact ones.
 </details>
+
+## P5-02 — working offline
+
+**What and why.** Field coordinators may open the map where there is no signal. A
+service worker is a small script the browser keeps. It saves the pages and data on the
+first visit and hands them back when the network is gone. The background map tiles
+belong to Esri and are not ours to store, so offline the map draws a simplified outline
+of the main roads from OpenStreetMap instead. The priorities are identical, because they
+come from the cached data, not the tiles.
+
+**The key idea in A Level terms.** *Line simplification* (Douglas–Peucker). The
+algorithm keeps a road's two end points, finds the point furthest from the straight
+line between them, and keeps it only if it is more than 15 m away. It then repeats on
+each half. That is recursion with a tolerance as the base case, much like a bisection
+search. It turned thousands of OSM points into a 72 kB file, and no road moves by more
+than 15 m.
+
+**Questions.**
+1. Why does the offline map hide the tile layer, rather than showing whatever tiles the
+   browser still has?
+2. Why "network-first" rather than "cache-first" for the data files?
+3. What does the 15 m tolerance guarantee, and what does it not?
+
+<details><summary>Answers</summary>
+
+1. A patchwork of leftover tiles looks like a complete map while missing most of it,
+   which is misleading. One consistent outline is honest about what is available.
+2. When online, the site should always show the current model. A cache-first worker
+   would keep showing an old file, including an old "provisional" state, until the
+   cache happened to refresh.
+3. Every simplified road lies within 15 m of the original. It does not guarantee the
+   road exists as drawn: OSM itself covers Landhi incompletely (D18).
+</details>

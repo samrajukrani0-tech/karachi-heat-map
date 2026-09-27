@@ -22,7 +22,7 @@ from pyproj import Transformer  # noqa: E402
 from shapely.geometry import LineString, MultiPolygon, Polygon, mapping  # noqa: E402
 from shapely.ops import linemerge, polygonize, transform, unary_union  # noqa: E402
 
-from pipeline import overpass  # noqa: E402
+from pipeline import fetch, overpass  # noqa: E402
 from pipeline.config import ARTIFACTS, MEASUREMENT_CRS, PROCESSED, STORAGE_CRS, load  # noqa: E402
 
 OUTPUT = PROCESSED / "pilot_area.geojson"
@@ -116,7 +116,11 @@ def build(*, refresh: bool = False) -> dict[str, Any]:
             "source": "OpenStreetMap via the Overpass API",
             "source_url": f"https://www.openstreetmap.org/relation/{relation_id}",
             "licence": "ODbL 1.0 - (c) OpenStreetMap contributors",
-            "accessed": dt.date.today().isoformat(),
+            # The date the response was downloaded, from the manifest -- not today, which
+            # a rebuild from the cache would otherwise stamp on data it never re-fetched.
+            "accessed": fetch.load_manifest().get(
+                f"osm/relation_{relation_id}.json", {}).get(
+                "downloaded", dt.date.today().isoformat()),
             "raw_response_sha256": digest,
             "raw_response_sha256_note": (
                 "fingerprints this particular download, not the geometry: Overpass "
