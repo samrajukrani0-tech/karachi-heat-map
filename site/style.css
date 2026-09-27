@@ -211,3 +211,7 @@ footer.site p { max-width: 38rem; }
 .table-scroll { overflow-x: auto; }
 caption { text-align: left; padding: 4px 0; }
 .point-label { font: 600 0.8rem var(--font); }
+
+/* --- field briefs list (P5-01) -------------------------------------------- */
+table.briefs .links { display: flex; flex-wrap: wrap; gap: 0 14px; }
+table.briefs .links a { display: inline-flex; align-items: center; min-height: var(--tap); }

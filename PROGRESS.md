@@ -1039,3 +1039,36 @@ provenance bug, logged here rather than silently tolerated.
 **Evidence:** offline suite 8 passed; pytest 859 passed; `check.py --lighthouse` CHECK:
 PASS (8 checks), performance 88 / accessibility 100 / best practices 96 / SEO 100.
 **Next:** P5-04 README, then P5-01 Field briefs.
+
+## 2026-09-27 — P5-01 Field briefs: PASS
+**What changed:** `pipeline/localities.py` (the 12 named OSM place nodes inside Landhi,
+now a proper pipeline step), `scripts/field_briefs.py` and `scripts/render_briefs.mjs`,
+`site/briefs/` (12 × HTML, PDF, PNG, plus `index.json`), the Field briefs page, 
+`tests/test_field_briefs.py` (10) and `tests/e2e/briefs.spec.js` (3 × 2 viewports).
+**What a brief is.** One A4 page per place: a headline in plain words, a map of Landhi
+with the nearby areas coloured (vector, no tiles, so it prints and photocopies), what
+pushes the scores up, a table of the areas, four questions worth asking on the ground,
+the caveats, and lines for visit notes. It covers the areas within **500 m of the point
+OSM marks**. A place node is a point, not a boundary, and the page says so rather than
+drawing a neighbourhood that does not exist.
+**Found and fixed by looking at the output:**
+1. The first render ran off the bottom of the page. The layout was tightened, and the
+   renderer now **fails** if the footer ends below the page. The page hides overflow, so
+   a page count alone could not have caught it.
+2. "Why these areas rank where they do" read as praise on a low-ranked place, so it now
+   says "What pushes these areas' scores up". "Confident about none of them being in
+   the top fifth" was ambiguous, so there are now three separate sentences for confident
+   in, confident out, and unsure.
+3. html-validate caught single-quoted attributes and header cells with no `scope`.
+4. On a phone the View / PDF / Image links were about 20 px tall. They are now 44 px, and
+   a test checks it.
+5. A query I wrote for the localities step asked Overpass for `out tags`, which returns
+   no coordinates. It only worked because the cached response came from an earlier
+   `out body` query, and a fresh clone would have broken. It now asks for `out body`.
+**Precache scope, stated:** the brief pages are precached, so they open offline. The
+PDF/PNG downloads are cached on first open instead: twelve pairs would cost a phone
+about 8 MB on its first visit. `tests/test_offline.py` names this one exclusion with the
+reason. It is not a blanket skip.
+**Evidence:** pytest 870 passed; `check.py --quick` CHECK: PASS (7 checks); every PDF is
+one A4 page; every file is under 1 MB (largest 422 kB).
+**Next:** P5-04 README, P5-03 one-pager.

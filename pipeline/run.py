@@ -37,20 +37,23 @@ STEPS: list[tuple[str, str]] = [
     ("score", "P2-03 scores"),
     ("sensitivity", "P2-04 sensitivity"),
     ("validate", "P2-05 validation pack"),
+    ("localities", "named OSM places, for the form and the briefs"),
     ("scenarios", "P4-02a allocation scenarios"),
     ("roads", "P5-02 offline road outline"),
     ("site", "site data files"),
+    ("briefs", "P5-01 field briefs (needs node: npm ci)"),
 ]
 
 
 def run_step(name: str) -> None:
-    if name == "site":
-        # The script ends in `raise SystemExit(main())`, which would end this run too.
+    scripts = {"site": "build_site_data.py", "briefs": "field_briefs.py"}
+    if name in scripts:
+        # These scripts end in `raise SystemExit(main())`, which would end this run too.
         try:
-            runpy.run_path(str(ROOT / "scripts" / "build_site_data.py"), run_name="__main__")
+            runpy.run_path(str(ROOT / "scripts" / scripts[name]), run_name="__main__")
         except SystemExit as done:
             if done.code:
-                raise SystemExit(f"step site failed: {done.code}") from None
+                raise SystemExit(f"step {name} failed: {done.code}") from None
         return
     module = importlib.import_module(f"pipeline.{name}")
     saved, sys.argv = sys.argv, [f"pipeline.{name}"]   # steps parse their own argv

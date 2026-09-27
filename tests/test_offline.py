@@ -14,6 +14,10 @@ def test_every_site_file_is_precached(root):
     site = root / "site"
     served = {p.relative_to(site).as_posix() for p in site.rglob("*") if p.is_file()}
     served -= {"sw.js"}                      # the worker is not cached by itself
+    # The briefs' PDF/PNG downloads are cached on first open, not precached: twelve
+    # pairs would cost a phone ~8 MB on its first visit (see the note in sw.js). The
+    # brief pages themselves ARE precached, so every brief still opens offline.
+    served -= {f for f in served if f.startswith("briefs/") and f.endswith((".pdf", ".png"))}
     missing = served - _shell(root)
     assert not missing, f"not precached, so broken offline: {sorted(missing)}"
 

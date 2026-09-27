@@ -934,3 +934,34 @@ than 15 m.
 3. Every simplified road lies within 15 m of the original. It does not guarantee the
    road exists as drawn: OSM itself covers Landhi incompletely (D18).
 </details>
+
+## P5-01 — field briefs, and why a point is not a place
+
+**What and why.** A coordinator standing in Landhi thinks in named places, not
+hexagons. So each brief takes a place OpenStreetMap names and shows the areas around it.
+But OSM records "Ilyas Goth" as a single point, not a boundary. The brief therefore says
+exactly what it covers: the areas within 500 m of that point. It does not pretend to
+know where the neighbourhood ends.
+
+**The key idea in A Level terms.** *Distance on a sphere.* The haversine formula gives
+the great-circle distance between two latitude/longitude points,
+d = 2R·asin(√(sin²(Δφ/2) + cos φ₁ cos φ₂ sin²(Δλ/2))). At 500 m the Earth is so nearly
+flat that this agrees with the flat-map (UTM) distance to well under a metre, far less
+than a hexagon's width. Knowing when an approximation is good enough is part of the
+modelling.
+
+**Questions.**
+1. Why does each brief say "within 500 m of the point OpenStreetMap marks" instead of
+   "in Ilyas Goth"?
+2. Why draw the map as vector shapes rather than a screenshot of the web map?
+3. Why can a PDF be "one page" and still be wrong?
+
+<details><summary>Answers</summary>
+
+1. OSM gives a point, not a boundary. Claiming a neighbourhood boundary would invent
+   data. A radius is a stated, checkable rule.
+2. It prints and photocopies cleanly, stays small enough for WhatsApp, and does not
+   copy Esri's tiles into a file we redistribute.
+3. The page hid its overflow, so the footer was cut off while the PDF still had exactly
+   one page. The renderer now checks where the last element ends.
+</details>

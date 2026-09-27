@@ -1,0 +1,204 @@
+{
+ "generated": "2026-09-27",
+ "radius_m": 500,
+ "briefs": [
+  {
+   "name_en": "Allah Buksh Goth",
+   "slug": "allah-buksh-goth",
+   "areas": 8,
+   "best_rank": 7,
+   "top_fifth": 5,
+   "cells": [
+    "8942e44e68fffff",
+    "8942e44e687ffff",
+    "8942e44e44bffff",
+    "8942e44e697ffff",
+    "8942e44e683ffff",
+    "8942e44e45bffff",
+    "8942e44e6b3ffff",
+    "8942e44e693ffff"
+   ]
+  },
+  {
+   "name_en": "Bagh-e-Korangi",
+   "slug": "bagh-e-korangi",
+   "areas": 7,
+   "best_rank": 18,
+   "top_fifth": 4,
+   "cells": [
+    "8942e44e453ffff",
+    "8942e44e44bffff",
+    "8942e441927ffff",
+    "8942e44e697ffff",
+    "8942e44e45bffff",
+    "8942e44192fffff",
+    "8942e44e693ffff"
+   ]
+  },
+  {
+   "name_en": "Future Colony",
+   "slug": "future-colony",
+   "areas": 9,
+   "best_rank": 76,
+   "top_fifth": 0,
+   "cells": [
+    "8942e44e387ffff",
+    "8942e44e393ffff",
+    "8942e44e397ffff",
+    "8942e44e02fffff",
+    "8942e44e14bffff",
+    "8942e44e15bffff",
+    "8942e44e027ffff",
+    "8942e44e143ffff",
+    "8942e44e153ffff"
+   ]
+  },
+  {
+   "name_en": "Ilyas Goth",
+   "slug": "ilyas-goth",
+   "areas": 8,
+   "best_rank": 1,
+   "top_fifth": 6,
+   "cells": [
+    "8942e44f1afffff",
+    "8942e44f127ffff",
+    "8942e44f137ffff",
+    "8942e44f133ffff",
+    "8942e44f107ffff",
+    "8942e44f1abffff",
+    "8942e44f123ffff",
+    "8942e44c4dbffff"
+   ]
+  },
+  {
+   "name_en": "Korangi Sector 29",
+   "slug": "korangi-sector-29",
+   "areas": 7,
+   "best_rank": 12,
+   "top_fifth": 2,
+   "cells": [
+    "8942e44e067ffff",
+    "8942e44e39bffff",
+    "8942e44e383ffff",
+    "8942e44e06fffff",
+    "8942e44e38bffff",
+    "8942e44e393ffff",
+    "8942e44e3d7ffff"
+   ]
+  },
+  {
+   "name_en": "Labour Colony",
+   "slug": "labour-colony",
+   "areas": 6,
+   "best_rank": 140,
+   "top_fifth": 0,
+   "cells": [
+    "8942e44c5cbffff",
+    "8942e44c5dbffff",
+    "8942e44e36fffff",
+    "8942e44c5c3ffff",
+    "8942e44c5d3ffff",
+    "8942e44c5d7ffff"
+   ]
+  },
+  {
+   "name_en": "Landhi 89 Chowk",
+   "slug": "landhi-89-chowk",
+   "areas": 8,
+   "best_rank": 70,
+   "top_fifth": 0,
+   "cells": [
+    "8942e44e30fffff",
+    "8942e44e377ffff",
+    "8942e44e33bffff",
+    "8942e44e303ffff",
+    "8942e44e333ffff",
+    "8942e44e317ffff",
+    "8942e44e307ffff",
+    "8942e44e3abffff"
+   ]
+  },
+  {
+   "name_en": "Landhi Sector 21",
+   "slug": "landhi-sector-21",
+   "areas": 8,
+   "best_rank": 2,
+   "top_fifth": 6,
+   "cells": [
+    "8942e44e07bffff",
+    "8942e44e073ffff",
+    "8942e44e063ffff",
+    "8942e44e067ffff",
+    "8942e44e06bffff",
+    "8942e44e077ffff",
+    "8942e44e00fffff",
+    "8942e44e06fffff"
+   ]
+  },
+  {
+   "name_en": "Mansehra Colony",
+   "slug": "mansehra-colony",
+   "areas": 8,
+   "best_rank": 23,
+   "top_fifth": 2,
+   "cells": [
+    "8942e44e007ffff",
+    "8942e44e077ffff",
+    "8942e44e00fffff",
+    "8942e44e02bffff",
+    "8942e44e03bffff",
+    "8942e44e023ffff",
+    "8942e44e033ffff",
+    "8942e44e037ffff"
+   ]
+  },
+  {
+   "name_en": "Muhammad Nagar",
+   "slug": "muhammad-nagar",
+   "areas": 8,
+   "best_rank": 65,
+   "top_fifth": 0,
+   "cells": [
+    "8942e44e32bffff",
+    "8942e44e32fffff",
+    "8942e44e377ffff",
+    "8942e44e367ffff",
+    "8942e44e363ffff",
+    "8942e44c593ffff",
+    "8942e44e36fffff",
+    "8942e44c59bffff"
+   ]
+  },
+  {
+   "name_en": "Sharafi Goth Landhi",
+   "slug": "sharafi-goth-landhi",
+   "areas": 7,
+   "best_rank": 50,
+   "top_fifth": 0,
+   "cells": [
+    "8942e44e0c3ffff",
+    "8942e44e0cbffff",
+    "8942e44e0dbffff",
+    "8942e44e0cfffff",
+    "8942e44e0d3ffff",
+    "8942e44e0c7ffff",
+    "8942e44e0d7ffff"
+   ]
+  },
+  {
+   "name_en": "Sherpao Colony",
+   "slug": "sherpao-colony",
+   "areas": 6,
+   "best_rank": 158,
+   "top_fifth": 0,
+   "cells": [
+    "8942e44c5dbffff",
+    "8942e44e36fffff",
+    "8942e44c4b7ffff",
+    "8942e44c4a7ffff",
+    "8942e44c5d3ffff",
+    "8942e44e36bffff"
+   ]
+  }
+ ]
+}

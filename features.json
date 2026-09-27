@@ -703,10 +703,10 @@
       "depends_on": [
         "P4-03"
       ],
-      "passes": false,
+      "passes": true,
       "blocked_on": null,
       "dropped": null,
-      "evidence": null
+      "evidence": "2026-09-27: scripts/field_briefs.py wrote 12 English A4 briefs, one per named OSM place node inside Landhi (data/processed/localities.csv, the same 12 as the expert form), rendered by scripts/render_briefs.mjs with Playwright Chromium. PDFs 318-335 kB, PNGs 387-422 kB, all under 1 MB; each PDF exactly 1 A4 page (pypdf), each PNG A4 proportions; renderer fails if content overflows the page. tests/test_field_briefs.py 10 passed (ranks match cells.geojson, committed HTML is current, caveats present, no judging words); briefs.spec.js 6 passed (36 links resolve with correct content types, 44px tap targets). check.py --quick CHECK: PASS (7 checks), pytest 870 passed. Brief PNGs and the list page reviewed at 375 and 1280."
     },
     {
       "id": "P5-02",

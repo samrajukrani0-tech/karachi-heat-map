@@ -107,7 +107,7 @@
     var marker = L.circleMarker(latlng, { radius: 8, color: "#1F5E6B", weight: 3,
       fillColor: "#FFFFFF", fillOpacity: 1 }).addTo(state.map);
     marker.bindTooltip("Stock point " + state.points.length, { permanent: true,
-      direction: "right", className: "point-label" });
+      direction: "right", offset: [12, 0], className: "point-label" });
     state.markers.push(marker);
     renderPoints();
     announce("Stock point " + state.points.length + " added.");
