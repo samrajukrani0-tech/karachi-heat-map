@@ -109,6 +109,7 @@ def build() -> dict[str, float]:
 
 
 def _map(grid: dict, rows: list[dict], means: list[float]) -> None:
+    ARTIFACTS.mkdir(parents=True, exist_ok=True)
     by_cell = {r["h3"]: r for r in rows}
     norm = Normalize(vmin=min(means), vmax=max(means))
     cmap = plt.get_cmap("inferno")

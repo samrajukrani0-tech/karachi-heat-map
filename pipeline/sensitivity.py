@@ -210,6 +210,7 @@ def build() -> dict[str, object]:
 
 
 def _figure(out: pd.DataFrame, ranks: np.ndarray, top_n: int) -> None:
+    ARTIFACTS.mkdir(parents=True, exist_ok=True)
     fig, axes = plt.subplots(1, 3, figsize=(15, 4.6), dpi=110)
     order = out.sort_values("median_rank")
     axes[0].fill_between(range(len(order)), order["rank_low_5pct"], order["rank_high_95pct"],

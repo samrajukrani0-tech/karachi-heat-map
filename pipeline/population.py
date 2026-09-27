@@ -119,6 +119,7 @@ def build() -> dict[str, float]:
 
 
 def _map(grid: dict, rows: list[dict]) -> None:
+    ARTIFACTS.mkdir(parents=True, exist_ok=True)
     by_cell = {r["h3"]: r for r in rows}
     positive = [r["population"] for r in rows if r["population"] > 0]
     norm = LogNorm(vmin=max(min(positive), 1), vmax=max(positive))

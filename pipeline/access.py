@@ -129,6 +129,7 @@ def build() -> dict[str, float]:
 
 
 def _map(grid, rows, facilities, boundary) -> None:
+    ARTIFACTS.mkdir(parents=True, exist_ok=True)
     by_cell = {r["h3"]: r for r in rows}
     values = [r["dist_health_m"] for r in rows]
     norm = plt.Normalize(vmin=min(values), vmax=max(values))

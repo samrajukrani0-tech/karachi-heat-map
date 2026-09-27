@@ -23,7 +23,15 @@ jobs:
       - uses: astral-sh/setup-uv@v6
         with:
           enable-cache: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
       - run: uv sync --locked
+      # Without these, html-validate, Playwright and axe report "not applicable" in CI
+      # and Pages could deploy a site nothing had checked.
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
       - name: Quality gates
         run: uv run python scripts/check.py --quick
       - name: Progress

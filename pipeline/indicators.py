@@ -117,6 +117,7 @@ def build() -> dict[str, Any]:
 
 
 def _qa_figure(frame: pd.DataFrame, indicators: list[str]) -> None:
+    ARTIFACTS.mkdir(parents=True, exist_ok=True)
     numeric = [c for c in LAYERS if frame[c].notna().any()]
     cols = 3
     rows = (len(numeric) + cols - 1) // cols

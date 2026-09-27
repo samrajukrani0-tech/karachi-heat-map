@@ -154,6 +154,7 @@ def build() -> dict[str, float]:
 
 
 def _map(grid: dict, rows: list[dict]) -> None:
+    ARTIFACTS.mkdir(parents=True, exist_ok=True)
     by_cell = {r["h3"]: r for r in rows}
     fig, axes = plt.subplots(1, 2, figsize=(13, 6), dpi=110)
     for ax, column, cmap, title in (
