@@ -1237,3 +1237,18 @@ Pending by Samraj's choice, until he has talked to his contacts:
    (may the planner use stock points the user places?); D31 (how a place is scored for
    the expert comparison); and the Karachi-wide expansion go-ahead. No work has been
    started on the expansion.
+
+## 2026-09-27 — Evening wrap-up: D31 approved, one-pager regenerated
+**Samraj's decisions:**
+- **D31 approved:** a place is scored by the population-weighted average Priority of
+  the areas within 500 m, with the single highest area reported alongside. Recorded in
+  DECISIONS.md; the "provisional" wording is gone from `pipeline/expert.py` and P6-01.
+- **Host organisation: TBD.** The one-pager now says so on its first line. It is
+  confirmed after he talks to Edhi and Saylani (P5-03b stays open).
+- **K-Electric bill feeder names: skipped for now** (optional). The one-pager no longer
+  asks for bills; it still asks which areas have the worst power cuts. Handover item 5
+  is set aside, not deleted: it remains the v2 route to power cuts (D20).
+**Regenerated:** `docs/pitch/one-pager.pdf` (1 A4 page, 185 kB) from the edited Markdown.
+**Still pending on Samraj, unchanged:** Q2 / P1-09b and P4-02b (verify a centre); the
+AHP weights (P2-02b, → v1.1.0); P5-03b (host); P6-01 (rankings); Q16 (user-placed stock
+points); the Karachi-wide expansion (no work started).

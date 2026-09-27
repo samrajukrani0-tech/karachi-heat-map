@@ -17,7 +17,7 @@ How one form becomes one row per place:
   * Forms filled in AFTER seeing the map are kept but analysed separately: their
     agreement is inflated by construction, because the person has seen the answer.
 
-How the model scores a place (D31, provisional -- Samraj to confirm): the
+How the model scores a place (D31, approved by Samraj): the
 population-weighted mean Priority of the cells within 500 m of the place's point, the
 same cells its field brief shows. The unweighted maximum is reported alongside, so the
 choice is visible.
@@ -210,7 +210,7 @@ def analyse(by_person: dict[str, list[dict]], cells: list[dict],
             "place_scores": scores,
             "unscorable_places": sorted(unscorable),
             "place_score_rule": f"population-weighted mean Priority of cells within "
-                                f"{RADIUS_M} m (D31, provisional); maximum reported too"}
+                                f"{RADIUS_M} m (D31); maximum reported too"}
 
 
 def write_report(result: dict, path: Path = OUT_DOC) -> None:

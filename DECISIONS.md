@@ -1199,7 +1199,7 @@ stays pending.
 
 ---
 
-## D31 — How the model scores a named place for the expert comparison (2026-09-27, PROVISIONAL)
+## D31 — How the model scores a named place for the expert comparison (2026-09-27)
 
 **Question.** Field staff rank places ("Ilyas Goth"); the model ranks 0.1 km² cells.
 Comparing them needs one model score per place.
@@ -1214,8 +1214,12 @@ with 40.
 here?". It is reported alongside every result, so if the two disagree the choice is
 visible rather than buried.
 
-**Status:** provisional. Samraj to confirm before P6-01's results are read. Changing it
-is one key in `pipeline/expert.py`.
+**Samraj's decision (2026-09-27):** "your approach (population-weighted average of nearby
+areas, with the single highest area also reported) sounds reasonable to me — go ahead
+with that."
+
+**Status:** approved
+**Date:** 2026-09-27
 
 ---
 

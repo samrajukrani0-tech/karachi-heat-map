@@ -1,7 +1,7 @@
 # Karachi Heat Priority Map
 
 **DRAFT for Samraj to edit before it is handed to anyone.** Written for:
-**[the organisation that agrees to host the pilot: fill in once one has said yes]**
+**Host organisation: TBD** (to be confirmed after talking to Edhi and Saylani; fill in once one has said yes)
 
 A free map that suggests where heat-relief support should go first in **Landhi Town**
 during a heatwave, and says why. Support means drinking water, ORS, cooling points and
@@ -45,8 +45,7 @@ ambulance standby. It is a tool for your team's judgement, not a replacement for
    This is how we find out whether the map is any use.
 3. **Your centre:** where it is, whether it can hold stock, how far you deliver, and
    how much water per person you plan for.
-4. **Power cuts:** which areas are worst. The feeder name printed on an electricity bill
-   would let us add power cuts to the map honestly.
+4. **Power cuts:** which areas are worst hit in the hot months.
 
 **Link:** samrajukrani0-tech.github.io/karachi-heat-map
 

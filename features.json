@@ -829,7 +829,7 @@
         "P6-00"
       ],
       "passes": false,
-      "blocked_on": "PENDING, not abandoned (Samraj, 2026-09-27). Waiting only for real rankings from relief workers in Landhi (Edhi, Saylani or others) on docs/expert-ranking-form.md. Everything else is ready (P6-00): enter the forms as described in docs/expert-ranking-import.md and run uv run python -m pipeline.expert. D31 (how a place is scored) is provisional for Samraj to confirm.",
+      "blocked_on": "PENDING, not abandoned (Samraj, 2026-09-27). Waiting only for real rankings from relief workers in Landhi (Edhi, Saylani or others) on docs/expert-ranking-form.md. Everything else is ready (P6-00): enter the forms as described in docs/expert-ranking-import.md and run uv run python -m pipeline.expert. D31 (how a place is scored) approved by Samraj on 2026-09-27.",
       "dropped": null,
       "evidence": null
     }
