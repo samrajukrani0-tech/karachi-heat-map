@@ -21,4 +21,5 @@ node_modules/
 
 # /brag skill scratch output (launch video + stills script), kept on disk, not project code
 brag-output/
+brag-output-*/
 stills-tmp.mjs
