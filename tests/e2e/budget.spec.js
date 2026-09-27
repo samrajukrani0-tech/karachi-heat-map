@@ -25,13 +25,13 @@ test('first load stays under 1.5 MB, excluding basemap tiles', async ({ page }) 
 
 test('the site has no third-party runtime dependency beyond the basemap', async ({ page }) => {
   const hosts = new Set();
-  page.on('request', r => {
-    const host = new URL(r.url()).host;
-    if (host && !host.startsWith('127.0.0.1') && !host.startsWith('localhost')) hosts.add(host);
-  });
+  page.on('request', r => { const host = new URL(r.url()).host; if (host) hosts.add(host); });
   await page.goto('index.html');
   await page.waitForFunction(() => window.__mapReady, null, { timeout: 20000 });
-  const unexpected = [...hosts].filter(h => !h.includes('arcgisonline.com'));
+  // The site's own host is first-party wherever it is served: 127.0.0.1 locally,
+  // github.io live. Exempting only localhost made this fail against the live URL.
+  const own = new URL(page.url()).host;
+  const unexpected = [...hosts].filter(h => h !== own && !h.includes('arcgisonline.com'));
   expect(unexpected, 'Leaflet is vendored; nothing else should be remote').toEqual([]);
 });
 

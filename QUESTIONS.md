@@ -450,3 +450,24 @@ are never stored or published. See D30.
 verified. **What changes:** one handler and one button in `site/plan.js`.
 
 **Answer:**
+
+## Q17 — Release v1.0.0: your weights, or a decision to ship equal weights? (P5-05, 2026-09-27)
+
+**Blocking the release, and only the release.** Everything else in Phases 0–5 is built
+and passing. P5-05 requires P2-02b, and PROMPT.md §14 offers exactly two ways through:
+
+1. **Run the AHP tool yourself** — `uv run python -m pipeline.ahp` (practise first with
+   `--dry-run`). Three pairwise comparisons: green cover vs distance to a clinic vs
+   distance to a relief centre. It writes `config/weights.yaml`; Claude then rebuilds
+   (`uv run python -m pipeline.run --from score`), re-runs the checks, and tags v1.0.0.
+2. **Record a decision to ship equal weights for v1**, with your reason. Claude writes
+   it into DECISIONS.md in your words; the site keeps saying "provisional".
+
+**Recommendation:** option 1. It takes about ten minutes. The weights are the one part of
+the model that is meant to be your judgement (D7b), and the sensitivity analysis shows
+the ranking in the middle band depends on them.
+
+**Also, small:** `CITATION.cff` gives your name as given names "Samraj Lal", family name
+"Ukrani". Tell Claude if "Lal" belongs with the family name.
+
+**Answer:**

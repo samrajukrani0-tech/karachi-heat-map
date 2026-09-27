@@ -792,7 +792,7 @@
         "P5-04"
       ],
       "passes": false,
-      "blocked_on": null,
+      "blocked_on": "Samraj: acceptance requires P2-02b resolved (his AHP weights), or per PROMPT.md section 14 a recorded decision by him to ship equal weights -- QUESTIONS.md Q17. Everything else is ready: CHANGELOG.md written (Unreleased, v1.0.0 candidate); check.py --lighthouse CHECK: PASS (8 checks) on 2026-09-27; live smoke and full suite pass. The tag is not created until then.",
       "dropped": null,
       "evidence": null
     },

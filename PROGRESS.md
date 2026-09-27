@@ -1132,3 +1132,19 @@ now 0.190, and a new test ties that sentence to the data, because nothing had.
 **Consequence:** the live site was stuck at the P4-01 deploy for three pushes. The
 planner, offline mode, briefs and README were committed but not live until this fix.
 **Evidence:** pytest 886 passed; `check.py --quick` CHECK: PASS (7 checks).
+
+## 2026-09-27 — P5-05 Release: everything ready except the one thing only Samraj can do
+**Done:** `CHANGELOG.md` written as an Unreleased v1.0.0 candidate. `check.py --lighthouse`
+→ **CHECK: PASS (8 checks)**: performance 89, accessibility 100, best practices 96,
+SEO 100 locally, and 97 / 100 / 96 / 100 against the live site. Live URL returns 200 on
+every page, the data files, the service worker and a brief PDF. The **full** end-to-end
+suite now runs against the live site: 147 passed. Before, only the 18 smoke tests did.
+**One test fixed on the way:** "no third-party runtime dependency" treated the site's own
+github.io host as third-party, because it exempted only localhost. That was harmless
+locally, but it failed every live run. It now exempts the page's own origin.
+**Not done, by design:** v1.0.0 is not tagged. P5-05's acceptance requires P2-02b
+resolved, or Samraj's recorded decision to ship equal weights (§14). Raised as **Q17**
+with both routes.
+**Phase status:** Phases 0–5 have every feature resolved except those blocked on Samraj:
+P1-09b (verify a centre), P2-02b (weights), P4-02b (real scenarios, needs a centre),
+P5-03b (tailor the one-pager to a host), P5-05 (tag, needs P2-02b). Phase 6 pending.
