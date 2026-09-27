@@ -198,9 +198,12 @@ def _validate(priority, need, stock, dist, max_distance_m, epsilon):
                          "tiebreak would prefer the *farther* centre")
     if epsilon >= 1:
         raise ValueError(
-            f"epsilon must be below 1, got {epsilon}. Priority is at most 1 and d/D is "
-            "at most 1, so at epsilon >= 1 the tiebreak can equal or outweigh the whole "
-            "gain from delivering a unit, and the solver stops delivering.")
+            f"epsilon must be below 1, got {epsilon}. A unit is only worth sending "
+            "when p_i > epsilon * d/D, so a large epsilon suppresses delivery to "
+            "distant or low-priority cells -- at epsilon >= 1 it can suppress every "
+            "cell at once, since priority and d/D are both at most 1. Values well "
+            "below 1 already bite: this bound is a backstop, not a guarantee that the "
+            "term stays a tiebreak.")
     return priority, need, stock, dist
 
 
@@ -275,6 +278,11 @@ def solve_lp(priority: np.ndarray, need: np.ndarray, stock: np.ndarray, dist: np
     _validate_equity(min_share_top_quintile, equity_penalty, epsilon)
     n_cells, n_centres = dist.shape
 
+    if exact_integers and not round_units:
+        raise ValueError("exact_integers=True contradicts round_units=False: one asks "
+                         "for whole units and the other for the fractional relaxation")
+    integral = round_units and exact_integers is not False
+
     within = dist <= max_distance_m
     reachable = within.any(axis=1)
     pairs = np.argwhere(within)
@@ -288,13 +296,21 @@ def solve_lp(priority: np.ndarray, need: np.ndarray, stock: np.ndarray, dist: np
         empty_top = top_quintile(priority, need)
         notes.append("nothing to allocate: no stock, no need, or no cell within reach")
         return _plan(x, "lp", priority, need, dist, max_distance_m, epsilon, empty_top,
-                     equity_floor(need, stock, empty_top, min_share_top_quintile),
-                     reachable, notes, stock)
+                     equity_floor(np.floor(need) if integral else need,
+                                  np.floor(stock) if integral else stock,
+                                  empty_top, min_share_top_quintile),
+                     reachable, notes, stock, whole=round_units)
 
     rows, cols = pairs[:, 0], pairs[:, 1]
     m = len(pairs)
     top = top_quintile(priority, need)
-    floor_units = equity_floor(need, stock, top, min_share_top_quintile)
+    # Measure the floor against the quantities the solve is actually capped at. Using
+    # raw stock and need while the integer solve is capped at their floors leaves a
+    # shortfall no plan can ever close -- it grows with the number of centres, because
+    # each one contributes up to a unit of discarded fraction.
+    floor_units = equity_floor(np.floor(need) if integral else need,
+                               np.floor(stock) if integral else stock,
+                               top, min_share_top_quintile)
     use_equity = floor_units > 0
 
     # minimise c.x, so the sign of the gain flips
@@ -306,7 +322,6 @@ def solve_lp(priority: np.ndarray, need: np.ndarray, stock: np.ndarray, dist: np
     if exact_integers and not round_units:
         raise ValueError("exact_integers=True contradicts round_units=False: one asks "
                          "for whole units and the other for the fractional relaxation")
-    integral = round_units and exact_integers is not False
     n_vars = m + (1 if use_equity else 0)
     blocks, b = [], []
     centre_of = np.zeros((n_centres, n_vars))
@@ -357,7 +372,7 @@ def solve_lp(priority: np.ndarray, need: np.ndarray, stock: np.ndarray, dist: np
         # HiGHS returns integers to within its tolerance, not exactly.
         x = np.round(x) if integral else largest_remainder(x, stock, need)
     return _plan(x, "lp", priority, need, dist, max_distance_m, epsilon, top,
-                 floor_units, reachable, notes, stock)
+                 floor_units, reachable, notes, stock, whole=round_units)
 
 
 def solve_greedy(priority: np.ndarray, need: np.ndarray, stock: np.ndarray,
@@ -405,9 +420,12 @@ def solve_greedy(priority: np.ndarray, need: np.ndarray, stock: np.ndarray,
 
     original_need = need + x.sum(axis=1)   # need was decremented in place
     top = top_quintile(priority, original_need)
-    floor_units = equity_floor(original_need, stock, top, min_share_top_quintile)
+    floor_units = equity_floor(
+        np.floor(original_need) if round_units else original_need,
+        np.floor(stock) if round_units else stock, top, min_share_top_quintile)
     return _plan(x, "greedy", priority, original_need, dist, max_distance_m, epsilon,
-                 top, floor_units, (dist <= max_distance_m).any(axis=1), [], stock)
+                 top, floor_units, (dist <= max_distance_m).any(axis=1), [], stock,
+                 whole=round_units)
 
 
 def largest_remainder(x: np.ndarray, stock: np.ndarray, need: np.ndarray) -> np.ndarray:
@@ -473,21 +491,30 @@ def largest_remainder(x: np.ndarray, stock: np.ndarray, need: np.ndarray) -> np.
 
 
 def _plan(x, method, priority, need, dist, max_distance_m, epsilon, top, floor_units,
-          reachable, notes, stock=None) -> Plan:
+          reachable, notes, stock=None, whole=True) -> Plan:
     delivered = x.sum(axis=1)
     need = np.asarray(need, float)
     shortfall = max(0.0, floor_units - float(x[top].sum())) if top.any() else 0.0
     # When the plan is in whole units, anything under one unit is float residue rather
     # than a finding -- without this an exactly-met floor of 27.000000000000004 was
-    # reported as "1 units short of the 28". But that reasoning does not hold for the
-    # fractional relaxation, where a real shortfall of 0.7 units is a real shortfall.
-    whole = bool(np.all(x == np.floor(x)))
+    # reported as "1 units short of the 28". That reasoning does not hold for the
+    # fractional relaxation, where a shortfall of 0.7 units is a real one, so `whole`
+    # comes from the caller's rounding flag and not from whether the numbers happen to
+    # have landed on integers.
     if shortfall >= (1.0 if whole else 1e-9):
-        notes.append(
-            f"the top-priority cells are {math.ceil(shortfall):,} "
-            f"{'unit' if math.ceil(shortfall) == 1 else 'units'} short of the "
-            f"{math.floor(floor_units + 0.5):,} they are owed -- "
-            f"{_why_short(x, top, need, reachable, dist, max_distance_m, stock)}")
+        capacity = float((np.floor(need[top]) if whole else need[top]).sum())
+        owed = math.ceil(round(floor_units, 6))
+        short = min(math.ceil(round(shortfall, 6)), owed)   # never "26 short of 25"
+        # Half a unit is a whole-unit notion. In the fractional relaxation a floor
+        # 0.5 above what the cells can take is a real, reportable excess.
+        cause = _why_short(capacity, float(need[top].sum()),
+                           bool(reachable[top].all()), floor_units,
+                           tolerance=0.5 if whole else 1e-9)
+        caveat = (" (this is what the quick method leaves; the exact solver may do "
+                  "better)") if method == "greedy" else ""
+        notes.append(f"the top-priority cells are {short:,} "
+                     f"{'unit' if short == 1 else 'units'} short of the {owed:,} they "
+                     f"are owed -- {cause}{caveat}")
     else:
         shortfall = 0.0
     return Plan(x=x, method=method,
@@ -497,39 +524,30 @@ def _plan(x, method, priority, need, dist, max_distance_m, epsilon, top, floor_u
                 equity_shortfall=shortfall, reachable=reachable, notes=notes)
 
 
-def _why_short(x, top, need, reachable, dist, max_distance_m, stock) -> str:
-    """Say which cause it actually was, rather than guessing.
+def _why_short(capacity_top, raw_need_top, reachable_top, floor_units,
+               tolerance: float = 0.5) -> str:
+    """Say which of three things made the floor unreachable.
 
-    Successive versions of this note have asserted causes that were plainly false --
-    first that the top cells were out of range when every one was in range, then that
-    there was not enough stock when the stock had simply gone elsewhere. A field brief
-    repeating either would send someone to solve a problem that does not exist, so each
-    branch below is now decided from the numbers rather than assumed.
+    Every previous version of this asserted causes that were flatly false -- that the
+    top cells were out of range when all of them were in range, that stock was short
+    when it was sitting unsent, that a starved cell's need was "already fully met". A
+    field brief repeating any of those sends someone to solve a problem that does not
+    exist, so the three branches below are the only ones that survived being audited
+    against the numbers, and each is checked rather than assumed.
+
+    A fourth branch, "their own need is already fully met", was removed as unreachable:
+    a shortfall means the top cells received less than the floor, and if they are also
+    fully served then their whole need is below the floor -- which is the first branch.
     """
-    unmet = need[top] - x[top].sum(axis=1)
-    # Shipments are whole units, so a cell can end up holding under one unit of
-    # unmet need and still be as served as it can be. Testing against a fixed 0.5
-    # put an arbitrary cliff in the middle of that: need 10.4 read as met, 10.6 did not.
-    if np.all(unmet < 1.0):
-        return ("their own need is already fully met, so the floor asks for more than "
-                "they can use")
-    if not reachable[top].all():
+    if floor_units > capacity_top + tolerance:
+        # Report the real need, not its floor: a cell needing 0.9 units has a whole-unit
+        # capacity of zero, and "they need only 0" reads like a bug rather than a fact.
+        amount = (f"{raw_need_top:,.0f}" if raw_need_top >= 1
+                  else f"{raw_need_top:.1f}")
+        return (f"the floor asks for {math.ceil(floor_units):,} units but these cells "
+                f"need only {amount} between them")
+    if not reachable_top:
         return "some of them have no centre within the service distance"
-    if stock is not None:
-        # Both of these tests must be about the cells that are actually SHORT and the
-        # centres that can actually reach THEM. An earlier version asked about centres
-        # in reach of any top cell, including ones already fully served, and summed
-        # per-centre leftovers -- so two centres holding 0.5 units each were reported
-        # as "1 unit sitting unsent". Both branches were false every time they fired.
-        short = np.zeros(len(need), dtype=bool)
-        short[np.flatnonzero(top)[unmet >= 1.0]] = True
-        in_reach = (dist[short] <= max_distance_m).any(axis=0)
-        leftover = (np.asarray(stock, float) - x.sum(axis=0))[in_reach]
-        if leftover.size and leftover.max() >= 1.0:
-            return (f"{leftover.max():,.0f} units sit at a centre within reach of them, "
-                    "unsent -- the equity penalty was outweighed by demand elsewhere")
-        if float(x[~top][:, in_reach].sum()) >= 1.0:
-            return "the stock within reach of them went to other cells first"
     return "there is not enough stock within reach of them"
 
 

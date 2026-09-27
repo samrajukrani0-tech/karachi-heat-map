@@ -6,6 +6,8 @@ happens to produce. The two worked examples are written out in docs/allocation.m
 Samraj can solve them himself and compare.
 """
 
+import re
+
 import numpy as np
 import pandas as pd
 import pytest
@@ -363,7 +365,7 @@ def test_the_shortfall_note_gives_the_real_reason():
     assert plan.reachable.all()
     assert plan.equity_shortfall > 0
     note = plan.notes[0]
-    assert "already fully met" in note, note
+    assert "need only 1 between them" in note, note
     assert "service distance" not in note, f"claims a distance problem that is absent: {note}"
 
 
@@ -579,17 +581,25 @@ def test_a_phantom_shortfall_is_not_reported():
     assert not any("short of" in n for n in plan.notes), plan.notes
 
 
-@pytest.mark.parametrize("top_need", [10.4, 10.6])
-def test_the_cause_does_not_turn_on_half_a_unit_of_fractional_need(top_need):
+def test_the_cause_does_not_turn_on_half_a_unit_of_fractional_need():
     """need 10.4 read as 'fully met' and 10.6 as 'not enough stock' -- an arbitrary
     cliff, and on the wrong side of it the stated cause was untrue: 1,000 units sat
-    1,000 m away and had been shipped."""
-    need = np.array([top_need, 100.0, 100.0, 100.0, 100.0])
-    plan = solve_lp(np.array([0.9, 0.5, 0.4, 0.3, 0.2]), need, np.array([1000.0]),
-                    np.full((5, 1), 1000.0), max_distance_m=D, epsilon=EPS,
-                    min_share_top_quintile=0.25)
-    assert plan.notes, "a shortfall against an unreachable floor should be reported"
-    assert "already fully met" in plan.notes[0], plan.notes[0]
+    1,000 m away and had been shipped. The diagnosis must not hinge on a fraction."""
+    def note_for(top_need):
+        need = np.array([top_need, 100.0, 100.0, 100.0, 100.0])
+        plan = solve_lp(np.array([0.9, 0.5, 0.4, 0.3, 0.2]), need, np.array([1000.0]),
+                        np.full((5, 1), 1000.0), max_distance_m=D, epsilon=EPS,
+                        min_share_top_quintile=0.25)
+        assert plan.notes, "a shortfall against an unreachable floor should be reported"
+        return plan.notes[0], plan.equity_shortfall
+
+    low, low_short = note_for(10.4)
+    high, high_short = note_for(10.6)
+    for note in (low, high):
+        assert "the floor asks for 103 units" in note, note
+        assert "need only 1" in note, note            # 10.4 and 10.6, same diagnosis
+        assert "service distance" not in note, note
+    assert low_short == high_short, "the shortfall must not jump across a half unit"
 
 
 def test_the_lp_reports_the_shortfall_when_nothing_is_reachable_at_all():
@@ -694,14 +704,19 @@ def test_an_unknown_commodity_is_refused():
 @pytest.mark.parametrize("share", [0.25, 0.5, 0.9])
 @pytest.mark.parametrize("seed", range(20))
 def test_the_equity_floor_never_changes_greedys_plan(share, seed):
-    """Not a bug but a fact, and one worth pinning down.
+    """Greedy's plan ignores the floor entirely, and that is a limitation, not a proof.
 
-    The top quintile IS the set of highest-priority cells, and greedy works in priority
-    order with the whole stock untouched, so those cells are already served first. If
-    the floor can be met, that order meets it; if it cannot, no order can. An "equity
-    first" pass was written here and removed once it was shown to change nothing in
-    200,000 comparisons. If this test ever fails, the reasoning above has stopped
-    holding and greedy may genuinely need one.
+    An earlier version of this test justified the behaviour by arguing that priority
+    order already meets any floor that can be met. **That argument is false** -- see
+    test_greedy_can_miss_a_floor_the_lp_meets for a counterexample at the configured
+    0.25 share, where greedy delivers 10 units to the top quintile and the LP delivers
+    20 from the same stock. Serving the top cells first is not enough, because greedy
+    also picks the nearest centre rather than the one that leaves the others an option.
+
+    The behaviour is kept because PROMPT.md section 8 defines greedy as the paper-map
+    baseline, and choosing centres by matching instead of proximity would make it the
+    LP. What changed is the honesty of the label: greedy's shortfall is reported as its
+    own, not as the achievable one.
     """
     problem = random_problem(np.random.default_rng(seed))
     base = solve_greedy(**problem, max_distance_m=D, epsilon=EPS)
@@ -726,13 +741,19 @@ def test_the_cause_is_about_the_cells_that_are_actually_short():
 
 
 def test_sub_unit_leftovers_at_separate_centres_are_not_added_up():
-    """Two centres holding 0.5 units each were reported as '1 unit sitting unsent'.
-    No van can carry half a unit from one centre and half from another."""
+    """Two centres holding 0.5 units each produced a shortfall no plan could close.
+
+    The floor was measured on raw stock while the integer solve was capped at its
+    floor, so each centre contributed up to a unit of phantom shortfall -- 4.0 units
+    with eight centres. The floor is now measured on the same quantities the solve is
+    capped at, so the two agree and there is nothing to report.
+    """
     plan = solve_lp(np.array([0.99, 0.98, 0.5, 0.4, 0.3, 0.2]), np.full(6, 100.0),
                     np.array([10.5, 10.5]),
                     np.array([[1000.0, 1000.0]] * 2 + [[9000.0, 9000.0]] * 4),
                     max_distance_m=D, epsilon=EPS, min_share_top_quintile=1.0)
-    assert "sit at a centre" not in plan.notes[0], plan.notes[0]
+    assert plan.equity_shortfall == 0.0
+    assert plan.notes == []
 
 
 def test_a_fractional_shortfall_is_reported_when_the_plan_is_fractional():
@@ -779,3 +800,127 @@ def test_both_solvers_accept_the_same_equity_settings():
         for solver in (solve_lp, solve_greedy):
             with pytest.raises(ValueError, match="share in"):
                 solver(*args, max_distance_m=D, min_share_top_quintile=bad)
+
+
+# --- regressions: the fifth review ----------------------------------------------------
+
+
+def _stranding_problem():
+    """The counterexample to 'greedy needs no equity pass'.
+
+    Cell 0 can reach centres 0 and 1; cell 1 can reach only centre 0. Both are in the
+    top quintile. Greedy sends cell 0 to the NEARER centre 0 and drains it, so cell 1
+    gets nothing -- the same myopia as worked example B, reaching the equity floor.
+    """
+    n_cells, n_centres = 10, 8
+    priority = np.linspace(0.95, 0.2, n_cells)
+    need = np.full(n_cells, 10.0)
+    stock = np.full(n_centres, 10.0)
+    dist = np.full((n_cells, n_centres), 9_000.0)
+    dist[0, 0], dist[0, 1] = 1000.0, 2000.0
+    dist[1, 0] = 1000.0
+    for i in range(2, n_cells):
+        dist[i, (i % (n_centres - 2)) + 2] = 1500.0
+    return priority, need, stock, dist
+
+
+def test_greedy_can_miss_a_floor_the_lp_meets():
+    """Pins the counterexample, because the docstring once claimed this was impossible.
+
+    The earlier reasoning -- 'greedy serves the top cells first with the stock
+    untouched, so if the floor can be met this order meets it' -- ignored that greedy
+    also chooses the NEAREST centre, not the one that leaves the other top cell an
+    option. If this ever starts passing trivially, the counterexample has decayed and
+    needs rebuilding, not deleting.
+    """
+    args = _stranding_problem()
+    kw = dict(max_distance_m=D, epsilon=EPS, min_share_top_quintile=0.25)
+    greedy, lp = solve_greedy(*args, **kw), solve_lp(*args, **kw)
+    top = top_quintile(args[0], args[1])
+
+    assert greedy.delivered[top].sum() == 10, "greedy strands the second top cell"
+    assert lp.delivered[top].sum() == 20, "the LP meets the floor from the same stock"
+    assert greedy.equity_shortfall > 0 and lp.equity_shortfall == 0
+
+
+def test_greedys_shortfall_is_labelled_as_its_own():
+    """Greedy is what the site exposes as the quick estimate. Reporting its shortfall
+    as if it were the achievable one would tell a relief team the top-priority cells
+    cannot be covered when they can."""
+    greedy = solve_greedy(*_stranding_problem(), max_distance_m=D, epsilon=EPS,
+                          min_share_top_quintile=0.25)
+    note = next(n for n in greedy.notes if "short of" in n)
+    assert "quick method" in note and "exact solver may do better" in note, note
+
+    lp = solve_lp(np.array([0.9, 0.5]), np.array([10.0, 10.0]), np.array([10.0]),
+                  np.array([[9000.0], [9000.0]]), max_distance_m=D, epsilon=EPS,
+                  min_share_top_quintile=0.25)
+    assert all("quick method" not in n for n in lp.notes), "only greedy carries it"
+
+
+def test_a_starved_unreachable_cell_is_not_called_fully_met():
+    """A top cell needing 0.9 units and receiving nothing, because it is out of range,
+    was reported as 'their own need is already fully met'."""
+    plan = solve_lp(np.array([0.9, 0.5, 0.4, 0.3, 0.2]),
+                    np.array([0.9, 100.0, 100.0, 100.0, 100.0]), np.array([100.0]),
+                    np.array([[9000.0]] + [[1000.0]] * 4), max_distance_m=D,
+                    epsilon=EPS, min_share_top_quintile=0.25)
+    note = next(n for n in plan.notes if "short of" in n)
+    assert "fully met" not in note, note
+    assert "need only 0.9 between them" in note, "report the real need, not its floor"
+
+
+def test_the_floor_cannot_exceed_what_the_solve_is_capped_at():
+    """The floor used raw stock while the integer solve was capped at floor(stock), so
+    each centre contributed up to a unit of shortfall no plan could ever close."""
+    for n_centres in (2, 4, 8):
+        stock = np.full(n_centres, 10.5)
+        dist = np.tile(np.array([[1000.0] * n_centres]), (4, 1))
+        plan = solve_lp(np.array([0.99, 0.98, 0.5, 0.4]), np.full(4, 100.0), stock,
+                        dist, max_distance_m=D, epsilon=EPS, min_share_top_quintile=1.0)
+        assert plan.equity_shortfall == 0.0, (
+            f"{n_centres} centres left a phantom shortfall of "
+            f"{plan.equity_shortfall}")
+
+
+def test_a_fractional_shortfall_survives_an_integer_looking_optimum():
+    """The whole-unit test was inferred from the data, so a real 0.5-unit shortfall was
+    zeroed whenever the fractional optimum happened to land on whole numbers."""
+    plan = solve_lp(np.array([0.9, 0.5, 0.4, 0.3, 0.2]), np.full(5, 4.0),
+                    np.array([18.0]), np.full((5, 1), 1000.0), max_distance_m=D,
+                    epsilon=EPS, min_share_top_quintile=0.25, round_units=False)
+    assert plan.equity_shortfall == pytest.approx(0.5)
+    assert plan.notes and "short of" in plan.notes[0]
+
+
+@pytest.mark.parametrize("degenerate", [
+    dict(stock=np.zeros(1)),
+    dict(need=np.zeros(2)),
+    dict(dist=np.array([[9000.0], [9000.0]])),
+])
+def test_contradictory_flags_are_refused_even_on_the_degenerate_path(degenerate):
+    """The check sat after the early return, so zero stock, zero need or nothing in
+    reach silently accepted it. Input validation must not depend on the data."""
+    good = dict(priority=np.array([0.9, 0.5]), need=np.array([10.0, 10.0]),
+                stock=np.array([10.0]), dist=np.array([[1000.0], [1000.0]]))
+    with pytest.raises(ValueError, match="contradicts"):
+        solve_lp(**{**good, **degenerate}, max_distance_m=D, round_units=False,
+                 exact_integers=True)
+
+
+def test_the_note_never_claims_more_is_short_than_is_owed():
+    """math.ceil against math.floor produced '26 units short of the 25 they are owed'."""
+    rng = np.random.default_rng(3)
+    for _ in range(400):
+        nc, ns = rng.integers(3, 8), rng.integers(1, 4)
+        args = (rng.uniform(0.02, 1, nc), np.round(rng.uniform(0, 150, nc), 2),
+                np.round(rng.uniform(0, 150, ns), 2), rng.uniform(200, 9000, (nc, ns)))
+        plan = solve_lp(*args, max_distance_m=D, epsilon=EPS,
+                        min_share_top_quintile=0.25)
+        for note in plan.notes:
+            if "short of" not in note:
+                continue
+            short, owed = (int(n.replace(",", "")) for n in
+                           re.findall(r"(\d[\d,]*) unit[s]? short of the (\d[\d,]*)",
+                                      note)[0])
+            assert short <= owed, note

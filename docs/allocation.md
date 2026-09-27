@@ -124,6 +124,16 @@ warning, which says where stock is sitting relative to where it is needed. A flo
 actually redistributed supply would have to protect a set defined *independently* of
 Priority. That is a different rule, and a decision for Samraj (Q15).
 
+**Greedy ignores the floor completely, and that is a real limitation.** It is tempting to
+argue that greedy does not need an equity step — it serves the top-priority cells first,
+with the whole stock untouched, so surely it meets any floor that can be met? That
+argument is wrong, and worth seeing why: greedy also sends each cell to the *nearest*
+centre with stock, not to the one that leaves the other top cells an option. One
+top-priority cell can drain the only centre a second one can reach. It is §5's trap
+again, this time hitting the equity rule. So greedy's shortfall is reported as **its
+own** — what the quick method leaves, not what is achievable — and the site must say so
+wherever the quick estimate appears.
+
 ### Why the equity rule is soft
 
 A hard floor of $\alpha$ can make the problem **infeasible** — for instance when the
