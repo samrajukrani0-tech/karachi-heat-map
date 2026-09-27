@@ -1,12 +1,12 @@
 import { test, expect } from '@playwright/test';
 
 async function mapReady(page) {
-  await page.goto('/index.html');
+  await page.goto('index.html');
   await page.waitForFunction(() => window.__mapReady, null, { timeout: 15000 });
   return page.evaluate(() => window.__mapReady);
 }
 
-test('every cell in the data renders on the map', async ({ page }) => {
+test('@smoke every cell in the data renders on the map', async ({ page }) => {
   const ready = await mapReady(page);
   expect(ready.cells).toBe(265);
   const drawn = await page.locator('#map path.leaflet-interactive').count();

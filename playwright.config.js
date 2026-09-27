@@ -8,7 +8,9 @@ export default defineConfig({
   retries: process.env.CI ? 1 : 0,
   reporter: process.env.CI ? 'line' : [['list']],
   use: {
-    baseURL: process.env.SITE_URL || 'http://127.0.0.1:8765',
+    // Must end in '/': a relative path resolves against the last path
+    // segment, and a Pages project URL is not the domain root.
+    baseURL: (process.env.SITE_URL || 'http://127.0.0.1:8765').replace(/\/?$/, '/'),
     trace: 'off',
   },
   projects: [

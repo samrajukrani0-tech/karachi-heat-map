@@ -4,7 +4,7 @@ import AxeBuilder from '@axe-core/playwright';
 const LAYERS = ['priority', 'hazard', 'exposure', 'vulnerability', 'stability'];
 
 async function ready(page) {
-  await page.goto('/index.html');
+  await page.goto('index.html');
   await page.waitForFunction(() => window.__mapReady, null, { timeout: 20000 });
 }
 
@@ -44,7 +44,7 @@ test('uncertain cells are hatched, not merely tinted', async ({ page }) => {
   expect(dash).not.toBe('none');
 });
 
-test('the panel shows every required section', async ({ page }) => {
+test('@smoke the panel shows every required section', async ({ page }) => {
   await ready(page);
   await page.locator('#map path.leaflet-interactive').first().click();
   const panel = page.locator('#panel');
@@ -128,7 +128,7 @@ test('the layer picker is focusable, labelled, and drives the map', async ({ pag
   expect(after).not.toBe(before);
 });
 
-test('axe finds no serious or critical accessibility violations', async ({ page }) => {
+test('@smoke axe finds no serious or critical accessibility violations', async ({ page }) => {
   await ready(page);
   await page.locator('#map path.leaflet-interactive').first().click();
   const results = await new AxeBuilder({ page })
@@ -140,7 +140,7 @@ test('axe finds no serious or critical accessibility violations', async ({ page 
 });
 
 test('axe finds no violations on the content pages', async ({ page }) => {
-  for (const path of ['/about.html', '/how-it-works.html', '/data-and-credits.html']) {
+  for (const path of ['about.html', 'how-it-works.html', 'data-and-credits.html']) {
     await page.goto(path);
     const results = await new AxeBuilder({ page })
       .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])

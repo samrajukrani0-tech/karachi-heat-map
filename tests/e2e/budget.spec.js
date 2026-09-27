@@ -12,7 +12,7 @@ test('first load stays under 1.5 MB, excluding basemap tiles', async ({ page }) 
       bytes.set(url, body.length);
     } catch { /* redirects and aborted requests have no body */ }
   });
-  await page.goto('/index.html');
+  await page.goto('index.html');
   await page.waitForFunction(() => window.__mapReady, null, { timeout: 20000 });
 
   const total = [...bytes.values()].reduce((a, b) => a + b, 0);
@@ -29,7 +29,7 @@ test('the site has no third-party runtime dependency beyond the basemap', async 
     const host = new URL(r.url()).host;
     if (host && !host.startsWith('127.0.0.1') && !host.startsWith('localhost')) hosts.add(host);
   });
-  await page.goto('/index.html');
+  await page.goto('index.html');
   await page.waitForFunction(() => window.__mapReady, null, { timeout: 20000 });
   const unexpected = [...hosts].filter(h => !h.includes('arcgisonline.com'));
   expect(unexpected, 'Leaflet is vendored; nothing else should be remote').toEqual([]);
@@ -39,7 +39,7 @@ test('the provisional banner does not depend on JavaScript', async ({ browser })
   // The honest state must not require a script to run.
   const context = await browser.newContext({ javaScriptEnabled: false });
   const page = await context.newPage();
-  await page.goto('/index.html');
+  await page.goto('index.html');
   await expect(page.locator('#provisional-note')).toBeVisible();
   await expect(page.locator('#provisional-note')).toContainText('Provisional');
   await context.close();

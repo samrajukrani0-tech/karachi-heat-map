@@ -1,779 +1,779 @@
 {
- "schema_version": 1,
- "project": "karachi-heat-map",
- "generated": "2026-09-26",
- "note": "Source of truth for progress. A feature is RESOLVED when passes is true, or when dropped is a non-empty reason approved by Samraj and recorded in DECISIONS.md. Never delete a feature or loosen an acceptance criterion.",
- "features": [
-  {
-   "id": "P0-01",
-   "phase": 0,
-   "title": "Machine ready",
-   "acceptance": [
-    "Tool versions printed for OS, git, Python, Node and free disk space",
-    "`gh auth status` shows Samraj is logged in"
-   ],
-   "depends_on": [],
-   "passes": true,
-   "blocked_on": null,
-   "dropped": null,
-   "evidence": "macOS 15.7.3 x86_64; git 2.39.5; Node v24.19.0 + npm 11.17.0; 140 GB free; Python 3.12.14 via `uv python install 3.12`; gh 2.101.0 installed from the official cli/cli release, SHA-256 verified against the published checksums file; `gh auth status` -> logged in as samrajukrani0-tech, scopes gist, read:org, repo, workflow."
-  },
-  {
-   "id": "P0-02",
-   "phase": 0,
-   "title": "Decisions recorded",
-   "acceptance": [
-    "D1 to D12 appear in DECISIONS.md",
-    "each has a status of approved, provisional or deferred",
-    "each records Samraj's decision in his own words"
-   ],
-   "depends_on": [],
-   "passes": true,
-   "blocked_on": null,
-   "dropped": null,
-   "evidence": "DECISIONS.md holds D1-D12, each with the question, options, recommendation and reasons, Samraj's decision in his words, a status and the date; `grep -c '^## D' DECISIONS.md` -> 12."
-  },
-  {
-   "id": "P0-03",
-   "phase": 0,
-   "title": "Scaffold",
-   "acceptance": [
-    "the PROMPT.md section 4 layout exists (adapted: DESIGN.md is created in P3-01)",
-    "CLAUDE.md is at most 150 lines",
-    "features.json validates against the schema test",
-    "`uv run python scripts/features.py` prints per-phase counts"
-   ],
-   "depends_on": [
-    "P0-02"
-   ],
-   "passes": true,
-   "blocked_on": null,
-   "dropped": null,
-   "evidence": "PROMPT.md section 4 layout present (DESIGN.md deferred to P3-01 by design); `wc -l CLAUDE.md` -> 135 (limit 150); features.json holds 42 features and validates against tests/features.schema.json; `uv run python scripts/features.py` prints per-phase counts plus an overall line."
-  },
-  {
-   "id": "P0-04",
-   "phase": 0,
-   "title": "Checks and CI",
-   "acceptance": [
-    "`uv run python scripts/check.py --quick` prints CHECK: PASS on the scaffold",
-    "the first GitHub Actions run is green, with its status printed via gh"
-   ],
-   "depends_on": [
-    "P0-03"
-   ],
-   "passes": true,
-   "blocked_on": null,
-   "dropped": null,
-   "evidence": "`uv run python scripts/check.py --quick` -> 'CHECK: PASS (3 checks)'; `uv run pytest` -> 22 passed; GitHub Actions run 36238295986 completed success with jobs check: success and deploy: success."
-  },
-  {
-   "id": "P0-05",
-   "phase": 0,
-   "title": "Live placeholder",
-   "acceptance": [
-    "the public repo is pushed",
-    "Pages deploys from GitHub Actions",
-    "the placeholder URL returns HTTP 200, printed"
-   ],
-   "depends_on": [
-    "P0-04"
-   ],
-   "passes": true,
-   "blocked_on": null,
-   "dropped": null,
-   "evidence": "Public repo pushed to github.com/samrajukrani0-tech/karachi-heat-map; Pages configured with build_type=workflow; `curl -o /dev/null -w '%{http_code}' -L https://samrajukrani0-tech.github.io/karachi-heat-map/` -> 200, serving the placeholder page."
-  },
-  {
-   "id": "P1-01",
-   "phase": 1,
-   "title": "Pilot boundary",
-   "acceptance": [
-    "data/processed/pilot_area.geojson exists in EPSG:4326 with provenance",
-    "area in km2 printed and within config/area.yaml tolerance of 25.37",
-    "preview PNG written to artifacts/"
-   ],
-   "depends_on": [
-    "P0-05"
-   ],
-   "passes": true,
-   "blocked_on": null,
-   "dropped": null,
-   "evidence": "uv run python -m pipeline.boundary -> 'Area: 25.370 km2 (config expects 25.37 +/- 0.75)', 1 ring, 0 interior holes; wrote data/processed/pilot_area.geojson (4.4 kB, EPSG:4326) and artifacts/pilot_area_preview.png (56 kB), which was viewed and shows a single closed polygon, centroid 24.84449, 67.18136. Provenance in the file: OSM relation 16350631, admin_level 7, ODbL 1.0, accessed 2026-09-26, raw response sha256 0a9b249905a9e5ff039f4239e548b90ac247bf9e9d749cad4697ff8af96181e8 (fingerprints the download, not the geometry: Overpass embeds a timestamp). uv run pytest -> 39 passed in 0.76s; uv run python scripts/check.py --quick -> 'CHECK: PASS (3 checks)'."
-  },
-  {
-   "id": "P1-02",
-   "phase": 1,
-   "title": "Grid",
-   "acceptance": [
-    "H3 resolution 9 cells cover the boundary",
-    "the inclusion rule from config/area.yaml is implemented and documented",
-    "cell count printed",
-    "tests: IDs valid, no duplicates, cells cover at least 99% of the boundary"
-   ],
-   "depends_on": [
-    "P1-01"
-   ],
-   "passes": true,
-   "blocked_on": null,
-   "dropped": null,
-   "evidence": "uv run python -m pipeline.grid -> 265 cells at H3 resolution 9 (248 by centre, 17 by the >=25% area rule); 'Coverage of the boundary: 99.115% (minimum 99%)'; hexagon area 27.080 km2, clipped 25.145 km2 against a boundary of 25.370 km2, overhang 1.935 km2 excluded from every indicator by clipping. Wrote data/processed/grid.geojson (130 kB) and artifacts/grid_preview.png, which was viewed and shows a gapless tiling with edge cells exactly where the boundary bulges past a cell centre. tests/test_grid.py adds 12 tests that recompute coverage, the inclusion rule, clipped areas and contiguity from the stored geometry rather than trusting the file's metadata. uv run pytest -> 51 passed in 1.03s; uv run python scripts/check.py --quick -> 'CHECK: PASS (3 checks)'. Inclusion rule revised under D15 (provisional, QUESTIONS.md Q5)."
-  },
-  {
-   "id": "P1-03",
-   "phase": 1,
-   "title": "Download cache",
-   "acceptance": [
-    "pipeline/fetch.py handles retries, backoff, checksums and manifest.json",
-    "a second run uses the cache and downloads nothing",
-    "tests use mocked responses"
-   ],
-   "depends_on": [
-    "P0-03"
-   ],
-   "passes": true,
-   "blocked_on": null,
-   "dropped": null,
-   "evidence": "pipeline/fetch.py streams to a .part file while hashing, renames atomically, retries only the transient statuses {408,425,429,500,502,503,504} with exponential backoff capped at 120 s and honours Retry-After, and records url, sha256, bytes, date and licence in data/raw/manifest.json. Cache reuse verified live: a second 'uv run python -m pipeline.boundary' printed the same 'Area: 25.370 km2' with no download line; 'uv run python -m pipeline.fetch --verify' -> 'Verified 1 cached file(s): all match the manifest'. tests/test_fetch.py adds 17 tests on a mocked transport with SYNTHETIC payloads, covering: manifest contents, zero network calls on the second run, refresh, tampered cache re-downloaded, an unmanifested file not trusted, checksum mismatch raising IntegrityError and removing the file, retry-then-succeed with growing backoff, Retry-After honoured, backoff capped, 404 never retried, give-up after the try limit, and .part cleanup. uv run pytest -> 68 passed in 1.49s; check.py --quick -> 'CHECK: PASS (3 checks)'."
-  },
-  {
-   "id": "P1-04a",
-   "phase": 1,
-   "title": "Hot-season LST composite",
-   "acceptance": [
-    "Landsat 8/9 C2 L2 April-June scenes found via STAC and read as windows, not whole scenes",
-    "cloud, shadow, cirrus, dilated cloud and fill masked with qa_pixel",
-    "USGS scaling applied: kelvin = 0.00341802 * DN + 149.0, then to degrees Celsius",
-    "per-pixel median composite, with a documented minimum number of clear looks",
-    "scene list and per-scene cloud statistics recorded in data/processed/lst_scenes.csv",
-    "composite values inside the documented plausible range in config/heat.yaml"
-   ],
-   "depends_on": [
-    "P1-02",
-    "P1-03"
-   ],
-   "passes": true,
-   "blocked_on": null,
-   "dropped": null,
-   "evidence": "uv run python -m pipeline.lst -> 48 Landsat 8/9 C2 L2 scenes, April-June 2022-2026, scene cloud cover <= 50%, all WRS path 152 row 043. Each scene read as a window over Landhi only, never the whole scene. Composite 278 x 244 px at 30 m; clear looks per pixel min 33, median 42, max 47; 0 of 67832 pixels dropped for fewer than 5 clear looks. 'LST degC: min 31.25, median 43.16, max 48.11' -- inside the documented plausible range 20-65 in config/heat.yaml. Wrote data/raw/derived/lst_hot_season.tif (195 kB, 2 bands: median LST and clear-look count) and data/processed/lst_scenes.csv (48 rows with per-scene cloud cover and usable-pixel fraction over Landhi). tests/test_lst.py adds 20 tests: each QA bit verified against Landsat's documented bit order, unlisted confidence bits proven not to mask, the USGS scaling checked against a hand-computed DN, and every recorded scene checked for season, year, platform and cloud limit. 4 tests that open the gitignored raster are marked raw. uv run pytest -> 88 passed; CI=true pytest -m 'not raw' -> 84 passed, 4 deselected; check.py --quick -> 'CHECK: PASS (3 checks)'."
-  },
-  {
-   "id": "P1-04b",
-   "phase": 1,
-   "title": "Daytime heat per cell",
-   "acceptance": [
-    "per-cell mean and 90th-percentile hot-season LST in degC",
-    "statistics computed over the CLIPPED cell geometry (D15), never the whole hexagon",
-    "cells with too little clear coverage are flagged, not silently averaged",
-    "values inside the documented plausible range",
-    "map PNG in artifacts/"
-   ],
-   "depends_on": [
-    "P1-04a"
-   ],
-   "passes": true,
-   "blocked_on": null,
-   "dropped": null,
-   "evidence": "uv run python -m pipeline.heat -> 'Cells: 265; with values: 265; flagged: 0'. Mean LST per cell 39.19 to 46.28 degC (median 43.23, spread 7.09); P90 per cell 40.21 to 47.29 degC; pixels per cell min 27, median 113. All inside the documented plausible range 20-65. Statistics computed over the clipped cell (cell intersect boundary) via pipeline/zonal.py, per D15. Wrote data/processed/lst_cells.csv (11 kB) and artifacts/lst_cells_map.png, which was viewed: spatially coherent structure with a cool band on the north-west edge and hot patches in the south-centre, not noise. 16 new tests: 7 on the zonal helper using SYNTHETIC in-memory rasters (including proof that clipping changes the answer, and that a sub-pixel cell falls back rather than vanishing) and 9 on the per-cell table (one row per grid cell, p90 never below mean across all 265, the flagging rule actually applied, real variation present). uv run pytest -> 104 passed in 2.45s; CI=true pytest -m 'not raw' -> 100 passed, 4 deselected in 1.47s; check.py --quick -> 'CHECK: PASS (3 checks)'."
-  },
-  {
-   "id": "P1-05",
-   "phase": 1,
-   "title": "Night heat",
-   "acceptance": [
-    "per-cell night LST, area-weighted and labelled coarse"
-   ],
-   "depends_on": [
-    "P1-02",
-    "P1-03"
-   ],
-   "passes": false,
-   "blocked_on": null,
-   "dropped": "Dropped by D4 (2026-09-26). MODIS night LST is 1 km: ~25 pixels cover the whole 25.37 km2 pilot area across 242 cells, so between-cell variation would be an artefact of area weighting, not a measurement. The model report states that night heat matters medically but could not be resolved at this scale. ECOSTRESS (~70 m) is recorded as a v2 candidate.",
-   "evidence": null
-  },
-  {
-   "id": "P1-06",
-   "phase": 1,
-   "title": "People per cell",
-   "acceptance": [
-    "per-cell counts from Meta and from WorldPop, with a comparison table",
-    "source chosen and recorded per D4",
-    "pilot total within the documented tolerance of an independent figure, or the gap explained",
-    "map PNG"
-   ],
-   "depends_on": [
-    "P1-02",
-    "P1-03"
-   ],
-   "passes": true,
-   "blocked_on": null,
-   "dropped": null,
-   "evidence": "uv run python -m pipeline.population -> Meta HRSL 295,132 people (median 119 px/cell); WorldPop 308,105 (median 13 px/cell); per-cell agreement Spearman rho 0.834, Pearson r 0.866. Source chosen: Meta, on resolution (D16). Comparison table written to data/processed/population_source_comparison.csv; per-cell counts to population_cells.csv; density min 0, median 6,366, max 48,332 per km2. Map viewed: dense core through the centre-south, sparser east, 21 empty cells. INDEPENDENT CHECK FAILED THE TOLERANCE AND THE GAP IS EXPLAINED: 2023 census Landhi Town is 681,293, so both sources are ~0.44x. Diagnosed by summing both rasters over the whole of Korangi District: models 1.81M and 1.93M against a census 3.13M (0.58x, 0.62x), so the shortfall is systematic across the district and not an artefact of the pilot boundary. Recorded in D16 with the consequences (relative ranking survives a uniform factor; a non-uniform undercount would under-rank the densest areas; absolute supply quantities are underestimates) and raised as Q6. Data was NOT rescaled to match the census, and a test asserts it was not. 9 new tests. uv run pytest -> 113 passed in 2.04s; CI -> 109 passed, 4 deselected in 1.49s; check.py --quick -> 'CHECK: PASS (3 checks)'."
-  },
-  {
-   "id": "P1-07",
-   "phase": 1,
-   "title": "Age groups",
-   "acceptance": [
-    "per-cell share aged 60+ and share under 5, each within [0,1]",
-    "the zero-population rule is implemented and tested"
-   ],
-   "depends_on": [
-    "P1-06"
-   ],
-   "passes": true,
-   "blocked_on": null,
-   "dropped": null,
-   "evidence": "uv run python -m pipeline.demographics -> 265 cells; shares defined 244; undefined (no_population) 21. share_over60 min 0.0447 median 0.0447 max 0.0620; share_under5 min 0.0909 median 0.1096 max 0.1097; all within [0,1] and inside the documented plausible maxima. Elderly 60+ total 17,084 (5.8%), under-5 total 28,148 (9.5%). Zero-population rule implemented and tested: a share is UNDEFINED (written empty, flagged no_population), never 0 and never imputed. FINDING RECORDED AS D17: the two shares correlate at exactly -1.0000, 86% of cells sit on just two values, and their sum spans only 0.15291-0.15441 (CV 0.0045 against 0.028 for LST and 0.994 for population) -- Meta applies an administrative age profile rather than modelling age spatially, so the SHARES carry no within-Landhi signal. The COUNTS do vary and are what D8's need definition uses, so they are retained. Raised as Q7. 9 new tests, including assertions that pin the D17 evidence so it cannot quietly become untrue. uv run pytest -> 122 passed in 2.48s; CI -> 118 passed, 4 deselected in 1.71s; check.py --quick -> 'CHECK: PASS (3 checks)'."
-  },
-  {
-   "id": "P1-08",
-   "phase": 1,
-   "title": "Built environment",
-   "acceptance": [
-    "building footprint fraction per cell",
-    "green cover fraction per cell",
-    "coverage caveats recorded in data/SOURCES.md"
-   ],
-   "depends_on": [
-    "P1-02",
-    "P1-03"
-   ],
-   "passes": true,
-   "blocked_on": null,
-   "dropped": null,
-   "evidence": "uv run python -m pipeline.landcover -> ESA WorldCover 10 m tile ESA_WorldCover_10m_2021_v200_N24E066, median 1,314 pixels per cell. built_fraction min 0.000, median 0.692, max 0.991; green_fraction min 0.000, median 0.131, max 1.000; lack_green stored as 1 - green. Wrote data/processed/landcover_cells.csv (13 kB) and artifacts/landcover_cells_map.png, viewed: the two maps are near-complements, matching the measured r = -0.929. SOURCE SUBSTITUTION (D18): Microsoft Building Footprints needs adlfs -> azure-storage-blob -> cryptography, which ships no x86_64 macOS wheel and wants a Rust toolchain (a system-wide install, 2.7), so WorldCover class 50 is used and named 'built-up surface' rather than building footprints. CROSS-VALIDATION: the five unexplained cool cells flagged by P1-04b are 93-100% green against a pilot median of 13.1% -- two independent datasets agreeing. COVERAGE CAVEAT recorded in data/SOURCES.md: OSM building polygons cover 6.01% of Landhi against WorldCover's 54.7% built-up, about 11% as much, from just 711 mapped buildings. 9 new tests. uv run pytest -> 131 passed in 1.67s; CI -> 127 passed, 4 deselected in 1.70s; check.py --quick -> 'CHECK: PASS (3 checks)'."
-  },
-  {
-   "id": "P1-09a",
-   "phase": 1,
-   "title": "Distance to nearest health facility",
-   "acceptance": [
-    "distance per cell to the nearest health facility, from OpenStreetMap",
-    "facilities outside the pilot boundary are included, so an edge cell is not penalised for a clinic just over the line",
-    "road distance if a routable graph works, otherwise straight-line distance times a documented circuity factor",
-    "OSM coverage gaps measured and reported, not assumed away",
-    "map PNG in artifacts/"
-   ],
-   "depends_on": [
-    "P1-02"
-   ],
-   "passes": true,
-   "blocked_on": null,
-   "dropped": null,
-   "evidence": "uv run python -m pipeline.access -> 228 OpenStreetMap health facilities within 6 km of the pilot area (32 inside Landhi, 196 outside but still serving it). Distance to care, straight line x 1.3 circuity factor from the clipped cell centroid, measured in EPSG:32642: min 14 m, median 849 m, max 2,471 m -- inside the documented plausible limits (median <= 3,000 m, any <= 12,000 m). 42 of 265 cells have their nearest facility OUTSIDE Landhi, so without the 6 km search buffer those cells would have been scored as far from care; that is the measured justification for the buffer, not an assumption. Wrote data/processed/access_cells.csv and health_facilities.csv, and artifacts/access_cells_map.png, which was viewed: facilities cluster along the central corridor, and the worst-served cells are the north-west band -- the same cells P1-08 showed to be greenest and P1-04b coolest. 8 new tests, including one that the circuity factor is applied exactly and one that it can never be below 1. uv run pytest -> 139 passed; CI -> 135 passed, 4 deselected; check.py --quick -> 'CHECK: PASS (3 checks)'."
-  },
-  {
-   "id": "P1-09b",
-   "phase": 1,
-   "title": "Distance to nearest verified relief centre",
-   "acceptance": [
-    "distance per cell to the nearest verified relief centre",
-    "centres.csv schema enforces name, org, role, can_hold_stock, lat, lon, source, verified_by, verified_on (D13)",
-    "role is one of ambulance_standby, distribution_point, clinic, morgue, office, other; invalid values fail the schema test",
-    "the vulnerability indicator counts every verified facility regardless of organisation (D13)",
-    "unverified candidates excluded from the model and listed for Samraj"
-   ],
-   "depends_on": [
-    "P1-02"
-   ],
-   "passes": false,
-   "blocked_on": "QUESTIONS.md Q2: no relief centre has been verified in person yet, and there is no open-data fallback -- OSM covers only about 11% of Landhi's built area (D18), so its silence is not evidence of absence. 11 unverified candidates are listed in data/manual/centre_candidates.csv; none may enter the model.",
-   "dropped": null,
-   "evidence": null
-  },
-  {
-   "id": "P1-10",
-   "phase": 1,
-   "title": "Load-shedding feasibility",
-   "acceptance": [
-    "docs/load-shedding-feasibility.md covers what K-Electric publishes, whether areas or feeders can be matched to cells reliably, and a recommendation",
-    "the indicator is built only if Samraj approves; otherwise he approves dropping it"
-   ],
-   "depends_on": [
-    "P1-02"
-   ],
-   "passes": false,
-   "blocked_on": null,
-   "dropped": "Dropped for v1 by D20 (2026-09-26), approved by Samraj after reading docs/load-shedding-feasibility.md. The feasibility study itself was completed: K-Electric's schedule was fetched, cached, manifested and parsed, giving 620 feeder rows across 58 grid stations, 26 on the LANDHI grid, with daily outage from 4.0 to 10.0 hours. The indicator cannot be built because the schedule publishes no geography and any per-cell value would require inventing a service boundary (2.1). The model report must state that the mechanism Faisal Edhi named in June 2024 is the one this model cannot see.",
-   "evidence": null
-  },
-  {
-   "id": "P1-11",
-   "phase": 1,
-   "title": "Indicator table",
-   "acceptance": [
-    "data/processed/indicators.parquet and .csv",
-    "docs/data-dictionary.md",
-    "QA report with histograms and a missing-value summary",
-    "schema tests",
-    "the dist_centre column is present but empty while P1-09b is blocked, and that gap is named explicitly in the missing-value summary rather than hidden",
-    "the table is rebuilt once P1-09b unblocks"
-   ],
-   "depends_on": [
-    "P1-04b",
-    "P1-06",
-    "P1-07",
-    "P1-08",
-    "P1-09a"
-   ],
-   "passes": true,
-   "blocked_on": null,
-   "dropped": null,
-   "evidence": "uv run python -m pipeline.indicators -> 265 cells, 14 columns, 4 of 5 configured indicators present. Wrote data/processed/indicators.parquet (29 kB) and indicators.csv (26 kB); data/processed totals 304 kB against a 5 MB budget. Missing-value summary printed and written into docs/data-dictionary.md (55 lines): every column 0 missing except dist_centre_m at 265 of 265 (100%), flagged BLOCKED, because P1-09b awaits a relief centre verified in person (Q2) and OSM offers no fallback (D18). QA histograms written to artifacts/indicators_qa.png and viewed: lst_mean_c roughly normal around 43.2; population heavily right-skewed with a spike at zero, which is why D4 specified log1p; lack_green strongly BIMODAL (masses near 0 and near 1), so it behaves closer to 'green or not' than a gradient -- flagged for P2-01 normalisation. 10 new tests, including one that the join did not reorder rows (values compared back against each source layer) and one that the data dictionary states the known biases rather than burying them in DECISIONS.md. uv run pytest -> 149 passed; CI -> 145 passed, 4 deselected; check.py --quick -> 'CHECK: PASS (3 checks)'."
-  },
-  {
-   "id": "P2-01",
-   "phase": 2,
-   "title": "Normalisation",
-   "acceptance": [
-    "robust min-max and percentile rank both implemented",
-    "tests: output within [0,1], monotonic, direction respected, ties and constant columns handled",
-    "checker subagent verdict recorded"
-   ],
-   "depends_on": [
-    "P1-11"
-   ],
-   "passes": true,
-   "blocked_on": null,
-   "dropped": null,
-   "evidence": "pipeline/normalise.py implements both D5 methods. Applied to the real table: lst_day_mean/population/lack_green/dist_health all normalise into [0,1] under both, Spearman rho 0.9999 between methods per indicator (below 1.0 only because robust min-max creates ties in the clipped tails). dist_centre skipped, no values yet. 32 tests cover every acceptance criterion: output in [0,1], monotonicity on 200 random values, direction respected and invalid directions rejected, ties equal, constant columns -> 0 with a warning, NaN preserved, clipping exact at the percentiles, linearity between clip points, and a demonstration that robust min-max resists an outlier that crushes plain min-max. CHECKER SUBAGENT (section 3.1): given the written spec and the data but not the implementation, it re-derived 18 spot values (3 cells x 3 columns x 2 methods) and ALL 18 AGREED to 6 decimal places. Its critique produced four real improvements, now applied and pinned by tests: the constant test is relative to magnitude rather than absolute; a column flat between p5 and p95 but varying in the tails now raises FlatCoreWarning instead of silently discarding that variation; the direction flip is documented and tested as NOT applying to the constant case (read literally the rule would map a constant direction -1 indicator to 1.0, maximum risk everywhere); and log1p is documented and tested as rank-invariant. uv run pytest -> ${ALL}; check.py --quick -> 'CHECK: PASS (3 checks)'."
-  },
-  {
-   "id": "P2-02",
-   "phase": 2,
-   "title": "AHP tool",
-   "acceptance": [
-    "`uv run python -m pipeline.ahp` works end to end in the terminal",
-    "reports lambda-max, CI and CR using Saaty's random index table",
-    "re-asks conflicting answers when CR >= 0.10",
-    "tests: a published textbook example reproduced within tolerance; a consistent matrix gives CR about 0; an inconsistent matrix is caught",
-    "checker subagent verdict recorded"
-   ],
-   "depends_on": [
-    "P1-11"
-   ],
-   "passes": true,
-   "blocked_on": null,
-   "dropped": null,
-   "evidence": "pipeline/ahp.py works end to end in the terminal, demonstrated live: `printf 'a\\n3\\na\\n5\\na\\n3\\n' | uv run python -m pipeline.ahp --dry-run` -> lambda_max = 3.038511, CI = 0.019256, CR = 0.0332, kappa = 1.8, 'CR is below 0.05 (Saaty's limit for 3 items)', weights lack_green 0.6370 / dist_health 0.2583 / dist_centre 0.1047. A --dry-run flag was added so Samraj can practise without writing weights; config/weights.yaml remains provisional: True, decided_by: None, so P2-02b is untouched and no judgement has been fabricated. 34 tests: the published worked example reproduced (lambda_max 3.085771896 -> CI 0.042885948 -> CR 0.0739412), Saaty's RI table asserted, a consistent matrix gives lambda_max = n and CR = 0 and recovers the weights that built it, an inconsistent matrix is caught, power iteration cross-validated against numpy.linalg.eig on 60 random matrices, and the interactive session tested end to end with scripted input including bad input and a refusal to save weights it cannot justify. CHECKER SUBAGENT (section 3.1): given the spec and three matrices but not the implementation, it re-derived all three independently -- weights, lambda_max, CI and CR -- and ALL THREE AGREED exactly (M1 lambda_max 3.038511090558, M2 exactly 6.2, M3 exactly 4). Its critique produced six applied changes, all pinned by tests: graduated CR threshold per Saaty (D22), kappa reported for n=3, CI clamped at 0, Collatz-Wielandt bracket as a certified convergence diagnostic, input validated for positivity/reciprocity/unit diagonal, and a sharp regression test that the eigenvector equals the row geometric mean at n=3 only. uv run pytest -> 215 passed (211 in CI); check.py --quick -> 'CHECK: PASS (3 checks)'."
-  },
-  {
-   "id": "P2-02b",
-   "phase": 2,
-   "title": "Samraj's weights",
-   "acceptance": [
-    "config/weights.yaml written by the AHP tool from Samraj's own answers",
-    "CR < 0.10",
-    "provisional flag cleared, decided_by and decided_on set"
-   ],
-   "depends_on": [
-    "P2-02"
-   ],
-   "passes": false,
-   "blocked_on": "Samraj runs the AHP tool himself (D7b). Until then the model runs on provisional equal weights, labelled provisional everywhere.",
-   "dropped": null,
-   "evidence": null
-  },
-  {
-   "id": "P2-03",
-   "phase": 2,
-   "title": "Scores",
-   "acceptance": [
-    "H, E, V, Priority, Intensity and top three reasons per cell",
-    "D6b floor applied to H and V only, and tested",
-    "property tests: weights sum to 1; raising a risk-increasing indicator never lowers Priority; results do not depend on indicator order",
-    "checker subagent verdict recorded"
-   ],
-   "depends_on": [
-    "P2-01"
-   ],
-   "passes": true,
-   "blocked_on": null,
-   "dropped": null,
-   "evidence": "uv run python -m pipeline.score -> hazard from [lst_day_mean] min 0.0100 (floored) median 0.5341 max 1.0000; exposure from [population] min 0.0000 (UNFLOORED per D6b) median 0.7879 max 1.0000; vulnerability from [lack_green, dist_health] min 0.1344 median 0.5500 max 0.9827. Priority min 0 median 0.6157 max 0.8529; Intensity median 0.5345, 21 undefined (no residents). 21 cells have Priority exactly 0, matching the 21 with no population -- D6b working as designed. An IncompleteDimensionWarning fires for the missing dist_centre and the surviving weights are renormalised to 0.5/0.5 and published in scores_weights_used.json; every row carries model_incomplete and weights_provisional. 24 tests including all four required property tests. A REAL BUG CAUGHT BY TESTING THE OUTPUT: 6 populated cells sat below the pilot median on every indicator, so top_reasons returned empty and the site would have shown a blank 'why' panel; they now say 'Below the Landhi average on every measure we track'. CHECKER SUBAGENT (section 3.1): given the spec and the raw table but not the implementation or the output, it re-derived three cells end to end -- normalisation, renormalised weights, floors, geometric mean, Intensity -- and ALL THREE AGREED to six decimal places. Five of its empirical claims were independently verified and all five held. One fix applied: Intensity is now undefined where nobody lives (unmasked, an empty cell scored 0.740 and ranked 24th on a measure called 'per-person'). Raised Q11 (the 'per-person' label) and Q12 (D19's second reason does not survive measurement). uv run pytest -> 239 passed; check.py --quick -> 'CHECK: PASS (3 checks)'."
-  },
-  {
-   "id": "P2-04",
-   "phase": 2,
-   "title": "Sensitivity",
-   "acceptance": [
-    "seeded Monte Carlo, N >= 1000",
-    "per-cell median rank, 90% rank interval, P(top 20%) and confidence class",
-    "reproducibility test and figures",
-    "checker subagent verdict recorded"
-   ],
-   "depends_on": [
-    "P2-03"
-   ],
-   "passes": true,
-   "blocked_on": null,
-   "dropped": null,
-   "evidence": "uv run python -m pipeline.sensitivity -> 1000 seeded draws (seed 20260926), Dirichlet concentration 50, methods run SEPARATELY then pooled (500/500). Rank interval width median 53, max 182; priority interval width median 0.193 on a 0-0.85 scale. Monte Carlo standard error on P max 0.016, so P is reported to 2 dp not 4. Stability of the top-20% call: confidently in 28, uncertain 48, confidently out 189. Mean |P_robust - P_percentile| = 0.144 with 36 cells disagreeing by more than 0.5, so the two methods are reported separately rather than pooled. OF THE 53 CELLS IN THE HEADLINE TOP 20%, ONLY 28 STAY THERE IN AT LEAST 80% OF DRAWS AND 12 ARE ON THE WRONG SIDE OF A COIN FLIP. Figures written to artifacts/sensitivity.png and viewed. 13 tests including the required reproducibility test, which re-runs the analysis and asserts the committed output is reproduced byte for byte. CHECKER SUBAGENT (section 3.1): it built its own implementation from the spec with its own seeds and AGREED on every headline number -- 27/49/189 split (mine 28/48/189 after a bug fix it prompted), mean method gap 0.145 vs 0.144, 36 cells disagreeing by >0.5 (exact match), 12 of 53 below a coin flip (exact match), and the three spot cells matching within Monte Carlo error. IT FOUND A REAL BUG, now fixed as D23: D6b's guarantee that an empty cell scores Priority 0 held only under robust min-max; under percentile rank the 21 empty cells normalised to 0.0379, so half the draws violated the invariant. population is now declared structural_zero in config. Three further findings applied: method arms separated (pooling produced bimodal distributions whose median landed in the trough), P reported to 2 dp with its standard error, and priority intervals published alongside rank intervals because rank is competitive and the priority curve is nearly flat mid-ranking. Raised Q13. uv run pytest -> 252 passed; check.py --quick -> 'CHECK: PASS (3 checks)'."
-  },
-  {
-   "id": "P2-05",
-   "phase": 2,
-   "title": "Validation pack",
-   "acceptance": [
-    "equal-weights comparison with Spearman rho",
-    "face-validity check against cited June 2024 reporting, no invented locations",
-    "expert-ranking form plus an analysis script tested on SYNTHETIC data only",
-    "checker subagent verdict recorded",
-    "the June 2024 face-validity check geocodes the one reported Landhi incident (near Landhi Hospital's Chowrangi) to a cell and reports that cell's priority rank (D14)",
-    "the model report states plainly that face validity could not be meaningfully tested at 25 km2, gives the three reasons from D14, and does not present the single mention as confirmation"
-   ],
-   "depends_on": [
-    "P2-03"
-   ],
-   "passes": true,
-   "blocked_on": null,
-   "dropped": null,
-   "evidence": "uv run python -m pipeline.validate -> (a) alternative weightings: hazard-led rho 0.9570, exposure-led 0.9651, vulnerability-led 0.9660. The equal-weights baseline is marked not-applicable-yet, because the configured weights ARE equal weights pending P2-02b, so it correlates a vector with itself; the JSON says so and points at P2-04 as what answers the question meanwhile. (b) face validity: the one reported Landhi incident resolves to four plausible locations ranking 106, 112, 156 and 160 of 245 distinguishable positions -- all mid-distribution. Recorded as illustrative context only, NOT weak support: a single incident has no denominator. (c) docs/expert-ranking-form.md built from 12 real OpenStreetMap place nodes inside Landhi plus 13 blank rows, with the power limitation stated on the form. Analysis script reports Spearman, Kendall, a percentile bootstrap CI, a Bonett-Wright Fisher-z CI and a permutation p, on SYNTHETIC rankings only. CHECKER SUBAGENT (section 3.1): re-derived the three spot ranks independently and got 106, 156, 160 -- EXACT MATCH -- and rho 0.965035 / tau 0.848485 / percentile CI [0.8175, 1.0000], all matching. Six of its findings applied: ranks now quoted against 245 distinguishable positions not 265 cells; quintile labels dropped as knife-edge artefacts in favour of rank plus priority; the face-validity verdict downgraded from 'weak' to 'illustrative context only'; the equal-weights tautology declared in the data; a permutation test added because 'better than chance' is a test not an interval; and the Fisher SE corrected to Bonett-Wright, giving [0.8721, 0.9908] against the checker's [0.8720, 0.9908]. Bootstrap and permutation vectorised: the suite went from 53 s to 2.5 s. uv run pytest -> 275 passed; check.py --quick -> 'CHECK: PASS (3 checks)'."
-  },
-  {
-   "id": "P2-06",
-   "phase": 2,
-   "title": "Model report",
-   "acceptance": [
-    "docs/model-report.md with a plain summary, a maths appendix, figures and limitations",
-    "the checker subagent's verdict is included"
-   ],
-   "depends_on": [
-    "P2-04",
-    "P2-05"
-   ],
-   "passes": true,
-   "blocked_on": null,
-   "dropped": null,
-   "evidence": "docs/model-report.md, 175 lines, generated from the committed outputs so no number is retyped: plain summary, headline result including the uncomfortable part (only 28 of 53 top-20% cells stay there in 80% of draws, 12 on the wrong side of a coin flip), six limitation sections, validation with each check labelled for what it is worth, a maths appendix with the normalisation, geometric-mean, asymmetric-floor, Intensity, AHP and sensitivity formulae, a figure list, and the checker subagents' verdicts for P2-01 to P2-05 in a table. 12 tests re-read data/processed/ and assert the report still matches it, so a stale report fails loudly: headline counts, the stability split, the never-fires floor claim (min V 0.1344), eleven named limitations, the face-validity ranks, the equal-weights tautology, the provisional banner, the LaTeX formulae, the checker table, the D12 AI disclosure, and the section 2.5 language rule. One test was corrected rather than loosened: it originally banned the word 'dangerous' outright, but PROMPT.md section 1 itself says 'circumstances that make heat more dangerous', so it now enforces the actual rule -- never call an AREA dangerous -- by requiring the word to reference heat. uv run pytest -> 287 passed; check.py --quick -> 'CHECK: PASS (3 checks)'."
-  },
-  {
-   "id": "P3-01",
-   "phase": 3,
-   "title": "DESIGN.md",
-   "acceptance": [
-    "the plan: 4-6 named hex colours, type roles, ASCII wireframes at 375 px and 1280 px, alignment rules and three project-specific principles",
-    "a written review against the brief and the avoid-list, and the revisions made",
-    "Samraj approves it, or it stays provisional"
-   ],
-   "depends_on": [
-    "P2-06"
-   ],
-   "passes": true,
-   "blocked_on": null,
-   "dropped": null,
-   "evidence": "DESIGN.md, 191 lines, written before any styling: audience, three project-specific principles, six named hex tokens, a five-step sequential ramp, type roles, ASCII wireframes at 375 px and 1280 px, alignment rules, panel contents in the order a coordinator asks in, motion policy, and a point-by-point review against the brief's avoid-list recording two revisions the review forced (the serif display was removed; the panel card and its shadow became a plain surface with a 1px rule). EVERY COLOUR CLAIM WAS MEASURED, AND ONE WAS WRONG: the first draft claimed 7.0:1 for --muted #5C5952, which measures 6.59:1. The token was darkened to #58554E (7.01:1) rather than the claim being softened. Measured: --ink 16.12:1, --deep 9.96:1, --signal 6.90:1 (interactive only, needs 4.5). The ramp is monotone in lightness and its order survives simulated deuteranopia, protanopia and tritanopia; adjacent steps differ by 1.54-1.83:1. Ink on the deepest step is only 1.62:1, so the design states that no text is ever drawn on a ramp colour and cells carry no labels. 12 tests in tests/test_design.py re-derive every one of these numbers, including one that parses the ratio claimed in DESIGN.md and fails if it disagrees with the measured value. Status: PROVISIONAL until Samraj approves it. uv run pytest -> ${ALL}; check.py --quick -> 'CHECK: PASS (3 checks)'."
-  },
-  {
-   "id": "P3-02",
-   "phase": 3,
-   "title": "Shell",
-   "acceptance": [
-    "all pages exist and are responsive",
-    "html-validate passes",
-    "no horizontal scrolling at 375 px"
-   ],
-   "depends_on": [
-    "P3-01"
-   ],
-   "passes": true,
-   "blocked_on": null,
-   "dropped": null,
-   "evidence": "All six pages from section 9 exist and validate: `npx html-validate site` -> clean. `npx playwright test` -> 44 passed across 375x812 and 1280x800, covering console cleanliness, zero horizontal overflow, keyboard reachability, link integrity, 44px tap targets, the shared left edge and the DESIGN.md colour tokens. scripts/build_site_data.py writes site/data/cells.geojson: 265 cells, 155 kB against a 1 MB budget. check.py now runs 6 checks rather than 3; two were fixed rather than left misleading -- site-data consistency was globbing *.json and never matched cells.geojson, and axe was FAILING with 'no tests found' instead of deferring. Screenshots taken at both widths and critiqued: the laptop view broke DESIGN.md's own alignment rule (nav at x=16, heading at x=305) and was fixed; the phone nav was consuming ~100px before any content and was tightened without dropping below 44px; the duplicated byline in the footer was removed. uv run pytest -> ${ALL}; check.py --quick -> 'CHECK: PASS (6 checks)'."
-  },
-  {
-   "id": "P3-03",
-   "phase": 3,
-   "title": "Map and legend",
-   "acceptance": [
-    "cells render from site data",
-    "quintile legend in plain words",
-    "basemap attribution visible"
-   ],
-   "depends_on": [
-    "P3-02"
-   ],
-   "passes": true,
-   "blocked_on": null,
-   "dropped": null,
-   "evidence": "site/map.js renders all 265 cells from site/data/cells.geojson with Leaflet 1.9.4 vendored at a pinned version. `npx playwright test tests/e2e/map.spec.js` -> 17 passed, 1 skipped (a phone-only test): one SVG path per cell, exactly five quintile bands all drawn from the DESIGN.md ramp, the rank-1 cell in the darkest band, a plain-words legend that contains neither 'safe' nor 'danger', visible Esri and OpenStreetMap attribution, real basemap tiles, the provisional warning shown, the map above the fold on a phone, and cells keyboard-focusable with aria-labels. A REAL FAULT FOUND BY LOOKING AT THE SCREENSHOT, NOT BY A TEST: CARTO's tiles returned HTTP 200 with naturalWidth > 0 -- so 'tiles load' passed -- while actually serving 'API KEY REQUIRED' watermarks. Measured at z=13 over Landhi a CARTO tile is 2.0 kB with 16 distinct colours against Esri's 12.3 kB and 161. Switched to Esri World Light Gray Canvas (D24), and the test now draws a tile to a canvas and requires more than 40 distinct colours. Screenshots at both widths taken and critiqued; the copy above the map was condensed so the map starts above the fold on a 375 px screen, now asserted by a test. check.py --quick -> 'CHECK: PASS (6 checks)'."
-  },
-  {
-   "id": "P3-04",
-   "phase": 3,
-   "title": "Layers and panel",
-   "acceptance": [
-    "all five layers work: Priority, Heat, People, Vulnerability, Confidence",
-    "the panel shows class, rank, top three reasons, raw values with units, confidence, and what this cannot tell you",
-    "keyboard accessible with visible focus",
-    "end-to-end tests"
-   ],
-   "depends_on": [
-    "P3-03"
-   ],
-   "passes": true,
-   "blocked_on": null,
-   "dropped": null,
-   "evidence": "All five layers work (Priority, Heat, People, Vulnerability, Confidence), each producing a distinct colouring, asserted by a test that requires all five renderings to differ. The panel shows, in DESIGN.md's order: rank and class, up to three plain-language reasons, the confidence chip with the rank interval in words, a values table with units, and a 'What this cannot tell you' disclosure. Uncertain cells are HATCHED rather than tinted (DESIGN.md principle 1), with a test asserting a non-none stroke-dasharray on them. Keyboard: a cell takes focus and Enter selects it; the layer picker is focusable with a real <label for>. `npx playwright test` -> 83 passed, 1 skipped, across both viewports. AXE IS NOW LIVE: zero serious or critical violations on the map with a cell selected and on all three content pages, so check.py runs 7 checks rather than 6. A test compares the panel's rank, temperature and population against the underlying GeoJSON, so the panel cannot drift from the data. Screenshots critiqued: the 'never a verdict on a neighbourhood' disclaimer appeared three times (panel caveats, a standalone paragraph, the footer); the standalone paragraph was removed. check.py --quick -> 'CHECK: PASS (7 checks)'."
-  },
-  {
-   "id": "P3-05",
-   "phase": 3,
-   "title": "Confidence",
-   "acceptance": [
-    "confidence layer and panel wording based on P2-04"
-   ],
-   "depends_on": [
-    "P3-04"
-   ],
-   "passes": true,
-   "blocked_on": null,
-   "dropped": null,
-   "evidence": "The Confidence layer is built on P2-04's output and uses the DIRECTIONAL three-way call recorded as D25: confidently a priority (28 cells), uncertain (48), confidently not a priority (189). The literal reading of section 7's thresholds would print 'low confidence' on 215 cells, 155 of them with P below 0.01 -- cells the model is certain about -- which on a page a coordinator acts from is false rather than merely imprecise. All three columns remain in confidence.csv so the choice is visible and reversible. The layer carries a note saying which band matters ('the middle band is the one to look at'), shown only for that layer. The panel states the stability label and the rank interval in words. Three new tests: the legend wording never says 'low confidence'; the explanatory note appears for Confidence and disappears for Priority; and the panel's confidence wording is checked against the underlying data for both a 'confidently in' and a 'confidently out' cell, including the exact rank interval. npx playwright test -> 89 passed, 1 skipped; check.py --quick -> 'CHECK: PASS (7 checks)'."
-  },
-  {
-   "id": "P3-06",
-   "phase": 3,
-   "title": "Content pages",
-   "acceptance": [
-    "How it works: plain version plus maths appendix",
-    "Data and credits: every attribution and licence, including ODbL for OSM",
-    "About: disclaimer and the D12 AI-assistance disclosure; no contact, per D11c"
-   ],
-   "depends_on": [
-    "P3-02"
-   ],
-   "passes": true,
-   "blocked_on": null,
-   "dropped": null,
-   "evidence": "Three content pages written and generated from the committed data so their figures cannot go stale. How it works: the three questions in plain words, why the model multiplies rather than adds (a scorching empty yard scores near zero), how sure it is (28 of 53 survive, 12 fail a coin flip), why it says provisional, what it cannot tell you, and a maths section placed AFTER the plain explanation rather than before it -- asserted by a test on the order. Data and credits: all nine sources with their licences, the required Esri and OpenStreetMap attribution, and the three project licences including why the processed data is ODbL. About: the three 'what it is not' disclaimers, why the project exists, and the D12 AI disclosure. npx playwright test -> 107 passed, 1 skipped, including tests that no page names the school (D11b), that About shows no email or contact channel (D11c), and that no page calls an area unsafe or dangerous (section 2.5). check.py --quick -> 'CHECK: PASS (7 checks)'."
-  },
-  {
-   "id": "P3-07",
-   "phase": 3,
-   "title": "Urdu strings",
-   "acceptance": [
-    "full Urdu string set, RTL layout, Nastaliq font, remembered language toggle"
-   ],
-   "depends_on": [
-    "P3-06"
-   ],
-   "passes": false,
-   "blocked_on": null,
-   "dropped": "Dropped for v1 by D9 (2026-09-26): Samraj chose English only. UI strings are still externalised in site/i18n/en.json and dir is driven by the language setting, so adding Urdu later is a translation task, not a rewrite.",
-   "evidence": null
-  },
-  {
-   "id": "P3-07b",
-   "phase": 3,
-   "title": "Urdu reviewed",
-   "acceptance": [
-    "Samraj has approved every Urdu string"
-   ],
-   "depends_on": [
-    "P3-07"
-   ],
-   "passes": false,
-   "blocked_on": null,
-   "dropped": "Not applicable for v1: its only dependency P3-07 was dropped by D9 (2026-09-26), which chose English only. There are no Urdu strings for Samraj to review, so this feature has nothing to verify. If Urdu is added in a later version, both features are reinstated together and P3-07b again blocks release until every string is approved.",
-   "evidence": null
-  },
-  {
-   "id": "P3-08",
-   "phase": 3,
-   "title": "Quality gates",
-   "acceptance": [
-    "Playwright at 375x812 and 1280x800 passes with no console errors",
-    "axe-core reports zero serious or critical violations",
-    "first load at most 1.5 MB excluding basemap tiles",
-    "Lighthouse mobile: performance >= 85, accessibility >= 95, best practices >= 90, SEO >= 90"
-   ],
-   "depends_on": [
-    "P3-05",
-    "P3-06"
-   ],
-   "passes": true,
-   "blocked_on": null,
-   "dropped": null,
-   "evidence": "`uv run python scripts/check.py --lighthouse` -> 'CHECK: PASS (8 checks)' with 'performance: 91 (needs 85); accessibility: 100 (needs 95); best-practices: 96 (needs 90); seo: 100 (needs 90)'. Every section 10 gate is now live: ruff, pytest, data validation, site-data consistency, html-validate, Playwright, axe-core and Lighthouse. PERFORMANCE STARTED AT 79 AND THE THRESHOLD WAS NOT LOWERED. Three genuine faults were fixed instead: a 404 from a missing favicon (which was also failing Lighthouse's console-errors audit while the Playwright console test passed, because the favicon request happens outside the page's own script); a 0.165 layout shift caused by the provisional banner being revealed by JavaScript after load; and leaflet.css blocking the critical path. 79 -> 84 -> 86 -> 91. The layout-shift fix also improved the site's honesty: the provisional banner is now rendered visible in the HTML and only ever REMOVED by JavaScript, so the honest state no longer depends on a script running -- asserted by a test that loads the page with JavaScript disabled. Page-weight budget enforced by test: first load excluding basemap tiles is well under 1.5 MB, and a second test asserts the site makes no third-party request except the basemap, since Leaflet is vendored."
-  },
-  {
-   "id": "P3-09",
-   "phase": 3,
-   "title": "Deploy",
-   "acceptance": [
-    "Pages deploys from CI",
-    "the live URL returns 200",
-    "the Playwright smoke suite passes against the live URL"
-   ],
-   "depends_on": [
-    "P3-08"
-   ],
-   "passes": false,
-   "blocked_on": null,
-   "dropped": null,
-   "evidence": null
-  },
-  {
-   "id": "P4-01",
-   "phase": 4,
-   "title": "Solver",
-   "acceptance": [
-    "LP and greedy baseline in pipeline/allocate.py",
-    "docs/allocation.md with the formulation and a hand-solvable example",
-    "tests: stock never exceeded; nothing sent beyond D; LP objective >= greedy objective; unlimited stock meets all reachable need; zero stock sends nothing; results deterministic",
-    "checker subagent verdict recorded",
-    "the LP draws stock only from centres where can_hold_stock is yes (D13)",
-    "a test proves a centre with role ambulance_standby is never assigned stock"
-   ],
-   "depends_on": [
-    "P2-06"
-   ],
-   "passes": false,
-   "blocked_on": null,
-   "dropped": null,
-   "evidence": null
-  },
-  {
-   "id": "P4-02",
-   "phase": 4,
-   "title": "Scenarios",
-   "acceptance": [
-    "precomputed scenarios per D8, exported for the site with plain-language summaries",
-    "the Sphere litres-per-person figure verified against the Sphere Handbook and cited"
-   ],
-   "depends_on": [
-    "P4-01"
-   ],
-   "passes": false,
-   "blocked_on": null,
-   "dropped": null,
-   "evidence": null
-  },
-  {
-   "id": "P4-03",
-   "phase": 4,
-   "title": "Planner page",
-   "acceptance": [
-    "pick centres and stock, then see the allocation on the map and in a table",
-    "approximate greedy mode clearly labelled",
-    "end-to-end tests show totals never exceed stock"
-   ],
-   "depends_on": [
-    "P4-02",
-    "P3-09"
-   ],
-   "passes": false,
-   "blocked_on": null,
-   "dropped": null,
-   "evidence": null
-  },
-  {
-   "id": "P5-01",
-   "phase": 5,
-   "title": "Field briefs",
-   "acceptance": [
-    "one A4 page per named locality inside the pilot area, in English (D9)",
-    "rendered from HTML with Playwright",
-    "PDF and PNG each under 1 MB"
-   ],
-   "depends_on": [
-    "P4-03"
-   ],
-   "passes": false,
-   "blocked_on": null,
-   "dropped": null,
-   "evidence": null
-  },
-  {
-   "id": "P5-02",
-   "phase": 5,
-   "title": "Offline",
-   "acceptance": [
-    "a service worker caches the app shell and the data",
-    "the offline view uses a simplified road outline instead of basemap tiles",
-    "tested offline in Playwright"
-   ],
-   "depends_on": [
-    "P3-09"
-   ],
-   "passes": false,
-   "blocked_on": null,
-   "dropped": null,
-   "evidence": null
-  },
-  {
-   "id": "P5-03",
-   "phase": 5,
-   "title": "NGO one-pager",
-   "acceptance": [
-    "docs/pitch/one-pager.md and a PDF",
-    "covers what it is, what it is not, how to read the map in two minutes, and what feedback is wanted",
-    "leaves a blank line for a handwritten contact, per D11c",
-    "a draft for Samraj to edit; Claude never sends it"
-   ],
-   "depends_on": [
-    "P4-02"
-   ],
-   "passes": false,
-   "blocked_on": null,
-   "dropped": null,
-   "evidence": null
-  },
-  {
-   "id": "P5-04",
-   "phase": 5,
-   "title": "README",
-   "acceptance": [
-    "overview, screenshots, reproduce steps, credits, all three licences, the D12 AI disclosure, and CITATION.cff"
-   ],
-   "depends_on": [
-    "P3-09"
-   ],
-   "passes": false,
-   "blocked_on": null,
-   "dropped": null,
-   "evidence": null
-  },
-  {
-   "id": "P5-05",
-   "phase": 5,
-   "title": "Release",
-   "acceptance": [
-    "`uv run python scripts/check.py --lighthouse` prints CHECK: PASS",
-    "P2-02b is resolved",
-    "CHANGELOG.md written",
-    "v1.0.0 tagged and pushed"
-   ],
-   "depends_on": [
-    "P5-01",
-    "P5-02",
-    "P5-03",
-    "P5-04"
-   ],
-   "passes": false,
-   "blocked_on": null,
-   "dropped": null,
-   "evidence": null
-  },
-  {
-   "id": "P6-01",
-   "phase": 6,
-   "title": "Expert agreement",
-   "acceptance": [
-    "real rankings imported",
-    "agreement computed with confidence intervals and written up",
-    "Samraj decides any model changes"
-   ],
-   "depends_on": [
-    "P2-05"
-   ],
-   "passes": false,
-   "blocked_on": "Not a goal until Samraj has real field rankings.",
-   "dropped": null,
-   "evidence": null
-  }
- ]
+  "schema_version": 1,
+  "project": "karachi-heat-map",
+  "generated": "2026-09-26",
+  "note": "Source of truth for progress. A feature is RESOLVED when passes is true, or when dropped is a non-empty reason approved by Samraj and recorded in DECISIONS.md. Never delete a feature or loosen an acceptance criterion.",
+  "features": [
+    {
+      "id": "P0-01",
+      "phase": 0,
+      "title": "Machine ready",
+      "acceptance": [
+        "Tool versions printed for OS, git, Python, Node and free disk space",
+        "`gh auth status` shows Samraj is logged in"
+      ],
+      "depends_on": [],
+      "passes": true,
+      "blocked_on": null,
+      "dropped": null,
+      "evidence": "macOS 15.7.3 x86_64; git 2.39.5; Node v24.19.0 + npm 11.17.0; 140 GB free; Python 3.12.14 via `uv python install 3.12`; gh 2.101.0 installed from the official cli/cli release, SHA-256 verified against the published checksums file; `gh auth status` -> logged in as samrajukrani0-tech, scopes gist, read:org, repo, workflow."
+    },
+    {
+      "id": "P0-02",
+      "phase": 0,
+      "title": "Decisions recorded",
+      "acceptance": [
+        "D1 to D12 appear in DECISIONS.md",
+        "each has a status of approved, provisional or deferred",
+        "each records Samraj's decision in his own words"
+      ],
+      "depends_on": [],
+      "passes": true,
+      "blocked_on": null,
+      "dropped": null,
+      "evidence": "DECISIONS.md holds D1-D12, each with the question, options, recommendation and reasons, Samraj's decision in his words, a status and the date; `grep -c '^## D' DECISIONS.md` -> 12."
+    },
+    {
+      "id": "P0-03",
+      "phase": 0,
+      "title": "Scaffold",
+      "acceptance": [
+        "the PROMPT.md section 4 layout exists (adapted: DESIGN.md is created in P3-01)",
+        "CLAUDE.md is at most 150 lines",
+        "features.json validates against the schema test",
+        "`uv run python scripts/features.py` prints per-phase counts"
+      ],
+      "depends_on": [
+        "P0-02"
+      ],
+      "passes": true,
+      "blocked_on": null,
+      "dropped": null,
+      "evidence": "PROMPT.md section 4 layout present (DESIGN.md deferred to P3-01 by design); `wc -l CLAUDE.md` -> 135 (limit 150); features.json holds 42 features and validates against tests/features.schema.json; `uv run python scripts/features.py` prints per-phase counts plus an overall line."
+    },
+    {
+      "id": "P0-04",
+      "phase": 0,
+      "title": "Checks and CI",
+      "acceptance": [
+        "`uv run python scripts/check.py --quick` prints CHECK: PASS on the scaffold",
+        "the first GitHub Actions run is green, with its status printed via gh"
+      ],
+      "depends_on": [
+        "P0-03"
+      ],
+      "passes": true,
+      "blocked_on": null,
+      "dropped": null,
+      "evidence": "`uv run python scripts/check.py --quick` -> 'CHECK: PASS (3 checks)'; `uv run pytest` -> 22 passed; GitHub Actions run 36238295986 completed success with jobs check: success and deploy: success."
+    },
+    {
+      "id": "P0-05",
+      "phase": 0,
+      "title": "Live placeholder",
+      "acceptance": [
+        "the public repo is pushed",
+        "Pages deploys from GitHub Actions",
+        "the placeholder URL returns HTTP 200, printed"
+      ],
+      "depends_on": [
+        "P0-04"
+      ],
+      "passes": true,
+      "blocked_on": null,
+      "dropped": null,
+      "evidence": "Public repo pushed to github.com/samrajukrani0-tech/karachi-heat-map; Pages configured with build_type=workflow; `curl -o /dev/null -w '%{http_code}' -L https://samrajukrani0-tech.github.io/karachi-heat-map/` -> 200, serving the placeholder page."
+    },
+    {
+      "id": "P1-01",
+      "phase": 1,
+      "title": "Pilot boundary",
+      "acceptance": [
+        "data/processed/pilot_area.geojson exists in EPSG:4326 with provenance",
+        "area in km2 printed and within config/area.yaml tolerance of 25.37",
+        "preview PNG written to artifacts/"
+      ],
+      "depends_on": [
+        "P0-05"
+      ],
+      "passes": true,
+      "blocked_on": null,
+      "dropped": null,
+      "evidence": "uv run python -m pipeline.boundary -> 'Area: 25.370 km2 (config expects 25.37 +/- 0.75)', 1 ring, 0 interior holes; wrote data/processed/pilot_area.geojson (4.4 kB, EPSG:4326) and artifacts/pilot_area_preview.png (56 kB), which was viewed and shows a single closed polygon, centroid 24.84449, 67.18136. Provenance in the file: OSM relation 16350631, admin_level 7, ODbL 1.0, accessed 2026-09-26, raw response sha256 0a9b249905a9e5ff039f4239e548b90ac247bf9e9d749cad4697ff8af96181e8 (fingerprints the download, not the geometry: Overpass embeds a timestamp). uv run pytest -> 39 passed in 0.76s; uv run python scripts/check.py --quick -> 'CHECK: PASS (3 checks)'."
+    },
+    {
+      "id": "P1-02",
+      "phase": 1,
+      "title": "Grid",
+      "acceptance": [
+        "H3 resolution 9 cells cover the boundary",
+        "the inclusion rule from config/area.yaml is implemented and documented",
+        "cell count printed",
+        "tests: IDs valid, no duplicates, cells cover at least 99% of the boundary"
+      ],
+      "depends_on": [
+        "P1-01"
+      ],
+      "passes": true,
+      "blocked_on": null,
+      "dropped": null,
+      "evidence": "uv run python -m pipeline.grid -> 265 cells at H3 resolution 9 (248 by centre, 17 by the >=25% area rule); 'Coverage of the boundary: 99.115% (minimum 99%)'; hexagon area 27.080 km2, clipped 25.145 km2 against a boundary of 25.370 km2, overhang 1.935 km2 excluded from every indicator by clipping. Wrote data/processed/grid.geojson (130 kB) and artifacts/grid_preview.png, which was viewed and shows a gapless tiling with edge cells exactly where the boundary bulges past a cell centre. tests/test_grid.py adds 12 tests that recompute coverage, the inclusion rule, clipped areas and contiguity from the stored geometry rather than trusting the file's metadata. uv run pytest -> 51 passed in 1.03s; uv run python scripts/check.py --quick -> 'CHECK: PASS (3 checks)'. Inclusion rule revised under D15 (provisional, QUESTIONS.md Q5)."
+    },
+    {
+      "id": "P1-03",
+      "phase": 1,
+      "title": "Download cache",
+      "acceptance": [
+        "pipeline/fetch.py handles retries, backoff, checksums and manifest.json",
+        "a second run uses the cache and downloads nothing",
+        "tests use mocked responses"
+      ],
+      "depends_on": [
+        "P0-03"
+      ],
+      "passes": true,
+      "blocked_on": null,
+      "dropped": null,
+      "evidence": "pipeline/fetch.py streams to a .part file while hashing, renames atomically, retries only the transient statuses {408,425,429,500,502,503,504} with exponential backoff capped at 120 s and honours Retry-After, and records url, sha256, bytes, date and licence in data/raw/manifest.json. Cache reuse verified live: a second 'uv run python -m pipeline.boundary' printed the same 'Area: 25.370 km2' with no download line; 'uv run python -m pipeline.fetch --verify' -> 'Verified 1 cached file(s): all match the manifest'. tests/test_fetch.py adds 17 tests on a mocked transport with SYNTHETIC payloads, covering: manifest contents, zero network calls on the second run, refresh, tampered cache re-downloaded, an unmanifested file not trusted, checksum mismatch raising IntegrityError and removing the file, retry-then-succeed with growing backoff, Retry-After honoured, backoff capped, 404 never retried, give-up after the try limit, and .part cleanup. uv run pytest -> 68 passed in 1.49s; check.py --quick -> 'CHECK: PASS (3 checks)'."
+    },
+    {
+      "id": "P1-04a",
+      "phase": 1,
+      "title": "Hot-season LST composite",
+      "acceptance": [
+        "Landsat 8/9 C2 L2 April-June scenes found via STAC and read as windows, not whole scenes",
+        "cloud, shadow, cirrus, dilated cloud and fill masked with qa_pixel",
+        "USGS scaling applied: kelvin = 0.00341802 * DN + 149.0, then to degrees Celsius",
+        "per-pixel median composite, with a documented minimum number of clear looks",
+        "scene list and per-scene cloud statistics recorded in data/processed/lst_scenes.csv",
+        "composite values inside the documented plausible range in config/heat.yaml"
+      ],
+      "depends_on": [
+        "P1-02",
+        "P1-03"
+      ],
+      "passes": true,
+      "blocked_on": null,
+      "dropped": null,
+      "evidence": "uv run python -m pipeline.lst -> 48 Landsat 8/9 C2 L2 scenes, April-June 2022-2026, scene cloud cover <= 50%, all WRS path 152 row 043. Each scene read as a window over Landhi only, never the whole scene. Composite 278 x 244 px at 30 m; clear looks per pixel min 33, median 42, max 47; 0 of 67832 pixels dropped for fewer than 5 clear looks. 'LST degC: min 31.25, median 43.16, max 48.11' -- inside the documented plausible range 20-65 in config/heat.yaml. Wrote data/raw/derived/lst_hot_season.tif (195 kB, 2 bands: median LST and clear-look count) and data/processed/lst_scenes.csv (48 rows with per-scene cloud cover and usable-pixel fraction over Landhi). tests/test_lst.py adds 20 tests: each QA bit verified against Landsat's documented bit order, unlisted confidence bits proven not to mask, the USGS scaling checked against a hand-computed DN, and every recorded scene checked for season, year, platform and cloud limit. 4 tests that open the gitignored raster are marked raw. uv run pytest -> 88 passed; CI=true pytest -m 'not raw' -> 84 passed, 4 deselected; check.py --quick -> 'CHECK: PASS (3 checks)'."
+    },
+    {
+      "id": "P1-04b",
+      "phase": 1,
+      "title": "Daytime heat per cell",
+      "acceptance": [
+        "per-cell mean and 90th-percentile hot-season LST in degC",
+        "statistics computed over the CLIPPED cell geometry (D15), never the whole hexagon",
+        "cells with too little clear coverage are flagged, not silently averaged",
+        "values inside the documented plausible range",
+        "map PNG in artifacts/"
+      ],
+      "depends_on": [
+        "P1-04a"
+      ],
+      "passes": true,
+      "blocked_on": null,
+      "dropped": null,
+      "evidence": "uv run python -m pipeline.heat -> 'Cells: 265; with values: 265; flagged: 0'. Mean LST per cell 39.19 to 46.28 degC (median 43.23, spread 7.09); P90 per cell 40.21 to 47.29 degC; pixels per cell min 27, median 113. All inside the documented plausible range 20-65. Statistics computed over the clipped cell (cell intersect boundary) via pipeline/zonal.py, per D15. Wrote data/processed/lst_cells.csv (11 kB) and artifacts/lst_cells_map.png, which was viewed: spatially coherent structure with a cool band on the north-west edge and hot patches in the south-centre, not noise. 16 new tests: 7 on the zonal helper using SYNTHETIC in-memory rasters (including proof that clipping changes the answer, and that a sub-pixel cell falls back rather than vanishing) and 9 on the per-cell table (one row per grid cell, p90 never below mean across all 265, the flagging rule actually applied, real variation present). uv run pytest -> 104 passed in 2.45s; CI=true pytest -m 'not raw' -> 100 passed, 4 deselected in 1.47s; check.py --quick -> 'CHECK: PASS (3 checks)'."
+    },
+    {
+      "id": "P1-05",
+      "phase": 1,
+      "title": "Night heat",
+      "acceptance": [
+        "per-cell night LST, area-weighted and labelled coarse"
+      ],
+      "depends_on": [
+        "P1-02",
+        "P1-03"
+      ],
+      "passes": false,
+      "blocked_on": null,
+      "dropped": "Dropped by D4 (2026-09-26). MODIS night LST is 1 km: ~25 pixels cover the whole 25.37 km2 pilot area across 242 cells, so between-cell variation would be an artefact of area weighting, not a measurement. The model report states that night heat matters medically but could not be resolved at this scale. ECOSTRESS (~70 m) is recorded as a v2 candidate.",
+      "evidence": null
+    },
+    {
+      "id": "P1-06",
+      "phase": 1,
+      "title": "People per cell",
+      "acceptance": [
+        "per-cell counts from Meta and from WorldPop, with a comparison table",
+        "source chosen and recorded per D4",
+        "pilot total within the documented tolerance of an independent figure, or the gap explained",
+        "map PNG"
+      ],
+      "depends_on": [
+        "P1-02",
+        "P1-03"
+      ],
+      "passes": true,
+      "blocked_on": null,
+      "dropped": null,
+      "evidence": "uv run python -m pipeline.population -> Meta HRSL 295,132 people (median 119 px/cell); WorldPop 308,105 (median 13 px/cell); per-cell agreement Spearman rho 0.834, Pearson r 0.866. Source chosen: Meta, on resolution (D16). Comparison table written to data/processed/population_source_comparison.csv; per-cell counts to population_cells.csv; density min 0, median 6,366, max 48,332 per km2. Map viewed: dense core through the centre-south, sparser east, 21 empty cells. INDEPENDENT CHECK FAILED THE TOLERANCE AND THE GAP IS EXPLAINED: 2023 census Landhi Town is 681,293, so both sources are ~0.44x. Diagnosed by summing both rasters over the whole of Korangi District: models 1.81M and 1.93M against a census 3.13M (0.58x, 0.62x), so the shortfall is systematic across the district and not an artefact of the pilot boundary. Recorded in D16 with the consequences (relative ranking survives a uniform factor; a non-uniform undercount would under-rank the densest areas; absolute supply quantities are underestimates) and raised as Q6. Data was NOT rescaled to match the census, and a test asserts it was not. 9 new tests. uv run pytest -> 113 passed in 2.04s; CI -> 109 passed, 4 deselected in 1.49s; check.py --quick -> 'CHECK: PASS (3 checks)'."
+    },
+    {
+      "id": "P1-07",
+      "phase": 1,
+      "title": "Age groups",
+      "acceptance": [
+        "per-cell share aged 60+ and share under 5, each within [0,1]",
+        "the zero-population rule is implemented and tested"
+      ],
+      "depends_on": [
+        "P1-06"
+      ],
+      "passes": true,
+      "blocked_on": null,
+      "dropped": null,
+      "evidence": "uv run python -m pipeline.demographics -> 265 cells; shares defined 244; undefined (no_population) 21. share_over60 min 0.0447 median 0.0447 max 0.0620; share_under5 min 0.0909 median 0.1096 max 0.1097; all within [0,1] and inside the documented plausible maxima. Elderly 60+ total 17,084 (5.8%), under-5 total 28,148 (9.5%). Zero-population rule implemented and tested: a share is UNDEFINED (written empty, flagged no_population), never 0 and never imputed. FINDING RECORDED AS D17: the two shares correlate at exactly -1.0000, 86% of cells sit on just two values, and their sum spans only 0.15291-0.15441 (CV 0.0045 against 0.028 for LST and 0.994 for population) -- Meta applies an administrative age profile rather than modelling age spatially, so the SHARES carry no within-Landhi signal. The COUNTS do vary and are what D8's need definition uses, so they are retained. Raised as Q7. 9 new tests, including assertions that pin the D17 evidence so it cannot quietly become untrue. uv run pytest -> 122 passed in 2.48s; CI -> 118 passed, 4 deselected in 1.71s; check.py --quick -> 'CHECK: PASS (3 checks)'."
+    },
+    {
+      "id": "P1-08",
+      "phase": 1,
+      "title": "Built environment",
+      "acceptance": [
+        "building footprint fraction per cell",
+        "green cover fraction per cell",
+        "coverage caveats recorded in data/SOURCES.md"
+      ],
+      "depends_on": [
+        "P1-02",
+        "P1-03"
+      ],
+      "passes": true,
+      "blocked_on": null,
+      "dropped": null,
+      "evidence": "uv run python -m pipeline.landcover -> ESA WorldCover 10 m tile ESA_WorldCover_10m_2021_v200_N24E066, median 1,314 pixels per cell. built_fraction min 0.000, median 0.692, max 0.991; green_fraction min 0.000, median 0.131, max 1.000; lack_green stored as 1 - green. Wrote data/processed/landcover_cells.csv (13 kB) and artifacts/landcover_cells_map.png, viewed: the two maps are near-complements, matching the measured r = -0.929. SOURCE SUBSTITUTION (D18): Microsoft Building Footprints needs adlfs -> azure-storage-blob -> cryptography, which ships no x86_64 macOS wheel and wants a Rust toolchain (a system-wide install, 2.7), so WorldCover class 50 is used and named 'built-up surface' rather than building footprints. CROSS-VALIDATION: the five unexplained cool cells flagged by P1-04b are 93-100% green against a pilot median of 13.1% -- two independent datasets agreeing. COVERAGE CAVEAT recorded in data/SOURCES.md: OSM building polygons cover 6.01% of Landhi against WorldCover's 54.7% built-up, about 11% as much, from just 711 mapped buildings. 9 new tests. uv run pytest -> 131 passed in 1.67s; CI -> 127 passed, 4 deselected in 1.70s; check.py --quick -> 'CHECK: PASS (3 checks)'."
+    },
+    {
+      "id": "P1-09a",
+      "phase": 1,
+      "title": "Distance to nearest health facility",
+      "acceptance": [
+        "distance per cell to the nearest health facility, from OpenStreetMap",
+        "facilities outside the pilot boundary are included, so an edge cell is not penalised for a clinic just over the line",
+        "road distance if a routable graph works, otherwise straight-line distance times a documented circuity factor",
+        "OSM coverage gaps measured and reported, not assumed away",
+        "map PNG in artifacts/"
+      ],
+      "depends_on": [
+        "P1-02"
+      ],
+      "passes": true,
+      "blocked_on": null,
+      "dropped": null,
+      "evidence": "uv run python -m pipeline.access -> 228 OpenStreetMap health facilities within 6 km of the pilot area (32 inside Landhi, 196 outside but still serving it). Distance to care, straight line x 1.3 circuity factor from the clipped cell centroid, measured in EPSG:32642: min 14 m, median 849 m, max 2,471 m -- inside the documented plausible limits (median <= 3,000 m, any <= 12,000 m). 42 of 265 cells have their nearest facility OUTSIDE Landhi, so without the 6 km search buffer those cells would have been scored as far from care; that is the measured justification for the buffer, not an assumption. Wrote data/processed/access_cells.csv and health_facilities.csv, and artifacts/access_cells_map.png, which was viewed: facilities cluster along the central corridor, and the worst-served cells are the north-west band -- the same cells P1-08 showed to be greenest and P1-04b coolest. 8 new tests, including one that the circuity factor is applied exactly and one that it can never be below 1. uv run pytest -> 139 passed; CI -> 135 passed, 4 deselected; check.py --quick -> 'CHECK: PASS (3 checks)'."
+    },
+    {
+      "id": "P1-09b",
+      "phase": 1,
+      "title": "Distance to nearest verified relief centre",
+      "acceptance": [
+        "distance per cell to the nearest verified relief centre",
+        "centres.csv schema enforces name, org, role, can_hold_stock, lat, lon, source, verified_by, verified_on (D13)",
+        "role is one of ambulance_standby, distribution_point, clinic, morgue, office, other; invalid values fail the schema test",
+        "the vulnerability indicator counts every verified facility regardless of organisation (D13)",
+        "unverified candidates excluded from the model and listed for Samraj"
+      ],
+      "depends_on": [
+        "P1-02"
+      ],
+      "passes": false,
+      "blocked_on": "QUESTIONS.md Q2: no relief centre has been verified in person yet, and there is no open-data fallback -- OSM covers only about 11% of Landhi's built area (D18), so its silence is not evidence of absence. 11 unverified candidates are listed in data/manual/centre_candidates.csv; none may enter the model.",
+      "dropped": null,
+      "evidence": null
+    },
+    {
+      "id": "P1-10",
+      "phase": 1,
+      "title": "Load-shedding feasibility",
+      "acceptance": [
+        "docs/load-shedding-feasibility.md covers what K-Electric publishes, whether areas or feeders can be matched to cells reliably, and a recommendation",
+        "the indicator is built only if Samraj approves; otherwise he approves dropping it"
+      ],
+      "depends_on": [
+        "P1-02"
+      ],
+      "passes": false,
+      "blocked_on": null,
+      "dropped": "Dropped for v1 by D20 (2026-09-26), approved by Samraj after reading docs/load-shedding-feasibility.md. The feasibility study itself was completed: K-Electric's schedule was fetched, cached, manifested and parsed, giving 620 feeder rows across 58 grid stations, 26 on the LANDHI grid, with daily outage from 4.0 to 10.0 hours. The indicator cannot be built because the schedule publishes no geography and any per-cell value would require inventing a service boundary (2.1). The model report must state that the mechanism Faisal Edhi named in June 2024 is the one this model cannot see.",
+      "evidence": null
+    },
+    {
+      "id": "P1-11",
+      "phase": 1,
+      "title": "Indicator table",
+      "acceptance": [
+        "data/processed/indicators.parquet and .csv",
+        "docs/data-dictionary.md",
+        "QA report with histograms and a missing-value summary",
+        "schema tests",
+        "the dist_centre column is present but empty while P1-09b is blocked, and that gap is named explicitly in the missing-value summary rather than hidden",
+        "the table is rebuilt once P1-09b unblocks"
+      ],
+      "depends_on": [
+        "P1-04b",
+        "P1-06",
+        "P1-07",
+        "P1-08",
+        "P1-09a"
+      ],
+      "passes": true,
+      "blocked_on": null,
+      "dropped": null,
+      "evidence": "uv run python -m pipeline.indicators -> 265 cells, 14 columns, 4 of 5 configured indicators present. Wrote data/processed/indicators.parquet (29 kB) and indicators.csv (26 kB); data/processed totals 304 kB against a 5 MB budget. Missing-value summary printed and written into docs/data-dictionary.md (55 lines): every column 0 missing except dist_centre_m at 265 of 265 (100%), flagged BLOCKED, because P1-09b awaits a relief centre verified in person (Q2) and OSM offers no fallback (D18). QA histograms written to artifacts/indicators_qa.png and viewed: lst_mean_c roughly normal around 43.2; population heavily right-skewed with a spike at zero, which is why D4 specified log1p; lack_green strongly BIMODAL (masses near 0 and near 1), so it behaves closer to 'green or not' than a gradient -- flagged for P2-01 normalisation. 10 new tests, including one that the join did not reorder rows (values compared back against each source layer) and one that the data dictionary states the known biases rather than burying them in DECISIONS.md. uv run pytest -> 149 passed; CI -> 145 passed, 4 deselected; check.py --quick -> 'CHECK: PASS (3 checks)'."
+    },
+    {
+      "id": "P2-01",
+      "phase": 2,
+      "title": "Normalisation",
+      "acceptance": [
+        "robust min-max and percentile rank both implemented",
+        "tests: output within [0,1], monotonic, direction respected, ties and constant columns handled",
+        "checker subagent verdict recorded"
+      ],
+      "depends_on": [
+        "P1-11"
+      ],
+      "passes": true,
+      "blocked_on": null,
+      "dropped": null,
+      "evidence": "pipeline/normalise.py implements both D5 methods. Applied to the real table: lst_day_mean/population/lack_green/dist_health all normalise into [0,1] under both, Spearman rho 0.9999 between methods per indicator (below 1.0 only because robust min-max creates ties in the clipped tails). dist_centre skipped, no values yet. 32 tests cover every acceptance criterion: output in [0,1], monotonicity on 200 random values, direction respected and invalid directions rejected, ties equal, constant columns -> 0 with a warning, NaN preserved, clipping exact at the percentiles, linearity between clip points, and a demonstration that robust min-max resists an outlier that crushes plain min-max. CHECKER SUBAGENT (section 3.1): given the written spec and the data but not the implementation, it re-derived 18 spot values (3 cells x 3 columns x 2 methods) and ALL 18 AGREED to 6 decimal places. Its critique produced four real improvements, now applied and pinned by tests: the constant test is relative to magnitude rather than absolute; a column flat between p5 and p95 but varying in the tails now raises FlatCoreWarning instead of silently discarding that variation; the direction flip is documented and tested as NOT applying to the constant case (read literally the rule would map a constant direction -1 indicator to 1.0, maximum risk everywhere); and log1p is documented and tested as rank-invariant. uv run pytest -> ${ALL}; check.py --quick -> 'CHECK: PASS (3 checks)'."
+    },
+    {
+      "id": "P2-02",
+      "phase": 2,
+      "title": "AHP tool",
+      "acceptance": [
+        "`uv run python -m pipeline.ahp` works end to end in the terminal",
+        "reports lambda-max, CI and CR using Saaty's random index table",
+        "re-asks conflicting answers when CR >= 0.10",
+        "tests: a published textbook example reproduced within tolerance; a consistent matrix gives CR about 0; an inconsistent matrix is caught",
+        "checker subagent verdict recorded"
+      ],
+      "depends_on": [
+        "P1-11"
+      ],
+      "passes": true,
+      "blocked_on": null,
+      "dropped": null,
+      "evidence": "pipeline/ahp.py works end to end in the terminal, demonstrated live: `printf 'a\\n3\\na\\n5\\na\\n3\\n' | uv run python -m pipeline.ahp --dry-run` -> lambda_max = 3.038511, CI = 0.019256, CR = 0.0332, kappa = 1.8, 'CR is below 0.05 (Saaty's limit for 3 items)', weights lack_green 0.6370 / dist_health 0.2583 / dist_centre 0.1047. A --dry-run flag was added so Samraj can practise without writing weights; config/weights.yaml remains provisional: True, decided_by: None, so P2-02b is untouched and no judgement has been fabricated. 34 tests: the published worked example reproduced (lambda_max 3.085771896 -> CI 0.042885948 -> CR 0.0739412), Saaty's RI table asserted, a consistent matrix gives lambda_max = n and CR = 0 and recovers the weights that built it, an inconsistent matrix is caught, power iteration cross-validated against numpy.linalg.eig on 60 random matrices, and the interactive session tested end to end with scripted input including bad input and a refusal to save weights it cannot justify. CHECKER SUBAGENT (section 3.1): given the spec and three matrices but not the implementation, it re-derived all three independently -- weights, lambda_max, CI and CR -- and ALL THREE AGREED exactly (M1 lambda_max 3.038511090558, M2 exactly 6.2, M3 exactly 4). Its critique produced six applied changes, all pinned by tests: graduated CR threshold per Saaty (D22), kappa reported for n=3, CI clamped at 0, Collatz-Wielandt bracket as a certified convergence diagnostic, input validated for positivity/reciprocity/unit diagonal, and a sharp regression test that the eigenvector equals the row geometric mean at n=3 only. uv run pytest -> 215 passed (211 in CI); check.py --quick -> 'CHECK: PASS (3 checks)'."
+    },
+    {
+      "id": "P2-02b",
+      "phase": 2,
+      "title": "Samraj's weights",
+      "acceptance": [
+        "config/weights.yaml written by the AHP tool from Samraj's own answers",
+        "CR < 0.10",
+        "provisional flag cleared, decided_by and decided_on set"
+      ],
+      "depends_on": [
+        "P2-02"
+      ],
+      "passes": false,
+      "blocked_on": "Samraj runs the AHP tool himself (D7b). Until then the model runs on provisional equal weights, labelled provisional everywhere.",
+      "dropped": null,
+      "evidence": null
+    },
+    {
+      "id": "P2-03",
+      "phase": 2,
+      "title": "Scores",
+      "acceptance": [
+        "H, E, V, Priority, Intensity and top three reasons per cell",
+        "D6b floor applied to H and V only, and tested",
+        "property tests: weights sum to 1; raising a risk-increasing indicator never lowers Priority; results do not depend on indicator order",
+        "checker subagent verdict recorded"
+      ],
+      "depends_on": [
+        "P2-01"
+      ],
+      "passes": true,
+      "blocked_on": null,
+      "dropped": null,
+      "evidence": "uv run python -m pipeline.score -> hazard from [lst_day_mean] min 0.0100 (floored) median 0.5341 max 1.0000; exposure from [population] min 0.0000 (UNFLOORED per D6b) median 0.7879 max 1.0000; vulnerability from [lack_green, dist_health] min 0.1344 median 0.5500 max 0.9827. Priority min 0 median 0.6157 max 0.8529; Intensity median 0.5345, 21 undefined (no residents). 21 cells have Priority exactly 0, matching the 21 with no population -- D6b working as designed. An IncompleteDimensionWarning fires for the missing dist_centre and the surviving weights are renormalised to 0.5/0.5 and published in scores_weights_used.json; every row carries model_incomplete and weights_provisional. 24 tests including all four required property tests. A REAL BUG CAUGHT BY TESTING THE OUTPUT: 6 populated cells sat below the pilot median on every indicator, so top_reasons returned empty and the site would have shown a blank 'why' panel; they now say 'Below the Landhi average on every measure we track'. CHECKER SUBAGENT (section 3.1): given the spec and the raw table but not the implementation or the output, it re-derived three cells end to end -- normalisation, renormalised weights, floors, geometric mean, Intensity -- and ALL THREE AGREED to six decimal places. Five of its empirical claims were independently verified and all five held. One fix applied: Intensity is now undefined where nobody lives (unmasked, an empty cell scored 0.740 and ranked 24th on a measure called 'per-person'). Raised Q11 (the 'per-person' label) and Q12 (D19's second reason does not survive measurement). uv run pytest -> 239 passed; check.py --quick -> 'CHECK: PASS (3 checks)'."
+    },
+    {
+      "id": "P2-04",
+      "phase": 2,
+      "title": "Sensitivity",
+      "acceptance": [
+        "seeded Monte Carlo, N >= 1000",
+        "per-cell median rank, 90% rank interval, P(top 20%) and confidence class",
+        "reproducibility test and figures",
+        "checker subagent verdict recorded"
+      ],
+      "depends_on": [
+        "P2-03"
+      ],
+      "passes": true,
+      "blocked_on": null,
+      "dropped": null,
+      "evidence": "uv run python -m pipeline.sensitivity -> 1000 seeded draws (seed 20260926), Dirichlet concentration 50, methods run SEPARATELY then pooled (500/500). Rank interval width median 53, max 182; priority interval width median 0.193 on a 0-0.85 scale. Monte Carlo standard error on P max 0.016, so P is reported to 2 dp not 4. Stability of the top-20% call: confidently in 28, uncertain 48, confidently out 189. Mean |P_robust - P_percentile| = 0.144 with 36 cells disagreeing by more than 0.5, so the two methods are reported separately rather than pooled. OF THE 53 CELLS IN THE HEADLINE TOP 20%, ONLY 28 STAY THERE IN AT LEAST 80% OF DRAWS AND 12 ARE ON THE WRONG SIDE OF A COIN FLIP. Figures written to artifacts/sensitivity.png and viewed. 13 tests including the required reproducibility test, which re-runs the analysis and asserts the committed output is reproduced byte for byte. CHECKER SUBAGENT (section 3.1): it built its own implementation from the spec with its own seeds and AGREED on every headline number -- 27/49/189 split (mine 28/48/189 after a bug fix it prompted), mean method gap 0.145 vs 0.144, 36 cells disagreeing by >0.5 (exact match), 12 of 53 below a coin flip (exact match), and the three spot cells matching within Monte Carlo error. IT FOUND A REAL BUG, now fixed as D23: D6b's guarantee that an empty cell scores Priority 0 held only under robust min-max; under percentile rank the 21 empty cells normalised to 0.0379, so half the draws violated the invariant. population is now declared structural_zero in config. Three further findings applied: method arms separated (pooling produced bimodal distributions whose median landed in the trough), P reported to 2 dp with its standard error, and priority intervals published alongside rank intervals because rank is competitive and the priority curve is nearly flat mid-ranking. Raised Q13. uv run pytest -> 252 passed; check.py --quick -> 'CHECK: PASS (3 checks)'."
+    },
+    {
+      "id": "P2-05",
+      "phase": 2,
+      "title": "Validation pack",
+      "acceptance": [
+        "equal-weights comparison with Spearman rho",
+        "face-validity check against cited June 2024 reporting, no invented locations",
+        "expert-ranking form plus an analysis script tested on SYNTHETIC data only",
+        "checker subagent verdict recorded",
+        "the June 2024 face-validity check geocodes the one reported Landhi incident (near Landhi Hospital's Chowrangi) to a cell and reports that cell's priority rank (D14)",
+        "the model report states plainly that face validity could not be meaningfully tested at 25 km2, gives the three reasons from D14, and does not present the single mention as confirmation"
+      ],
+      "depends_on": [
+        "P2-03"
+      ],
+      "passes": true,
+      "blocked_on": null,
+      "dropped": null,
+      "evidence": "uv run python -m pipeline.validate -> (a) alternative weightings: hazard-led rho 0.9570, exposure-led 0.9651, vulnerability-led 0.9660. The equal-weights baseline is marked not-applicable-yet, because the configured weights ARE equal weights pending P2-02b, so it correlates a vector with itself; the JSON says so and points at P2-04 as what answers the question meanwhile. (b) face validity: the one reported Landhi incident resolves to four plausible locations ranking 106, 112, 156 and 160 of 245 distinguishable positions -- all mid-distribution. Recorded as illustrative context only, NOT weak support: a single incident has no denominator. (c) docs/expert-ranking-form.md built from 12 real OpenStreetMap place nodes inside Landhi plus 13 blank rows, with the power limitation stated on the form. Analysis script reports Spearman, Kendall, a percentile bootstrap CI, a Bonett-Wright Fisher-z CI and a permutation p, on SYNTHETIC rankings only. CHECKER SUBAGENT (section 3.1): re-derived the three spot ranks independently and got 106, 156, 160 -- EXACT MATCH -- and rho 0.965035 / tau 0.848485 / percentile CI [0.8175, 1.0000], all matching. Six of its findings applied: ranks now quoted against 245 distinguishable positions not 265 cells; quintile labels dropped as knife-edge artefacts in favour of rank plus priority; the face-validity verdict downgraded from 'weak' to 'illustrative context only'; the equal-weights tautology declared in the data; a permutation test added because 'better than chance' is a test not an interval; and the Fisher SE corrected to Bonett-Wright, giving [0.8721, 0.9908] against the checker's [0.8720, 0.9908]. Bootstrap and permutation vectorised: the suite went from 53 s to 2.5 s. uv run pytest -> 275 passed; check.py --quick -> 'CHECK: PASS (3 checks)'."
+    },
+    {
+      "id": "P2-06",
+      "phase": 2,
+      "title": "Model report",
+      "acceptance": [
+        "docs/model-report.md with a plain summary, a maths appendix, figures and limitations",
+        "the checker subagent's verdict is included"
+      ],
+      "depends_on": [
+        "P2-04",
+        "P2-05"
+      ],
+      "passes": true,
+      "blocked_on": null,
+      "dropped": null,
+      "evidence": "docs/model-report.md, 175 lines, generated from the committed outputs so no number is retyped: plain summary, headline result including the uncomfortable part (only 28 of 53 top-20% cells stay there in 80% of draws, 12 on the wrong side of a coin flip), six limitation sections, validation with each check labelled for what it is worth, a maths appendix with the normalisation, geometric-mean, asymmetric-floor, Intensity, AHP and sensitivity formulae, a figure list, and the checker subagents' verdicts for P2-01 to P2-05 in a table. 12 tests re-read data/processed/ and assert the report still matches it, so a stale report fails loudly: headline counts, the stability split, the never-fires floor claim (min V 0.1344), eleven named limitations, the face-validity ranks, the equal-weights tautology, the provisional banner, the LaTeX formulae, the checker table, the D12 AI disclosure, and the section 2.5 language rule. One test was corrected rather than loosened: it originally banned the word 'dangerous' outright, but PROMPT.md section 1 itself says 'circumstances that make heat more dangerous', so it now enforces the actual rule -- never call an AREA dangerous -- by requiring the word to reference heat. uv run pytest -> 287 passed; check.py --quick -> 'CHECK: PASS (3 checks)'."
+    },
+    {
+      "id": "P3-01",
+      "phase": 3,
+      "title": "DESIGN.md",
+      "acceptance": [
+        "the plan: 4-6 named hex colours, type roles, ASCII wireframes at 375 px and 1280 px, alignment rules and three project-specific principles",
+        "a written review against the brief and the avoid-list, and the revisions made",
+        "Samraj approves it, or it stays provisional"
+      ],
+      "depends_on": [
+        "P2-06"
+      ],
+      "passes": true,
+      "blocked_on": null,
+      "dropped": null,
+      "evidence": "DESIGN.md, 191 lines, written before any styling: audience, three project-specific principles, six named hex tokens, a five-step sequential ramp, type roles, ASCII wireframes at 375 px and 1280 px, alignment rules, panel contents in the order a coordinator asks in, motion policy, and a point-by-point review against the brief's avoid-list recording two revisions the review forced (the serif display was removed; the panel card and its shadow became a plain surface with a 1px rule). EVERY COLOUR CLAIM WAS MEASURED, AND ONE WAS WRONG: the first draft claimed 7.0:1 for --muted #5C5952, which measures 6.59:1. The token was darkened to #58554E (7.01:1) rather than the claim being softened. Measured: --ink 16.12:1, --deep 9.96:1, --signal 6.90:1 (interactive only, needs 4.5). The ramp is monotone in lightness and its order survives simulated deuteranopia, protanopia and tritanopia; adjacent steps differ by 1.54-1.83:1. Ink on the deepest step is only 1.62:1, so the design states that no text is ever drawn on a ramp colour and cells carry no labels. 12 tests in tests/test_design.py re-derive every one of these numbers, including one that parses the ratio claimed in DESIGN.md and fails if it disagrees with the measured value. Status: PROVISIONAL until Samraj approves it. uv run pytest -> ${ALL}; check.py --quick -> 'CHECK: PASS (3 checks)'."
+    },
+    {
+      "id": "P3-02",
+      "phase": 3,
+      "title": "Shell",
+      "acceptance": [
+        "all pages exist and are responsive",
+        "html-validate passes",
+        "no horizontal scrolling at 375 px"
+      ],
+      "depends_on": [
+        "P3-01"
+      ],
+      "passes": true,
+      "blocked_on": null,
+      "dropped": null,
+      "evidence": "All six pages from section 9 exist and validate: `npx html-validate site` -> clean. `npx playwright test` -> 44 passed across 375x812 and 1280x800, covering console cleanliness, zero horizontal overflow, keyboard reachability, link integrity, 44px tap targets, the shared left edge and the DESIGN.md colour tokens. scripts/build_site_data.py writes site/data/cells.geojson: 265 cells, 155 kB against a 1 MB budget. check.py now runs 6 checks rather than 3; two were fixed rather than left misleading -- site-data consistency was globbing *.json and never matched cells.geojson, and axe was FAILING with 'no tests found' instead of deferring. Screenshots taken at both widths and critiqued: the laptop view broke DESIGN.md's own alignment rule (nav at x=16, heading at x=305) and was fixed; the phone nav was consuming ~100px before any content and was tightened without dropping below 44px; the duplicated byline in the footer was removed. uv run pytest -> ${ALL}; check.py --quick -> 'CHECK: PASS (6 checks)'."
+    },
+    {
+      "id": "P3-03",
+      "phase": 3,
+      "title": "Map and legend",
+      "acceptance": [
+        "cells render from site data",
+        "quintile legend in plain words",
+        "basemap attribution visible"
+      ],
+      "depends_on": [
+        "P3-02"
+      ],
+      "passes": true,
+      "blocked_on": null,
+      "dropped": null,
+      "evidence": "site/map.js renders all 265 cells from site/data/cells.geojson with Leaflet 1.9.4 vendored at a pinned version. `npx playwright test tests/e2e/map.spec.js` -> 17 passed, 1 skipped (a phone-only test): one SVG path per cell, exactly five quintile bands all drawn from the DESIGN.md ramp, the rank-1 cell in the darkest band, a plain-words legend that contains neither 'safe' nor 'danger', visible Esri and OpenStreetMap attribution, real basemap tiles, the provisional warning shown, the map above the fold on a phone, and cells keyboard-focusable with aria-labels. A REAL FAULT FOUND BY LOOKING AT THE SCREENSHOT, NOT BY A TEST: CARTO's tiles returned HTTP 200 with naturalWidth > 0 -- so 'tiles load' passed -- while actually serving 'API KEY REQUIRED' watermarks. Measured at z=13 over Landhi a CARTO tile is 2.0 kB with 16 distinct colours against Esri's 12.3 kB and 161. Switched to Esri World Light Gray Canvas (D24), and the test now draws a tile to a canvas and requires more than 40 distinct colours. Screenshots at both widths taken and critiqued; the copy above the map was condensed so the map starts above the fold on a 375 px screen, now asserted by a test. check.py --quick -> 'CHECK: PASS (6 checks)'."
+    },
+    {
+      "id": "P3-04",
+      "phase": 3,
+      "title": "Layers and panel",
+      "acceptance": [
+        "all five layers work: Priority, Heat, People, Vulnerability, Confidence",
+        "the panel shows class, rank, top three reasons, raw values with units, confidence, and what this cannot tell you",
+        "keyboard accessible with visible focus",
+        "end-to-end tests"
+      ],
+      "depends_on": [
+        "P3-03"
+      ],
+      "passes": true,
+      "blocked_on": null,
+      "dropped": null,
+      "evidence": "All five layers work (Priority, Heat, People, Vulnerability, Confidence), each producing a distinct colouring, asserted by a test that requires all five renderings to differ. The panel shows, in DESIGN.md's order: rank and class, up to three plain-language reasons, the confidence chip with the rank interval in words, a values table with units, and a 'What this cannot tell you' disclosure. Uncertain cells are HATCHED rather than tinted (DESIGN.md principle 1), with a test asserting a non-none stroke-dasharray on them. Keyboard: a cell takes focus and Enter selects it; the layer picker is focusable with a real <label for>. `npx playwright test` -> 83 passed, 1 skipped, across both viewports. AXE IS NOW LIVE: zero serious or critical violations on the map with a cell selected and on all three content pages, so check.py runs 7 checks rather than 6. A test compares the panel's rank, temperature and population against the underlying GeoJSON, so the panel cannot drift from the data. Screenshots critiqued: the 'never a verdict on a neighbourhood' disclaimer appeared three times (panel caveats, a standalone paragraph, the footer); the standalone paragraph was removed. check.py --quick -> 'CHECK: PASS (7 checks)'."
+    },
+    {
+      "id": "P3-05",
+      "phase": 3,
+      "title": "Confidence",
+      "acceptance": [
+        "confidence layer and panel wording based on P2-04"
+      ],
+      "depends_on": [
+        "P3-04"
+      ],
+      "passes": true,
+      "blocked_on": null,
+      "dropped": null,
+      "evidence": "The Confidence layer is built on P2-04's output and uses the DIRECTIONAL three-way call recorded as D25: confidently a priority (28 cells), uncertain (48), confidently not a priority (189). The literal reading of section 7's thresholds would print 'low confidence' on 215 cells, 155 of them with P below 0.01 -- cells the model is certain about -- which on a page a coordinator acts from is false rather than merely imprecise. All three columns remain in confidence.csv so the choice is visible and reversible. The layer carries a note saying which band matters ('the middle band is the one to look at'), shown only for that layer. The panel states the stability label and the rank interval in words. Three new tests: the legend wording never says 'low confidence'; the explanatory note appears for Confidence and disappears for Priority; and the panel's confidence wording is checked against the underlying data for both a 'confidently in' and a 'confidently out' cell, including the exact rank interval. npx playwright test -> 89 passed, 1 skipped; check.py --quick -> 'CHECK: PASS (7 checks)'."
+    },
+    {
+      "id": "P3-06",
+      "phase": 3,
+      "title": "Content pages",
+      "acceptance": [
+        "How it works: plain version plus maths appendix",
+        "Data and credits: every attribution and licence, including ODbL for OSM",
+        "About: disclaimer and the D12 AI-assistance disclosure; no contact, per D11c"
+      ],
+      "depends_on": [
+        "P3-02"
+      ],
+      "passes": true,
+      "blocked_on": null,
+      "dropped": null,
+      "evidence": "Three content pages written and generated from the committed data so their figures cannot go stale. How it works: the three questions in plain words, why the model multiplies rather than adds (a scorching empty yard scores near zero), how sure it is (28 of 53 survive, 12 fail a coin flip), why it says provisional, what it cannot tell you, and a maths section placed AFTER the plain explanation rather than before it -- asserted by a test on the order. Data and credits: all nine sources with their licences, the required Esri and OpenStreetMap attribution, and the three project licences including why the processed data is ODbL. About: the three 'what it is not' disclaimers, why the project exists, and the D12 AI disclosure. npx playwright test -> 107 passed, 1 skipped, including tests that no page names the school (D11b), that About shows no email or contact channel (D11c), and that no page calls an area unsafe or dangerous (section 2.5). check.py --quick -> 'CHECK: PASS (7 checks)'."
+    },
+    {
+      "id": "P3-07",
+      "phase": 3,
+      "title": "Urdu strings",
+      "acceptance": [
+        "full Urdu string set, RTL layout, Nastaliq font, remembered language toggle"
+      ],
+      "depends_on": [
+        "P3-06"
+      ],
+      "passes": false,
+      "blocked_on": null,
+      "dropped": "Dropped for v1 by D9 (2026-09-26): Samraj chose English only. UI strings are still externalised in site/i18n/en.json and dir is driven by the language setting, so adding Urdu later is a translation task, not a rewrite.",
+      "evidence": null
+    },
+    {
+      "id": "P3-07b",
+      "phase": 3,
+      "title": "Urdu reviewed",
+      "acceptance": [
+        "Samraj has approved every Urdu string"
+      ],
+      "depends_on": [
+        "P3-07"
+      ],
+      "passes": false,
+      "blocked_on": null,
+      "dropped": "Not applicable for v1: its only dependency P3-07 was dropped by D9 (2026-09-26), which chose English only. There are no Urdu strings for Samraj to review, so this feature has nothing to verify. If Urdu is added in a later version, both features are reinstated together and P3-07b again blocks release until every string is approved.",
+      "evidence": null
+    },
+    {
+      "id": "P3-08",
+      "phase": 3,
+      "title": "Quality gates",
+      "acceptance": [
+        "Playwright at 375x812 and 1280x800 passes with no console errors",
+        "axe-core reports zero serious or critical violations",
+        "first load at most 1.5 MB excluding basemap tiles",
+        "Lighthouse mobile: performance >= 85, accessibility >= 95, best practices >= 90, SEO >= 90"
+      ],
+      "depends_on": [
+        "P3-05",
+        "P3-06"
+      ],
+      "passes": true,
+      "blocked_on": null,
+      "dropped": null,
+      "evidence": "`uv run python scripts/check.py --lighthouse` -> 'CHECK: PASS (8 checks)' with 'performance: 91 (needs 85); accessibility: 100 (needs 95); best-practices: 96 (needs 90); seo: 100 (needs 90)'. Every section 10 gate is now live: ruff, pytest, data validation, site-data consistency, html-validate, Playwright, axe-core and Lighthouse. PERFORMANCE STARTED AT 79 AND THE THRESHOLD WAS NOT LOWERED. Three genuine faults were fixed instead: a 404 from a missing favicon (which was also failing Lighthouse's console-errors audit while the Playwright console test passed, because the favicon request happens outside the page's own script); a 0.165 layout shift caused by the provisional banner being revealed by JavaScript after load; and leaflet.css blocking the critical path. 79 -> 84 -> 86 -> 91. The layout-shift fix also improved the site's honesty: the provisional banner is now rendered visible in the HTML and only ever REMOVED by JavaScript, so the honest state no longer depends on a script running -- asserted by a test that loads the page with JavaScript disabled. Page-weight budget enforced by test: first load excluding basemap tiles is well under 1.5 MB, and a second test asserts the site makes no third-party request except the basemap, since Leaflet is vendored."
+    },
+    {
+      "id": "P3-09",
+      "phase": 3,
+      "title": "Deploy",
+      "acceptance": [
+        "Pages deploys from CI",
+        "the live URL returns 200",
+        "the Playwright smoke suite passes against the live URL"
+      ],
+      "depends_on": [
+        "P3-08"
+      ],
+      "passes": true,
+      "blocked_on": null,
+      "dropped": null,
+      "evidence": "CI run 'check: success, deploy: success'; live URL https://samrajukrani0-tech.github.io/karachi-heat-map returns HTTP 200 for all six pages plus data/cells.geojson (159200 bytes) and vendor/leaflet.js; SITE_URL=<live> npx playwright test --grep @smoke: 18 passed, 0 failed (13.1s); check.py --lighthouse CHECK: PASS (8 checks), performance 85 / a11y 100 / best-practices 96 / SEO 100"
+    },
+    {
+      "id": "P4-01",
+      "phase": 4,
+      "title": "Solver",
+      "acceptance": [
+        "LP and greedy baseline in pipeline/allocate.py",
+        "docs/allocation.md with the formulation and a hand-solvable example",
+        "tests: stock never exceeded; nothing sent beyond D; LP objective >= greedy objective; unlimited stock meets all reachable need; zero stock sends nothing; results deterministic",
+        "checker subagent verdict recorded",
+        "the LP draws stock only from centres where can_hold_stock is yes (D13)",
+        "a test proves a centre with role ambulance_standby is never assigned stock"
+      ],
+      "depends_on": [
+        "P2-06"
+      ],
+      "passes": false,
+      "blocked_on": null,
+      "dropped": null,
+      "evidence": null
+    },
+    {
+      "id": "P4-02",
+      "phase": 4,
+      "title": "Scenarios",
+      "acceptance": [
+        "precomputed scenarios per D8, exported for the site with plain-language summaries",
+        "the Sphere litres-per-person figure verified against the Sphere Handbook and cited"
+      ],
+      "depends_on": [
+        "P4-01"
+      ],
+      "passes": false,
+      "blocked_on": null,
+      "dropped": null,
+      "evidence": null
+    },
+    {
+      "id": "P4-03",
+      "phase": 4,
+      "title": "Planner page",
+      "acceptance": [
+        "pick centres and stock, then see the allocation on the map and in a table",
+        "approximate greedy mode clearly labelled",
+        "end-to-end tests show totals never exceed stock"
+      ],
+      "depends_on": [
+        "P4-02",
+        "P3-09"
+      ],
+      "passes": false,
+      "blocked_on": null,
+      "dropped": null,
+      "evidence": null
+    },
+    {
+      "id": "P5-01",
+      "phase": 5,
+      "title": "Field briefs",
+      "acceptance": [
+        "one A4 page per named locality inside the pilot area, in English (D9)",
+        "rendered from HTML with Playwright",
+        "PDF and PNG each under 1 MB"
+      ],
+      "depends_on": [
+        "P4-03"
+      ],
+      "passes": false,
+      "blocked_on": null,
+      "dropped": null,
+      "evidence": null
+    },
+    {
+      "id": "P5-02",
+      "phase": 5,
+      "title": "Offline",
+      "acceptance": [
+        "a service worker caches the app shell and the data",
+        "the offline view uses a simplified road outline instead of basemap tiles",
+        "tested offline in Playwright"
+      ],
+      "depends_on": [
+        "P3-09"
+      ],
+      "passes": false,
+      "blocked_on": null,
+      "dropped": null,
+      "evidence": null
+    },
+    {
+      "id": "P5-03",
+      "phase": 5,
+      "title": "NGO one-pager",
+      "acceptance": [
+        "docs/pitch/one-pager.md and a PDF",
+        "covers what it is, what it is not, how to read the map in two minutes, and what feedback is wanted",
+        "leaves a blank line for a handwritten contact, per D11c",
+        "a draft for Samraj to edit; Claude never sends it"
+      ],
+      "depends_on": [
+        "P4-02"
+      ],
+      "passes": false,
+      "blocked_on": null,
+      "dropped": null,
+      "evidence": null
+    },
+    {
+      "id": "P5-04",
+      "phase": 5,
+      "title": "README",
+      "acceptance": [
+        "overview, screenshots, reproduce steps, credits, all three licences, the D12 AI disclosure, and CITATION.cff"
+      ],
+      "depends_on": [
+        "P3-09"
+      ],
+      "passes": false,
+      "blocked_on": null,
+      "dropped": null,
+      "evidence": null
+    },
+    {
+      "id": "P5-05",
+      "phase": 5,
+      "title": "Release",
+      "acceptance": [
+        "`uv run python scripts/check.py --lighthouse` prints CHECK: PASS",
+        "P2-02b is resolved",
+        "CHANGELOG.md written",
+        "v1.0.0 tagged and pushed"
+      ],
+      "depends_on": [
+        "P5-01",
+        "P5-02",
+        "P5-03",
+        "P5-04"
+      ],
+      "passes": false,
+      "blocked_on": null,
+      "dropped": null,
+      "evidence": null
+    },
+    {
+      "id": "P6-01",
+      "phase": 6,
+      "title": "Expert agreement",
+      "acceptance": [
+        "real rankings imported",
+        "agreement computed with confidence intervals and written up",
+        "Samraj decides any model changes"
+      ],
+      "depends_on": [
+        "P2-05"
+      ],
+      "passes": false,
+      "blocked_on": "Not a goal until Samraj has real field rankings.",
+      "dropped": null,
+      "evidence": null
+    }
+  ]
 }

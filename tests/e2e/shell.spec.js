@@ -1,16 +1,16 @@
 import { test, expect } from '@playwright/test';
 
 const PAGES = [
-  ['/index.html', 'Karachi Heat Priority Map'],
-  ['/plan.html', 'Plan supplies'],
-  ['/briefs.html', 'Field briefs'],
-  ['/how-it-works.html', 'How it works'],
-  ['/data-and-credits.html', 'Data and credits'],
-  ['/about.html', 'About'],
+  ['index.html', 'Karachi Heat Priority Map'],
+  ['plan.html', 'Plan supplies'],
+  ['briefs.html', 'Field briefs'],
+  ['how-it-works.html', 'How it works'],
+  ['data-and-credits.html', 'Data and credits'],
+  ['about.html', 'About'],
 ];
 
 for (const [path, title] of PAGES) {
-  test(`${path} loads with a clean console`, async ({ page }) => {
+  test(`@smoke ${path} loads with a clean console`, async ({ page }) => {
     const problems = [];
     page.on('console', m => { if (m.type() === 'error') problems.push(m.text()); });
     page.on('pageerror', e => problems.push(String(e)));
@@ -36,7 +36,7 @@ for (const [path, title] of PAGES) {
 }
 
 test('every navigation link resolves', async ({ page }) => {
-  await page.goto('/index.html');
+  await page.goto('index.html');
   const hrefs = await page.$$eval('header.site nav a', els => els.map(e => e.getAttribute('href')));
   expect(hrefs.length).toBe(PAGES.length);
   for (const href of hrefs) {
@@ -46,7 +46,7 @@ test('every navigation link resolves', async ({ page }) => {
 });
 
 test('tap targets in the header are at least 44px', async ({ page }) => {
-  await page.goto('/index.html');
+  await page.goto('index.html');
   const links = await page.$$('header.site nav a');
   for (const link of links) {
     const box = await link.boundingBox();
@@ -55,7 +55,7 @@ test('tap targets in the header are at least 44px', async ({ page }) => {
 });
 
 test('everything shares one left edge (DESIGN.md alignment rule)', async ({ page }) => {
-  await page.goto('/about.html');
+  await page.goto('about.html');
   const edges = await page.evaluate(() => {
     // Measure the TEXT edge, not the box edge: the nav uses a negative margin so its
     // links' boxes start left of their text, which is exactly what a reader does not see.
@@ -79,7 +79,7 @@ test('everything shares one left edge (DESIGN.md alignment rule)', async ({ page
 });
 
 test('the page background and body text match the DESIGN.md tokens', async ({ page }) => {
-  await page.goto('/about.html');
+  await page.goto('about.html');
   const styles = await page.evaluate(() => {
     const cs = getComputedStyle(document.body);
     return { bg: cs.backgroundColor, fg: cs.color };

@@ -360,3 +360,26 @@ the three-way call, because the literal reading is not merely imprecise — it w
 a page a field coordinator acts from. All three columns remain in
 `data/processed/confidence.csv`, so nothing is lost and Samraj can switch the site to the
 literal reading by changing one mapping if he disagrees. Recorded as **D25**.
+
+## Q14 — Lighthouse performance has no headroom left (P3-09, 2026-09-27)
+
+**Not blocking. Answer when convenient.**
+
+The performance gate is 85 and the live site now scores exactly **85**, down from 91 in
+P3-08 on the same commit. Nothing regressed; this is run-to-run variance in how fast a
+cold CDN serves the first tile. But a gate you pass by zero points is a gate that will
+fail on the next page you add, and the failure will look like a bug rather than noise.
+
+Three options, with Claude's recommendation first:
+
+1. **Run Lighthouse three times and take the median** (recommended). This is what the
+   Lighthouse authors advise for exactly this reason, and it raises the *reliability* of
+   the measurement without touching the threshold. Costs about a minute per check run.
+2. **Leave it.** Honest, and a failure would at least be loud. But it will fail on noise,
+   and a gate that cries wolf is one you start ignoring.
+3. **Lower the threshold to 80.** Claude will not do this without Samraj saying so —
+   CLAUDE.md rule 2 forbids loosening a threshold to make checks pass, and the threshold
+   is not the thing that is wrong here.
+
+**What changes:** option 1 is a change to `scripts/lighthouse.mjs` only, no threshold
+moves, and Claude can do it in one feature. Options 2 and 3 need no work.

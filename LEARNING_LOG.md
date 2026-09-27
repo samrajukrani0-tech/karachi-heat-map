@@ -512,3 +512,55 @@ but interpreting 0.6370 as distinguishable from 0.63 reads precision into a judg
 never had it. One scale point of change in a single answer moves the weights by several
 percentage points.
 </details>
+
+## P3-09 — Deploy
+
+**What and why.** The site is live on GitHub Pages, deployed by CI rather than by hand,
+so what the public sees is always something that passed the gates. The last acceptance
+criterion was that the Playwright smoke suite passes *against the live URL*, not just
+against a local dev server — because the two can differ, and this time they did. Running
+the suite against the deployed site failed almost entirely, and the reason was that a
+path written as `/index.html` means "the root of this domain", not "next to the page I am
+on". On a local dev server those are the same place. On GitHub Pages, where the project
+lives at `/karachi-heat-map/`, they are not.
+
+**The key idea in A Level terms.** This is the difference between an **absolute** and a
+**relative** reference, and it is the same idea as a position vector versus a displacement
+vector. `/index.html` is absolute: it is measured from a fixed origin (the domain root),
+so it means the same place no matter where you are standing. `index.html` is relative: it
+is measured from where you currently are, so the same expression resolves to different
+places in different contexts. The bug was writing an absolute reference while assuming it
+was relative — which works perfectly as long as you happen to be standing at the origin,
+and silently breaks the moment you move. A local dev server puts you at the origin; a
+project page on a shared domain does not.
+
+**Questions to check you have it.**
+
+1. The site works locally and the paths are all `/index.html`. Why does this keep working
+   right up until the moment it is deployed?
+<details><summary>Answer</summary>
+Locally the site is served at `http://127.0.0.1:8765/`, so the domain root and the site
+root are the same directory. An absolute path from the domain root therefore lands in the
+right place by coincidence. On GitHub Pages the site is served from a subdirectory,
+`/karachi-heat-map/`, so the two roots separate and every absolute path points one level
+too high. The test never checked an assumption that only held in one environment.
+</details>
+
+2. After switching to relative paths, `baseURL` still had to be changed to end in a
+   slash. Why does a trailing slash matter?
+<details><summary>Answer</summary>
+A relative path resolves against the *directory* of the current URL, which means
+everything up to the last slash. With base `.../karachi-heat-map`, the last segment
+`karachi-heat-map` is treated as a file name and discarded, so `index.html` resolves to
+the domain root again — the same bug in a new disguise. With `.../karachi-heat-map/`, the
+final segment is a directory and is kept.
+</details>
+
+3. The first live run printed "12 passed" and no failures. Why was that not good news?
+<details><summary>Answer</summary>
+Because the suite has 113 tests. A number that should have been 113 coming back as 12 is
+information in itself: most tests never reported at all. The "passed" count only tells you
+about tests that finished, so it is not a verdict on the run — it has to be read against
+how many tests *should* have run. The 6.2-minute duration for twelve tests was the second
+clue, since the same tests take seconds when they are actually loading a page.
+</details>

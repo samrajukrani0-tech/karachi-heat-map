@@ -876,3 +876,38 @@ JavaScript disabled and asserts the banner is still there.
 **Two budget tests added:** first load excluding basemap tiles is well under 1.5 MB, and
 the site makes no third-party request except the basemap, because Leaflet is vendored.
 **Next:** P3-09 Deploy.
+
+## P3-09 Deploy — PASS
+
+GitHub Pages deploys from CI, and the live site is up at
+<https://samrajukrani0-tech.github.io/karachi-heat-map>. All six pages,
+`data/cells.geojson` and the vendored Leaflet return HTTP 200.
+
+**The smoke suite against the live URL nearly went into features.json as a pass on a
+misreading — the same mistake as P3-02.** The first live run printed `12 passed (6.2m)`
+with two bare test names above it and no counters. Twelve of a 113-test suite is not a
+result worth trusting, and 6.2 minutes for twelve tests is a timeout signature, not a
+fast run.
+
+The cause was URL joining. With `baseURL` set to the Pages project URL
+`https://…github.io/karachi-heat-map`, a test path written as `/index.html` resolves
+against the **domain root**, because a leading slash discards the path. Every live
+navigation was requesting `https://samrajukrani0-tech.github.io/index.html` — someone
+else's 404 page. Locally the bug was invisible: the dev server *is* the domain root,
+so `/index.html` happened to be right.
+
+Two changes fixed it: test paths are now relative (`index.html`), and the config
+normalises `baseURL` to end in `/`, without which a relative path resolves against the
+last path *segment* and drops `karachi-heat-map` anyway. A `@smoke` tag now marks the
+subset worth running over the network — page loads, cell rendering, basemap tiles, the
+panel, and axe — so the live check is 18 tests in 13 seconds instead of the whole suite.
+
+**Evidence:** live smoke 18 passed / 0 failed; local suite 113 passed / 1 skipped;
+`check.py --lighthouse` CHECK: PASS (8 checks).
+
+**Worth noting:** Lighthouse performance came in at 85 against a threshold of 85, down
+from 91 in P3-08. Same site, same commit — this is run-to-run variance on a cold CDN,
+not a regression, but it has no headroom left and the next thing added to the page will
+break it. Raised as Q14.
+
+**Phase 3 is complete: 9 of 9.** Next: P4-01 Solver.
